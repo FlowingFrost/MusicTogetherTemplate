@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEngine;
 using LiteGameFrame.CoreInfrastructure;
-using UnityEditor.Experimental.GraphView;
+ 
 
 namespace LiteDebugTool
 {
@@ -12,125 +11,63 @@ namespace LiteDebugTool
     {
         public override bool Persistent => true;
         
-        public bool recordUnityLog = false;
         public string logName = "GameLog";
-        
-        private Queue<string> logQueue = new Queue<string>();
-        private const int MAX_QUEUE_SIZE = 100;
         private string logFilePath;
+        //Settings
+        public bool recordUnityLog = false;
+        private const int WRITE_IN_TRIGGER = 100;
+        private const int MIN_CACHE_SIZE = 50;
+        //Runtime data
+        private List<LogEntry> logCache = new List<LogEntry>();
+        private DebugNode unityLogNode;
 
-        //Wrapper
-        private int lastLogLevel;
-        private LogData lastLogData;
-        private DateTime lastLogTime;
-        protected override void Awake()
+        public void Log(LogEntry logEntry)
         {
-            base.Awake();
-            logName += DateTime.Now.ToString("yyyyMMddHHmmss") + ".log";
-            lastLogLevel = 0;
-            lastLogTime = DateTime.Now;
-            lastLogData = LogData.Info("Log begin, saved at" + logName);
-            logFilePath = Path.Combine(Application.persistentDataPath, logName);
-            Debug.Log(logFilePath);
-            if(recordUnityLog)
-                Application.logMessageReceived += HandleUnityLog;
-        }
-
-        private void OnDestroy()
-        {
-            if(recordUnityLog)
-                Application.logMessageReceived -= HandleUnityLog;
-            FlushLogsToFile();
-        }
-
-        // 处理Unity自带日志
-        private void HandleUnityLog(string logString, string stackTrace,LogType type)
-        {
-            // 可以选择将Unity日志也整合到我们的系统中
-            //LogMessage("UnityLog" + logString, 0,type,stackTrace);
-        }
-
-        // 记录日志消息
-        public void LogMessage(LogData data, int indentLevel)
-        {
-            PushLog(indentLevel);
-            lastLogData = data;
-            lastLogTime = DateTime.Now;
-            lastLogLevel = indentLevel;
-        }
-
-        string GetDirectory(int currentLevel)
-        {
-            if(lastLogLevel <= currentLevel)
-                return string.Concat(Enumerable.Repeat("\u2502 ", lastLogLevel));
-            else
-                return string.Concat(Enumerable.Repeat("\u2502 ", lastLogLevel - 1)) + "\u2514\u2500";
-        }
-
-        string LengthWrapper(string content, int count,string wrapperCharL = "[",string wrapperCharR = "]")
-        {
-            int spaceCount = count - content.Length;
-            if (spaceCount < 0) spaceCount = 0;
-            string spaces = string.Concat(Enumerable.Repeat(" ", spaceCount));
-            return string.Concat(wrapperCharL, content, spaces, wrapperCharR);
-        }
-
-        void PushLog(int currentLevel)
-        {
-            string indent = GetDirectory(currentLevel);
-            string logType = "";
-            string formattedMessage ="";
-            int logTypeLength = 9;
-            switch (lastLogData.logType)
-            {
-                case LogType.Log:
-                    logType = LengthWrapper("Info",logTypeLength);
-                    goto default;
-                case LogType.Warning:
-                    logType = LengthWrapper("Warning",logTypeLength);
-                    goto default;
-                case LogType.Assert:
-                    logType = LengthWrapper("Assert",logTypeLength);
-                    goto hasStackTrace;
-                case LogType.Error:
-                    logType = LengthWrapper("Error",logTypeLength);
-                    goto hasStackTrace;
-                case LogType.Exception:
-                    logType = LengthWrapper("Exception",logTypeLength);
-                    goto hasStackTrace;
-                hasStackTrace:
-                    formattedMessage = $"{Environment.NewLine}{string.Concat(Enumerable.Repeat(" ", logTypeLength+3+8+5 ))}{indent}{lastLogData.stackTrace}";
-                    goto default;
-                default:
-                    formattedMessage = $"[{lastLogTime:hh:mm:ss}] - {logType} {indent}{lastLogData.message}" + formattedMessage;
-                    break; 
-            }
-            
-            // 输出到Unity控制台
-            //Debug.Log(formattedMessage);
-
-            // 添加到队列
-            logQueue.Enqueue(formattedMessage);
-
-            // 如果队列过大，写入文件并清空队列
-            if (logQueue.Count >= MAX_QUEUE_SIZE)
+            logCache.Add(logEntry);
+            if (logCache.Count >= WRITE_IN_TRIGGER)
             {
                 FlushLogsToFile();
             }
         }
 
-        // 将日志写入文件
+
         public void FlushLogsToFile()
         {
-            if (logQueue.Count == 0) return;
+            FlushLogsToFile(false);
+        }
+
+        // force=true 时强制写出所有剩余缓存
+        public void FlushLogsToFile(bool force)
+        {
+            if (logCache.Count == 0) return;
 
             try
             {
                 using (StreamWriter writer = new StreamWriter(logFilePath, true))
                 {
-                    while (logQueue.Count > 0)
+                    if (force)
                     {
-                        writer.WriteLine(logQueue.Dequeue());
+                        while (logCache.Count > 0)
+                        {
+                            LogEntry entry = logCache[0];
+                            // 查看下一个元素（如果有）来判断是否是最后一个分支
+                            bool isLast = logCache.Count > 1 ? (logCache[1].Level < entry.Level) : true;
+                            logCache.RemoveAt(0);
+                            string log = entry.ToString(isLast);
+                            writer.WriteLine(log);
+                        }
+                    }
+                    else
+                    {
+                        while (logCache.Count > MIN_CACHE_SIZE + 1)
+                        {
+                            LogEntry entry = logCache[0];
+                            logCache.RemoveAt(0);
+                            // 现在 logCache[0] 仍然存在（至少剩下 MIN_CACHE_SIZE+1 个）
+                            bool isLast = logCache[0].Level < entry.Level;
+                            string log = entry.ToString(isLast);
+                            writer.WriteLine(log);
+                        }
                     }
                 }
             }
@@ -148,7 +85,44 @@ namespace LiteDebugTool
                 File.Delete(logFilePath);
             }
 
-            logQueue.Clear();
+            logCache.Clear();
+        }
+
+        //unity Log
+        private void InitializeUnityLogNode()
+        {
+            unityLogNode = DebugNode.CreateRoot("UnityLog");
+        }
+        private void HandleUnityLog(string logString, string stackTrace, LogType type)
+        {
+            if (unityLogNode == null)
+                InitializeUnityLogNode();
+            unityLogNode.Log(logString, type, stackTrace);
+        }
+
+        //life cycle
+        protected override void Awake()
+        {
+            base.Awake();
+            logName += DateTime.Now.ToString("yyyyMMddHHmmss") + ".log";
+            logFilePath = Path.Combine(Application.persistentDataPath, logName);
+            Debug.Log(logFilePath);
+            if (recordUnityLog)
+            {
+                InitializeUnityLogNode();
+                Application.logMessageReceived += HandleUnityLog; 
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (recordUnityLog)
+            {
+                Application.logMessageReceived -= HandleUnityLog;
+                unityLogNode = null;
+            }
+            // 销毁时强制写出所有剩余缓存
+            FlushLogsToFile(true);
         }
     }
 }
