@@ -1,0 +1,201 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee6457b0d0f3a0a46a8508cf700d089f, type: 3}
+  m_Name: NewStateMachineGraph
+  m_EditorClassIdentifier: 
+  serializedNodes: []
+  nodes:
+  - rid: 7396172212021756036
+  - rid: 7396172212021756040
+  - rid: 7396172212021756043
+  - rid: 7396172216732483584
+  - rid: 7396172216732483588
+  - rid: 7396172216732483589
+  edges:
+  - GUID: 6ee618a0-aca2-4f1e-a24f-484870ec8d90
+    owner: {fileID: 11400000}
+    inputNodeGUID: 95f4e2d4-b477-4aa7-ab1f-74b5f0d66fff
+    outputNodeGUID: 2ebf8c0a-b16a-42f3-b5d1-fb8dbf4f9e9e
+    inputFieldName: inputEnter
+    outputFieldName: outputSignal
+    inputPortIdentifier: 
+    outputPortIdentifier: 
+  - GUID: d1783dc5-78a4-420f-8bf7-f04dae656733
+    owner: {fileID: 11400000}
+    inputNodeGUID: 141454ae-ee70-48bd-a2b0-344fa2562fe6
+    outputNodeGUID: 2ebf8c0a-b16a-42f3-b5d1-fb8dbf4f9e9e
+    inputFieldName: inputEnter
+    outputFieldName: outputSignal
+    inputPortIdentifier: 
+    outputPortIdentifier: 
+  - GUID: 46f59c4b-448a-48a2-b835-e05ab1323f5e
+    owner: {fileID: 11400000}
+    inputNodeGUID: 162cbd14-e18f-4473-b243-e4bb92c33e9f
+    outputNodeGUID: 141454ae-ee70-48bd-a2b0-344fa2562fe6
+    inputFieldName: inputEnter
+    outputFieldName: outputSignal
+    inputPortIdentifier: 
+    outputPortIdentifier: 
+  - GUID: 3677793d-9599-48bd-bdea-8fafc617c778
+    owner: {fileID: 11400000}
+    inputNodeGUID: 52750160-ff66-4686-8c39-45dadd6fabfd
+    outputNodeGUID: 141454ae-ee70-48bd-a2b0-344fa2562fe6
+    inputFieldName: inputEnter
+    outputFieldName: outputSignal
+    inputPortIdentifier: 
+    outputPortIdentifier: 
+  - GUID: e544e945-2951-4e23-b5b4-65e903d6e3e0
+    owner: {fileID: 11400000}
+    inputNodeGUID: d5e73b5f-1400-453b-8afb-53b714acdd90
+    outputNodeGUID: 52750160-ff66-4686-8c39-45dadd6fabfd
+    inputFieldName: inputEnter
+    outputFieldName: outputSignal
+    inputPortIdentifier: 
+    outputPortIdentifier: 
+  - GUID: 380cefd7-ef0c-4ea1-a945-ec5ac4cfb176
+    owner: {fileID: 11400000}
+    inputNodeGUID: 141454ae-ee70-48bd-a2b0-344fa2562fe6
+    outputNodeGUID: d5e73b5f-1400-453b-8afb-53b714acdd90
+    inputFieldName: inputExit
+    outputFieldName: outputSignal
+    inputPortIdentifier: 
+    outputPortIdentifier: 
+  - GUID: 82fd154d-37ee-44d2-bbba-d0d2a4b2cc1f
+    owner: {fileID: 11400000}
+    inputNodeGUID: 52750160-ff66-4686-8c39-45dadd6fabfd
+    outputNodeGUID: 141454ae-ee70-48bd-a2b0-344fa2562fe6
+    inputFieldName: value
+    outputFieldName: triggerCount
+    inputPortIdentifier: 
+    outputPortIdentifier: 
+  groups: []
+  stackNodes: []
+  pinnedElements: []
+  exposedParameters: []
+  serializedParameterList: []
+  stickyNotes: []
+  nodeInspectorReference: {fileID: 0}
+  position: {x: 92.666664, y: -304, z: 0}
+  scale: {x: 1.15, y: 1.15, z: 1}
+  entryNodeGUID: 2ebf8c0a-b16a-42f3-b5d1-fb8dbf4f9e9e
+  description: 
+  version: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: 7396172212021756036
+      type: {class: EntryNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
+      data:
+        nodeCustomName: 
+        GUID: 2ebf8c0a-b16a-42f3-b5d1-fb8dbf4f9e9e
+        computeOrder: 0
+        position:
+          serializedVersion: 2
+          x: 439.71017
+          y: 304.6175
+          width: 221.33331
+          height: 108
+        expanded: 0
+        debug: 0
+        nodeLock: 0
+        description: "\u72B6\u6001\u673A\u7684\u5165\u53E3\u8282\u70B9"
+    - rid: 7396172212021756040
+      type: {class: LogNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
+      data:
+        nodeCustomName: 
+        GUID: 95f4e2d4-b477-4aa7-ab1f-74b5f0d66fff
+        computeOrder: 1
+        position:
+          serializedVersion: 2
+          x: 84.260895
+          y: 473.10144
+          width: 222.66666
+          height: 162.66669
+        expanded: 1
+        debug: 0
+        nodeLock: 0
+        logLevel: 0
+        message: OnEnter
+        variableNames: []
+    - rid: 7396172212021756043
+      type: {class: LogNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
+      data:
+        nodeCustomName: 
+        GUID: 162cbd14-e18f-4473-b243-e4bb92c33e9f
+        computeOrder: -2
+        position:
+          serializedVersion: 2
+          x: 380
+          y: 877.73926
+          width: 223.33331
+          height: 162.66669
+        expanded: 0
+        debug: 0
+        nodeLock: 0
+        logLevel: 0
+        message: 'Now times: %f'
+        variableNames:
+        - Time
+    - rid: 7396172216732483584
+      type: {class: TimerNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
+      data:
+        nodeCustomName: 
+        GUID: 141454ae-ee70-48bd-a2b0-344fa2562fe6
+        computeOrder: -2
+        position:
+          serializedVersion: 2
+          x: 408.66666
+          y: 591.13043
+          width: 194.00003
+          height: 154.66669
+        expanded: 1
+        debug: 0
+        nodeLock: 0
+        interval: 0.2
+        maxTriggers: 0
+        triggerCount: 6
+        progress: 0
+    - rid: 7396172216732483588
+      type: {class: SetBlackboardValueNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
+      data:
+        nodeCustomName: 
+        GUID: 52750160-ff66-4686-8c39-45dadd6fabfd
+        computeOrder: -2
+        position:
+          serializedVersion: 2
+          x: 754.84064
+          y: 778.029
+          width: 204
+          height: 128.66663
+        expanded: 0
+        debug: 0
+        nodeLock: 0
+        key: Time
+        triggerOnSuccess: 1
+    - rid: 7396172216732483589
+      type: {class: ConditionNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
+      data:
+        nodeCustomName: 
+        GUID: d5e73b5f-1400-453b-8afb-53b714acdd90
+        computeOrder: -2
+        position:
+          serializedVersion: 2
+          x: 911.2464
+          y: 350.66666
+          width: 225.99994
+          height: 4108
+        expanded: 0
+        debug: 0
+        nodeLock: 0
+        expression: Time > 5
+        variableNames:
+        - Time

@@ -11,7 +11,7 @@ namespace LiteGameFrame.CoreInfrastructure
             return base.StartCoroutine(routine);
         }
 
-        public new Coroutine StartCoroutine(IEnumerator routine, float delay)
+        public Coroutine StartCoroutine(IEnumerator routine, float delay)
         {
             return base.StartCoroutine(routine);
         }
