@@ -1,6 +1,8 @@
 using UnityEditor;
+using UnityEditor;
 using GraphProcessor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace LiteGameFrame.NGPStateMachine.Editor
 {
@@ -12,6 +14,8 @@ namespace LiteGameFrame.NGPStateMachine.Editor
     {
         private NGPStateMachine _currentStateMachine;
         private GameObject _lastSelectedGameObject;
+        private bool _isLocked;
+        private Button _lockButton;
         
         [MenuItem("Window/State Machine Graph Editor")]
         public static void OpenWindow()
@@ -23,6 +27,9 @@ namespace LiteGameFrame.NGPStateMachine.Editor
         protected override void OnEnable()
         {
             base.OnEnable();
+            
+            // 创建工具栏（包含锁定按钮）
+            CreateToolbar();
             
             // 订阅选中变化事件
             Selection.selectionChanged += OnSelectionChanged;
@@ -47,6 +54,10 @@ namespace LiteGameFrame.NGPStateMachine.Editor
 
         private void OnSelectionChanged()
         {
+            // 如果窗口被锁定，忽略选择变化
+            if (_isLocked)
+                return;
+            
             // 检查选中的 GameObject 是否有 NGPStateMachine 组件
             var selectedGameObject = Selection.activeGameObject;
             
@@ -147,29 +158,52 @@ namespace LiteGameFrame.NGPStateMachine.Editor
             titleContent = new GUIContent(windowTitle);
         }
         
-        private void OnGUI()
+        private void CreateToolbar()
         {
-            // 如果没有加载图，显示提示信息
-            if (graphView == null || graphView.graph == null)
+            var toolbar = new UnityEditor.UIElements.Toolbar();
+            
+            // 添加弹性空间，让锁定按钮靠右
+            toolbar.Add(new VisualElement() { style = { flexGrow = 1 } });
+            
+            // 创建锁定按钮
+            _lockButton = new Button(ToggleLock)
             {
-                EditorGUILayout.BeginVertical();
-                GUILayout.FlexibleSpace();
-                
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                
-                EditorGUILayout.HelpBox(
-                    "Select a GameObject with NGPStateMachine component to edit its State Machine Graph.\n\n" +
-                    "Tip: The graph will automatically load when you select a GameObject in the Hierarchy.",
-                    MessageType.Info,
-                    true
-                );
-                
-                GUILayout.FlexibleSpace();
-                EditorGUILayout.EndHorizontal();
-                
-                GUILayout.FlexibleSpace();
-                EditorGUILayout.EndVertical();
+                style =
+                {
+                    width = 30,
+                    height = 20,
+                    paddingLeft = 0,
+                    paddingRight = 0,
+                    paddingTop = 0,
+                    paddingBottom = 0,
+                    marginLeft = 2,
+                    marginRight = 2
+                }
+            };
+            
+            UpdateLockButtonIcon();
+            _lockButton.tooltip = "Lock window to prevent auto-loading graph on selection change";
+            
+            toolbar.Add(_lockButton);
+            
+            // 将工具栏添加到 rootView 的顶部
+            rootView.Insert(0, toolbar);
+        }
+        
+        private void ToggleLock()
+        {
+            _isLocked = !_isLocked;
+            UpdateLockButtonIcon();
+            Debug.Log($"[StateMachineGraphWindow] Window {(_isLocked ? "locked" : "unlocked")}");
+        }
+        
+        private void UpdateLockButtonIcon()
+        {
+            if (_lockButton != null)
+            {
+                // 使用 Unity 内置的锁定图标
+                var icon = EditorGUIUtility.IconContent(_isLocked ? "IN LockButton on" : "IN LockButton");
+                _lockButton.style.backgroundImage = icon.image as Texture2D;
             }
         }
     }
