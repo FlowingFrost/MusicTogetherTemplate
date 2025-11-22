@@ -1,4 +1,12 @@
-# 状态机图编辑器窗口 - 锁定功能测试指南
+# 状态机图编辑器窗口 - 锁定功能测试指南（v2.0）
+
+## 更新说明
+**版本 2.0 (2025-11-22)**
+- 重新实现了窗口锁定功能
+- 锁定按钮已移至窗口标题栏右侧（与 Inspector、Animator、Timeline 等原生窗口一致）
+- 通过反射访问 EditorWindow 的内部 `isLocked` 属性，实现真正的窗口锁定
+- 实现了 `IHasCustomMenu` 接口，在窗口右上角菜单中添加"锁定"选项
+- 锁定图标自动显示在标题栏右侧，与"关闭"、"最大化"按钮并列
 
 ## 测试目标
 验证状态机图编辑器窗口的锁定功能是否正常工作，确保锁定状态能够正确阻止窗口内容随选择变化而更新。
@@ -28,23 +36,27 @@ Scene Hierarchy:
 
 ## 测试用例
 
-### 测试用例 1: 基本锁定/解锁功能
+### 测试用例 1: 基本锁定/解锁功能（通过标题栏菜单）
 
 #### 步骤
 1. 打开状态机图编辑器窗口 (`Window > State Machine Graph Editor`)
 2. 在 Hierarchy 中选择 `TestStateMachine_A`
 3. 验证窗口标题显示为 "TestStateMachine_A - TestGraphA"
 4. 验证窗口显示 TestGraphA 的节点和连接
-5. 点击工具栏右侧的锁定按钮
-6. 验证按钮图标变为"锁定"状态（高亮）
-7. 验证控制台输出: `[StateMachineGraphWindow] Window locked`
-8. 再次点击锁定按钮
-9. 验证按钮图标变回"解锁"状态
-10. 验证控制台输出: `[StateMachineGraphWindow] Window unlocked`
+5. **点击窗口标题栏右侧的"☰"（三横线）按钮，打开窗口菜单**
+6. 在菜单中选择"锁定"选项
+7. 验证菜单中"锁定"选项左侧出现勾选标记（✓）
+8. 验证窗口标题栏右侧出现锁定图标（🔒）
+9. 验证控制台输出: `[StateMachineGraphWindow] 窗口 已锁定`
+10. 再次打开窗口菜单，点击"锁定"选项取消锁定
+11. 验证菜单中"锁定"选项的勾选标记消失
+12. 验证标题栏的锁定图标消失
+13. 验证控制台输出: `[StateMachineGraphWindow] 窗口 已解锁`
 
 #### 预期结果
-- ✅ 锁定按钮能够正常切换状态
-- ✅ 按钮图标正确反映当前锁定状态
+- ✅ 锁定功能能够通过窗口菜单正常切换
+- ✅ 锁定图标正确显示在标题栏右侧
+- ✅ 菜单项正确反映当前锁定状态
 - ✅ 控制台输出正确的日志信息
 
 ---
@@ -55,7 +67,7 @@ Scene Hierarchy:
 1. 打开状态机图编辑器窗口
 2. 在 Hierarchy 中选择 `TestStateMachine_A`
 3. 验证窗口显示 TestGraphA
-4. 点击锁定按钮（锁定窗口）
+4. **通过窗口菜单锁定窗口**
 5. 在 Hierarchy 中选择 `TestStateMachine_B`
 6. 验证窗口**仍然**显示 TestGraphA（内容未变）
 7. 验证窗口标题**仍然**显示 "TestStateMachine_A - TestGraphA"
@@ -73,7 +85,7 @@ Scene Hierarchy:
 
 #### 步骤
 1. 继续上一个测试用例的状态（窗口锁定，当前显示 TestGraphA，选中 TestStateMachine_C）
-2. 点击锁定按钮（解锁窗口）
+2. **通过窗口菜单解锁窗口**
 3. 验证窗口**立即**更新为显示 TestGraphC
 4. 验证窗口标题更新为 "TestStateMachine_C - TestGraphC"
 5. 在 Hierarchy 中选择 `TestStateMachine_B`
@@ -92,7 +104,7 @@ Scene Hierarchy:
 1. 打开状态机图编辑器窗口
 2. 在 Hierarchy 中选择 `TestStateMachine_A`
 3. 验证窗口显示 TestGraphA
-4. 点击锁定按钮（锁定窗口）
+4. **通过窗口菜单锁定窗口**
 5. 在 Hierarchy 中选择一个**没有** `NGPStateMachine` 组件的 GameObject（例如 Main Camera）
 6. 验证窗口**仍然**显示 TestGraphA
 7. 在 Hierarchy 中选择多个对象
@@ -109,7 +121,7 @@ Scene Hierarchy:
 #### 步骤
 1. 打开状态机图编辑器窗口
 2. 在 Hierarchy 中选择 `TestStateMachine_A`
-3. 点击锁定按钮（锁定窗口）
+3. **通过窗口菜单锁定窗口**
 4. 在图视图中添加新节点
 5. 连接节点
 6. 验证修改能够正常应用
@@ -127,15 +139,21 @@ Scene Hierarchy:
 
 ---
 
-### 测试用例 6: 按钮悬停提示
+### 测试用例 6: 锁定图标显示位置
 
 #### 步骤
 1. 打开状态机图编辑器窗口
-2. 将鼠标悬停在锁定按钮上
-3. 验证显示提示文本
+2. 在 Hierarchy 中选择 `TestStateMachine_A`
+3. **通过窗口菜单锁定窗口**
+4. 观察窗口标题栏右侧
+5. 验证锁定图标（🔒）显示在标题栏右侧
+6. 验证锁定图标与"关闭"、"最大化"等按钮在同一行
+7. 打开 Inspector 窗口并锁定，对比两个窗口的锁定图标位置
 
 #### 预期结果
-- ✅ 悬停时显示: "Lock window to prevent auto-loading graph on selection change"
+- ✅ 锁定图标显示在窗口标题栏右侧
+- ✅ 图标位置与 Unity 原生窗口（Inspector、Animator 等）一致
+- ✅ 图标与其他窗口控制按钮对齐
 - ✅ 提示文本清晰易懂
 
 ---
