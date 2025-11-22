@@ -20,11 +20,10 @@ MonoBehaviour:
   - rid: 7396172216732483584
   - rid: 7396172216732483588
   - rid: 7396172216732483589
-  - rid: 7396172216732483638
   - rid: 7396172216732483639
   - rid: 7396172216732483640
   - rid: 7396172216732483641
-  - rid: 7396172216732483642
+  - rid: 7396172216732483644
   edges:
   - GUID: 6ee618a0-aca2-4f1e-a24f-484870ec8d90
     owner: {fileID: 11400000}
@@ -90,34 +89,10 @@ MonoBehaviour:
     outputFieldName: outputSignal
     inputPortIdentifier: 
     outputPortIdentifier: 
-  - GUID: 74a584f4-9341-4d32-9ac4-6077f020e5c5
-    owner: {fileID: 11400000}
-    inputNodeGUID: 16ecb608-63d0-4dd4-bd15-1f83a5a1aab2
-    outputNodeGUID: 43aa6b07-2067-4ae9-96b4-b185bf9cb87f
-    inputFieldName: inputEnter
-    outputFieldName: outputSignal
-    inputPortIdentifier: 
-    outputPortIdentifier: 
   - GUID: 3d64e9e6-ea09-4ffa-a7d3-56d34e8ac9fb
     owner: {fileID: 11400000}
     inputNodeGUID: 2fb8e765-2e90-4f9f-b7c6-a2ef6da4d8da
     outputNodeGUID: 141454ae-ee70-48bd-a2b0-344fa2562fe6
-    inputFieldName: inputEnter
-    outputFieldName: outputSignal
-    inputPortIdentifier: 
-    outputPortIdentifier: 
-  - GUID: 629ebdf8-67be-497e-af05-960046c1f140
-    owner: {fileID: 11400000}
-    inputNodeGUID: 16ecb608-63d0-4dd4-bd15-1f83a5a1aab2
-    outputNodeGUID: 449dd70c-fbd1-4471-a8e5-2092d5b75024
-    inputFieldName: active
-    outputFieldName: compared
-    inputPortIdentifier: 
-    outputPortIdentifier: 
-  - GUID: af5d1581-4851-4efe-9443-bec79c5d6fe5
-    owner: {fileID: 11400000}
-    inputNodeGUID: e53f16d1-3650-4f71-9ac7-4eb67a38c92f
-    outputNodeGUID: 2fb8e765-2e90-4f9f-b7c6-a2ef6da4d8da
     inputFieldName: inputEnter
     outputFieldName: outputSignal
     inputPortIdentifier: 
@@ -129,8 +104,8 @@ MonoBehaviour:
   serializedParameterList: []
   stickyNotes: []
   nodeInspectorReference: {fileID: 0}
-  position: {x: 134, y: -122, z: 0}
-  scale: {x: 0.49717674, y: 0.49717674, z: 1}
+  position: {x: 223.33333, y: -75.333336, z: 0}
+  scale: {x: 0.43232757, y: 0.43232757, z: 1}
   entryNodeGUID: 2ebf8c0a-b16a-42f3-b5d1-fb8dbf4f9e9e
   description: 
   version: 1
@@ -161,10 +136,10 @@ MonoBehaviour:
         computeOrder: 1
         position:
           serializedVersion: 2
-          x: 84.260895
-          y: 473.10144
-          width: 222.66666
-          height: 162.66669
+          x: -247.50664
+          y: 486.77332
+          width: 223.33334
+          height: 182.66669
         expanded: 1
         debug: 0
         nodeLock: 0
@@ -179,10 +154,10 @@ MonoBehaviour:
         computeOrder: -2
         position:
           serializedVersion: 2
-          x: 100.533356
-          y: 778.0001
+          x: -247.33333
+          y: 729.3334
           width: 226
-          height: 4162.6665
+          height: 4162.667
         expanded: 0
         debug: 0
         nodeLock: 0
@@ -198,8 +173,8 @@ MonoBehaviour:
         computeOrder: -2
         position:
           serializedVersion: 2
-          x: 391.43005
-          y: 565.3188
+          x: 467.33337
+          y: 575.2467
           width: 193.99997
           height: 154.66669
         expanded: 1
@@ -217,10 +192,10 @@ MonoBehaviour:
         computeOrder: -2
         position:
           serializedVersion: 2
-          x: 754.84064
-          y: 778.029
+          x: 739.6783
+          y: 703.94
           width: 204
-          height: 128.66663
+          height: 128.66669
         expanded: 0
         debug: 0
         nodeLock: 0
@@ -234,32 +209,16 @@ MonoBehaviour:
         computeOrder: -2
         position:
           serializedVersion: 2
-          x: 911.2464
-          y: 350.66666
-          width: 225.99994
+          x: 1114.316
+          y: 486.66666
+          width: 226
           height: 4108
         expanded: 0
         debug: 0
         nodeLock: 0
-        expression: Time > 5
+        expression: Time > 6
         variableNames:
         - Time
-    - rid: 7396172216732483638
-      type: {class: GameObjectSetActiveNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
-      data:
-        nodeCustomName: 
-        GUID: 16ecb608-63d0-4dd4-bd15-1f83a5a1aab2
-        computeOrder: -2
-        position:
-          serializedVersion: 2
-          x: 326.00006
-          y: 1102.6666
-          width: 271.99997
-          height: 118.666626
-        expanded: 0
-        debug: 0
-        nodeLock: 0
-        active: 1
     - rid: 7396172216732483639
       type: {class: ConditionNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
       data:
@@ -268,14 +227,14 @@ MonoBehaviour:
         computeOrder: -2
         position:
           serializedVersion: 2
-          x: 371.3334
-          y: 899.80023
-          width: 225.99997
-          height: 4108
+          x: 311.05164
+          y: 940.6667
+          width: 221.33331
+          height: 128
         expanded: 0
         debug: 0
         nodeLock: 0
-        expression: Time%2==0
+        expression: Time<5
         variableNames:
         - Time
     - rid: 7396172216732483640
@@ -293,7 +252,7 @@ MonoBehaviour:
         expanded: 0
         debug: 0
         nodeLock: 0
-        expression: Time%2==1
+        expression: Time>5
         variableNames:
         - Time
     - rid: 7396172216732483641
@@ -313,21 +272,24 @@ MonoBehaviour:
         nodeLock: 0
         inA: 0
         inB: 0
-        compared: 0
+        compared: 1
         compareFunction: 8
-    - rid: 7396172216732483642
-      type: {class: GameObjectSetActiveNode, ns: LiteGameFrame.NGPStateMachine.Nodes, asm: Assembly-CSharp}
+    - rid: 7396172216732483644
+      type: {class: Comparison, ns: NodeGraphProcessor.Examples, asm: Assembly-CSharp}
       data:
         nodeCustomName: 
-        GUID: e53f16d1-3650-4f71-9ac7-4eb67a38c92f
-        computeOrder: -2
+        GUID: 758dceb0-9f87-4f36-a282-abf28fd05816
+        computeOrder: 3
         position:
           serializedVersion: 2
-          x: 689.3335
-          y: 1114
-          width: 313.3333
-          height: 118.666626
+          x: 308.66672
+          y: 1297.3336
+          width: 222.66669
+          height: 164
         expanded: 0
         debug: 0
         nodeLock: 0
-        active: 1
+        inA: 0
+        inB: 0
+        compared: 0
+        compareFunction: 1

@@ -441,5 +441,76 @@ namespace LiteGameFrame.NGPStateMachine
         }
         
         #endregion
+        
+        #region 脚本状态控制（新增：支持 ScriptStateNode）
+        
+        /// <summary>
+        /// 脚本通知状态机：我已完成，请触发输出信号
+        /// 由 StateContext.RequestComplete() 调用
+        /// </summary>
+        /// <param name="nodeId">节点 ID（GUID）</param>
+        public void NotifyScriptCompleted(string nodeId)
+        {
+            var node = FindNodeById(nodeId);
+            if (node == null)
+            {
+                Debug.LogWarning($"[{gameObject.name}] Cannot find node: {nodeId}");
+                return;
+            }
+            
+            if (!(node is BaseStateNode stateNode))
+            {
+                Debug.LogWarning($"[{gameObject.name}] Node {nodeId} is not a BaseStateNode");
+                return;
+            }
+            
+            if (_debugLog)
+                Debug.Log($"[{gameObject.name}] Script completed: {nodeId}, triggering signal");
+            
+            // 触发节点的输出信号（转到下一状态）
+            stateNode.TriggerSignalPublic();
+            
+            // 从活跃列表移除
+            RemoveActiveNode(node);
+        }
+        
+        /// <summary>
+        /// 脚本通知状态机：我要停止（不触发输出信号）
+        /// 由 StateContext.RequestStop() 调用
+        /// </summary>
+        /// <param name="nodeId">节点 ID（GUID）</param>
+        public void NotifyScriptStopped(string nodeId)
+        {
+            var node = FindNodeById(nodeId);
+            if (node != null)
+            {
+                if (_debugLog)
+                    Debug.Log($"[{gameObject.name}] Script stopped: {nodeId}");
+                
+                RemoveActiveNode(node);
+            }
+        }
+        
+        /// <summary>
+        /// 根据节点 ID 查找节点实例
+        /// </summary>
+        /// <param name="nodeId">节点 GUID</param>
+        /// <returns>找到的节点，未找到返回 null</returns>
+        private IStateNode FindNodeById(string nodeId)
+        {
+            if (_stateGraph == null) return null;
+            
+            foreach (var node in _stateGraph.nodes)
+            {
+                if (node is IStateNode stateNode && stateNode.NodeId == nodeId)
+                {
+                    return stateNode;
+                }
+            }
+            
+            return null;
+        }
+        
+        #endregion
     }
 }
