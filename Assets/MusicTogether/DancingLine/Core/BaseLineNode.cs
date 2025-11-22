@@ -1,0 +1,37 @@
+using System;
+using Sirenix.OdinInspector;
+using UnityEngine;
+
+namespace MusicTogether.DancingLine.Core
+{
+    /// <summary>
+    /// 基本输入节点信息抽象类
+    /// 注：节点内声明目标线尾
+    /// </summary>
+    /// <typeparam name="T">基本线尾类型</typeparam>
+    [Serializable]
+    public abstract class BaseLineNode<T> where T : BaseLineTail
+    {
+        public double BeginTime;
+        public Vector3 BeginPosition;
+        public Vector3 DirectionVector;
+        public T Tail;
+
+        protected BaseLineNode(double beginTime, Vector3 directionVector)
+        {
+            this.BeginTime = beginTime;
+            this.DirectionVector = directionVector;
+        }
+        
+        public virtual void SetBeginPosition(Vector3 position)
+        {
+            BeginPosition = position;
+            Tail?.SetBeginPosition(position);
+        }
+        
+        public abstract void SetActive(bool active);
+        public abstract Vector3 GetNodePosition(double time);
+        public abstract Vector3 UpdateNode(double time);
+        public abstract void DeleteNode();
+    }
+}
