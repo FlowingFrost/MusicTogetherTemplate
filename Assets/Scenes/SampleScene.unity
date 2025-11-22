@@ -6064,6 +6064,9 @@ MonoBehaviour:
   - nodeGUID: e53f16d1-3650-4f71-9ac7-4eb67a38c92f
     fieldName: target
     target: {fileID: 2058683634}
+  - nodeGUID: 463c6c37-cb2e-4d31-b4ca-6a6e6027dc29
+    fieldName: targetScript
+    target: {fileID: 0}
 --- !u!4 &1438115782
 Transform:
   m_ObjectHideFlags: 0
