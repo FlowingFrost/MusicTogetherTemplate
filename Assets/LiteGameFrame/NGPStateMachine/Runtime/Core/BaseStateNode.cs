@@ -90,6 +90,23 @@ namespace LiteGameFrame.NGPStateMachine
         /// </summary>
         protected void TriggerSignal()
         {
+            TriggerSignalInternal();
+        }
+        
+        /// <summary>
+        /// 触发输出信号（公开版本，供 NGPStateMachine 调用）
+        /// 用于脚本完成时由状态机触发节点的输出信号
+        /// </summary>
+        internal void TriggerSignalPublic()
+        {
+            TriggerSignalInternal();
+        }
+        
+        /// <summary>
+        /// 触发输出信号的内部实现
+        /// </summary>
+        private void TriggerSignalInternal()
+        {
             // 获取输出信号端口
             var port = GetPort(nameof(outputSignal), null);
             if (port == null)

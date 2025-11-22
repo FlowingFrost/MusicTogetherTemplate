@@ -18,6 +18,10 @@ namespace LiteGameFrame.NGPStateMachine.Editor
         private GameObject _lastSelectedGameObject;
         private bool _isLocked;
         
+        // 锁定按钮样式（用于标题栏按钮）
+        [System.NonSerialized]
+        private GUIStyle _lockButtonStyle;
+        
         // 反射相关字段，用于访问 EditorWindow 的内部锁定状态
         private PropertyInfo _isLockedProperty;
         private const string LOCKED_PROPERTY_NAME = "isLocked";
@@ -167,6 +171,27 @@ namespace LiteGameFrame.NGPStateMachine.Editor
         }
         
         #region 窗口锁定功能实现
+        
+        /// <summary>
+        /// Unity 魔法方法：在标题栏显示自定义按钮
+        /// 此方法会被 Unity 自动检测并调用
+        /// </summary>
+        /// <param name="position">按钮的位置（由 Unity 自动提供）</param>
+        private void ShowButton(Rect position)
+        {
+            // 延迟初始化锁定按钮样式
+            if (_lockButtonStyle == null)
+                _lockButtonStyle = "IN LockButton";
+            
+            // 绘制锁定按钮并获取新状态
+            bool newLockedState = GUI.Toggle(position, _isLocked, GUIContent.none, _lockButtonStyle);
+            
+            // 如果状态改变，更新锁定状态
+            if (newLockedState != _isLocked)
+            {
+                SetLockState(newLockedState);
+            }
+        }
         
         /// <summary>
         /// 初始化反射，获取 EditorWindow 的内部 isLocked 属性
