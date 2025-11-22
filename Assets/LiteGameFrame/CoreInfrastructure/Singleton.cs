@@ -54,8 +54,8 @@ namespace LiteGameFrame.CoreInfrastructure
         
         // 7. 编辑器退出 Play 模式时清引用（防止域重载后野指针）
 #if UNITY_EDITOR
-        [UnityEditor.InitializeOnEnterPlayMode]
-        static void ClearOnEnterPlayMode() => _instance = null;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => _instance = null;
 #endif
         
         protected virtual void Awake()
