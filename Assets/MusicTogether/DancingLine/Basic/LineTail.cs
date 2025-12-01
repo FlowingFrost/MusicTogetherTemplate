@@ -8,7 +8,7 @@ namespace MusicTogether.DancingLine.Basic
         private readonly Transform _lineContainer;
         private readonly GameObject _lineTailObject;
         
-        public LineTail(Vector3 directionVector, Transform lineContainer):base(directionVector)
+        public LineTail(Vector3 directionVector, Transform lineContainer)
         {
             GameObject newTailObject = Resources.Load<GameObject>("DancingLine/Basic/LineTail");
             _lineContainer = lineContainer;
@@ -22,7 +22,7 @@ namespace MusicTogether.DancingLine.Basic
             _lineTailObject.transform.position = position;
         }
         
-        public void SetActive(bool active)
+        public override void SetActive(bool active)
         {
             if (active != _lineTailObject.activeSelf)
                 _lineTailObject.SetActive(active);
@@ -32,10 +32,9 @@ namespace MusicTogether.DancingLine.Basic
             _lineTailObject.transform.position = BeginPosition + DirectionVector * deltaTime/2;
             _lineTailObject.transform.localScale = new Vector3(1, 1, deltaTime*DirectionVector.magnitude + 1f);
         }
-        public override bool DeleteTail()
+        public override void DeleteTail()
         {
             Object.Destroy(_lineTailObject);
-            return true;
         }
     }
 }

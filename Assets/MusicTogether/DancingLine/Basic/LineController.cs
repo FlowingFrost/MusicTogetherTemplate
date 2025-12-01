@@ -12,7 +12,7 @@ namespace MusicTogether.DancingLine.Basic
     }
     
     [Serializable]
-    public class LineController : BaseLineController<Direction> 
+    public class LineController : BaseLineController
     {
         /*public BasicLineController(List<BasicDirection> directions,Action<BasicDirection> callback) : base(callback)
         {

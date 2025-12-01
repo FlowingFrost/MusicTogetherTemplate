@@ -11,18 +11,14 @@ namespace MusicTogether.DancingLine.Core
     /// </summary>
     /// <typeparam name="TNode">节点类型</typeparam>
     /// <typeparam name="TTail">线尾类型</typeparam>
-    public abstract class BaseLineComponent<TController,TDirection,TPool,TNode,TTail> : MonoBehaviour 
-        where TTail : BaseLineTail
-        where TNode : BaseLineNode<TTail>
-        where TPool : BaseLinePool<TNode,TTail>, new()
-        where TDirection : BaseDirection
-        where TController : BaseLineController<TDirection>, new()
+    public abstract class BaseLineComponent : MonoBehaviour 
     {
         public ILevelManager LevelManager => SimpleLevelManager.Instance;
-        public TPool pool = new TPool();
-        public TController controller = new TController();
+        public ILinePool pool;
+        public ILineController controller;
+        public ILineFactory factory;
 
         public abstract void Move();
-        public abstract void Turn(TDirection direction);
+        public abstract void Turn(IDirection direction);
     }
 }

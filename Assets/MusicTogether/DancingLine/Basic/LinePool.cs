@@ -6,7 +6,7 @@ using UnityEngine;
 namespace MusicTogether.DancingLine.Basic
 {
     [Serializable]
-    public class LinePool : BaseLinePool<LineNode,LineTail>
+    public class LinePool : BaseLinePool
     {
         public Transform tailHolder;
         internal int CurrentIndex = 0;
@@ -15,48 +15,48 @@ namespace MusicTogether.DancingLine.Basic
         internal override void Validate()
         {
             if (!_dirty) return;
-            if (_pendingUnits.Count == 0) { _dirty = false; return; }
+            if (PendingNodes.Count == 0) { _dirty = false; return; }
             //没有待添加节点，直接返回
             
-            _pendingUnits.Sort((a, b) => a.BeginTime.CompareTo(b.BeginTime));
+            PendingNodes.Sort((a, b) => a.BeginTime.CompareTo(b.BeginTime));
             int insertIndex = 0;
             
             //准备插入节点
-            if (_units.Count == 0)
+            if (LineNodes.Count == 0)
             {
-                _units.AddRange(_pendingUnits);
-                _pendingUnits.Clear();
+                LineNodes.AddRange(PendingNodes);
+                PendingNodes.Clear();
                 _dirty = false;
                 return;
             }//最简单的情况，当前列表为空，直接添加
-            if (_pendingUnits[0].BeginTime >= _units[^1].BeginTime)
+            if (PendingNodes[0].BeginTime >= LineNodes[^1].BeginTime)
             {
-                insertIndex = _units.Count;
-                _units.AddRange(_pendingUnits);
-                _pendingUnits.Clear();
+                insertIndex = LineNodes.Count;
+                LineNodes.AddRange(PendingNodes);
+                PendingNodes.Clear();
             }//次之简单的情况，直接添加到末尾
             else
             {
-                insertIndex = _units.BinarySearch(_pendingUnits[0], Comparer<LineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
+                insertIndex = LineNodes.BinarySearch(PendingNodes[0], Comparer<ILineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
                 if (insertIndex < 0) insertIndex = ~insertIndex;
                 
                 int insertIndexInLoop = 0;
-                while (_pendingUnits.Count > 0)
+                while (PendingNodes.Count > 0)
                 {
-                    insertIndexInLoop = _units.BinarySearch(_pendingUnits[0], Comparer<LineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
+                    insertIndexInLoop = LineNodes.BinarySearch(PendingNodes[0], Comparer<ILineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
                     if (insertIndexInLoop < 0) insertIndexInLoop = ~insertIndexInLoop;
-                    _units.Insert(insertIndex, _pendingUnits[0]);
-                    _pendingUnits.RemoveAt(0);
+                    LineNodes.Insert(insertIndex, PendingNodes[0]);
+                    PendingNodes.RemoveAt(0);
                 }
             }//否则用二分查找添加到中间
             Vector3 newPosition = Vector3.zero;
-            if(insertIndex - 1 >= 0) newPosition = _units[insertIndex - 1].GetNodePosition(_units[insertIndex].BeginTime);
-            for(int i = insertIndex; i < _units.Count - 1; i++)
+            if(insertIndex - 1 >= 0) newPosition = LineNodes[insertIndex - 1].GetNodePosition(LineNodes[insertIndex].BeginTime);
+            for(int i = insertIndex; i < LineNodes.Count - 1; i++)
             {
-                _units[i].SetBeginPosition(newPosition);
-                newPosition = _units[i].GetNodePosition(_units[i+1].BeginTime);
+                LineNodes[i].AdjustNode(newPosition);
+                newPosition = LineNodes[i].GetNodePosition(LineNodes[i+1].BeginTime);
             }
-            _units[^1].SetBeginPosition(newPosition);
+            LineNodes[^1].AdjustNode(newPosition);
             _dirty = false;
             //将所有插入的节点更新数据
             CurrentIndex = insertIndex;
@@ -73,20 +73,20 @@ namespace MusicTogether.DancingLine.Basic
         public override Vector3 GetPosition(double time)
         {
             Validate();
-            if (_units.Count == 0) return Vector3.zero;
-            while (CurrentIndex > 0 && _units[CurrentIndex].BeginTime > time)
+            if (LineNodes.Count == 0) return Vector3.zero;
+            while (CurrentIndex > 0 && LineNodes[CurrentIndex].BeginTime > time)
             {
-                _units[CurrentIndex].UpdateNode(time);
+                LineNodes[CurrentIndex].UpdateNode(time);
                 CurrentIndex--;
             }//currentIndex达到目标项或0
-            while (CurrentIndex < _units.Count - 1 && _units[CurrentIndex + 1].BeginTime <= time)
+            while (CurrentIndex < LineNodes.Count - 1 && LineNodes[CurrentIndex + 1].BeginTime <= time)
             {
-                var nextBegin = _units[CurrentIndex].UpdateNode(_units[CurrentIndex + 1].BeginTime);
-                _units[CurrentIndex + 1].SetBeginPosition(nextBegin);
+                var nextBegin = LineNodes[CurrentIndex].UpdateNode(LineNodes[CurrentIndex + 1].BeginTime);
+                LineNodes[CurrentIndex + 1].AdjustNode(nextBegin);
                 Debug.Log("SetBeginPosition:" + nextBegin);
                 CurrentIndex++;
             }//currentIndex达到目标项或末尾
-            var targetUnit = _units[CurrentIndex];
+            var targetUnit = LineNodes[CurrentIndex];
             return targetUnit.UpdateNode(time);
         }
     }

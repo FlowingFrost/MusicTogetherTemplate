@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace MusicTogether.DancingLine.Basic
 {
-    public class LineNode : BaseLineNode<LineTail>
+    public class LineNode : BaseLineNode
     {
         public LineNode(double beginTime, Vector3 directionVector, Transform lineContainer) : base(beginTime, directionVector)
         {

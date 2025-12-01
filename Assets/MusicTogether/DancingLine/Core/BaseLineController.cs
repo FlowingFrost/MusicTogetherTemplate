@@ -1,27 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using UnityEngine;
 using Vector3 = System.Numerics.Vector3;
 
 namespace MusicTogether.DancingLine.Core
 {
-    public abstract class BaseLineController<T> where T : BaseDirection
+    public abstract class BaseLineController : ILineController
     {
-        public Action<T> OnDirectionChanged;
-        public List<T> Directions = new List<T>();
+        event Action<IDirection> OnDirectionChanged;
+        private List<IDirection> Directions = new List<IDirection>();
         
         protected int CurrentDirectionIndex = 0;
-
-        /*protected BaseLineController(Action<T> callback)
-        {
-            OnDirectionChanged = callback;
-        }*/
-
-        public virtual void Register(Action<T> callback)
+        
+        public virtual void Register(Action<IDirection> callback)
         {
             OnDirectionChanged += callback;
         }
-        public virtual T CurrentDirection()
+        public virtual IDirection CurrentDirection()
         {
             return Directions[CurrentDirectionIndex];
         }
