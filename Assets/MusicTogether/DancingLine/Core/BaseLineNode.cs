@@ -10,13 +10,14 @@ namespace MusicTogether.DancingLine.Core
     /// </summary>
     /// <typeparam name="T">基本线尾类型</typeparam>
     [Serializable]
-    public abstract class BaseLineNode : ILineNode
+    public class BaseLineNode : SerializedMonoBehaviour, ILineNode
     {
-        Type TailType;
+        //Type TailType;
         
-        public double BeginTime { get; set; }                    
-        public Vector3 BeginPosition;
-        public Vector3 DirectionVector;
+        public double BeginTime { get; set; }
+        public IDirection Direction { get; set; }
+        protected Vector3 BeginPosition;
+        protected Vector3 DirectionVector;
         public ILineTail Tail;
 
         /*protected BaseLineNode(double beginTime, Vector3 directionVector)
@@ -26,19 +27,19 @@ namespace MusicTogether.DancingLine.Core
         }*/
         protected virtual bool Validate()
         {
-            if (Tail == null)
+            /*if (Tail == null)
             {
                 Tail = (ILineTail)Activator.CreateInstance(TailType);
-            }
+            }*/
             if (Tail == null)
             {
-                Debug.LogError($"无法创建类型为{TailType}的线身");
+                Debug.LogError($"线身丢失");
                 return false;
             }
             return true;
         }
         
-        public virtual bool AssignTailType(Type tailType)
+        /*public virtual bool AssignTailType(Type tailType)
         {
             TailType = tailType;
             if (TailType != null && typeof(ILineTail).IsAssignableFrom(TailType))
@@ -48,29 +49,57 @@ namespace MusicTogether.DancingLine.Core
             }
             Debug.LogError($"分配的线尾类型{tailType}无效：未实现ILineTail接口");
             return false;
-        }
+        }*/
         
-        public virtual void Init(double time, Vector3 direction)
+        public virtual void Init(double time, IDirection direction)
         {
             BeginTime = time;
-            DirectionVector = direction;
+            Direction = direction;
+            DirectionVector = direction.DirectionVector;
+            Tail.Init(DirectionVector);
         }
-        public virtual void AdjustNode(Vector3 position)
+        public virtual void AdjustNode(Vector3 beginPosition)
         {
-            BeginPosition = position;
-            Tail.SetBeginPosition(position);
+            BeginPosition = beginPosition;
+            Tail.SetBeginPosition(beginPosition);
         }
-        public virtual void AdjustNode(double time, Vector3 position)
+        public virtual void AdjustNode(double time, Vector3 beginPosition)
         {
             BeginTime = time;
-            AdjustNode(position);
+            AdjustNode(beginPosition);
         }
 
         public virtual void SetActive(bool active)
         {
             Tail.SetActive(active);
         }
-        public abstract Vector3 UpdatePosition(double time);
-        public abstract void DeleteNode();
+        
+        public virtual Vector3 GetNodePosition(double time)
+        {
+            float deltaTime = (float)(time - BeginTime);
+            return BeginPosition + DirectionVector*deltaTime;
+        }
+
+        public virtual Vector3 UpdatePosition(double time)
+        {
+            float deltaTime = (float)(time - BeginTime);
+            if (deltaTime >= 0)
+            {
+                Tail.SetActive(true);
+                Tail.UpdateTail(deltaTime);
+                return GetNodePosition(time);
+            }
+            else
+            {
+                Tail.SetActive(false);
+                return BeginPosition;
+            }
+        }
+
+        public virtual void DeleteNode()
+        {
+            Tail.DeleteTail();
+            Tail = null;
+        }
     }
 }

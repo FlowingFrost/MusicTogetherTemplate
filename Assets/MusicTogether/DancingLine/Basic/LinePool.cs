@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MusicTogether.DancingLine.Core;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace MusicTogether.DancingLine.Basic
@@ -8,9 +9,8 @@ namespace MusicTogether.DancingLine.Basic
     [Serializable]
     public class LinePool : BaseLinePool
     {
-        public Transform tailHolder;
-        internal int CurrentIndex = 0;
-        
+        internal int currentIndex = 0;
+        public int CurrentIndex => currentIndex;
         
         internal override void Validate()
         {
@@ -22,72 +22,87 @@ namespace MusicTogether.DancingLine.Basic
             int insertIndex = 0;
             
             //准备插入节点
-            if (LineNodes.Count == 0)
+            if (lineNodes.Count == 0)
             {
-                LineNodes.AddRange(PendingNodes);
+                lineNodes.AddRange(PendingNodes);
                 PendingNodes.Clear();
                 _dirty = false;
                 return;
             }//最简单的情况，当前列表为空，直接添加
-            if (PendingNodes[0].BeginTime >= LineNodes[^1].BeginTime)
+            if (PendingNodes[0].BeginTime >= lineNodes[^1].BeginTime)
             {
-                insertIndex = LineNodes.Count;
-                LineNodes.AddRange(PendingNodes);
+                insertIndex = lineNodes.Count;
+                lineNodes.AddRange(PendingNodes);
                 PendingNodes.Clear();
             }//次之简单的情况，直接添加到末尾
             else
             {
-                insertIndex = LineNodes.BinarySearch(PendingNodes[0], Comparer<ILineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
+                insertIndex = lineNodes.BinarySearch(PendingNodes[0], Comparer<ILineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
                 if (insertIndex < 0) insertIndex = ~insertIndex;
                 
                 int insertIndexInLoop = 0;
                 while (PendingNodes.Count > 0)
                 {
-                    insertIndexInLoop = LineNodes.BinarySearch(PendingNodes[0], Comparer<ILineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
+                    insertIndexInLoop = lineNodes.BinarySearch(PendingNodes[0], Comparer<ILineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
                     if (insertIndexInLoop < 0) insertIndexInLoop = ~insertIndexInLoop;
-                    LineNodes.Insert(insertIndex, PendingNodes[0]);
+                    lineNodes.Insert(insertIndex, PendingNodes[0]);
                     PendingNodes.RemoveAt(0);
                 }
             }//否则用二分查找添加到中间
             Vector3 newPosition = Vector3.zero;
-            if(insertIndex - 1 >= 0) newPosition = LineNodes[insertIndex - 1].GetNodePosition(LineNodes[insertIndex].BeginTime);
-            for(int i = insertIndex; i < LineNodes.Count - 1; i++)
+            if(insertIndex - 1 >= 0) newPosition = lineNodes[insertIndex - 1].UpdatePosition(lineNodes[insertIndex].BeginTime);
+            for(int i = insertIndex; i < lineNodes.Count - 1; i++)
             {
-                LineNodes[i].AdjustNode(newPosition);
-                newPosition = LineNodes[i].GetNodePosition(LineNodes[i+1].BeginTime);
+                lineNodes[i].AdjustNode(newPosition);
+                newPosition = lineNodes[i].UpdatePosition(lineNodes[i+1].BeginTime);
             }
-            LineNodes[^1].AdjustNode(newPosition);
+            lineNodes[^1].AdjustNode(newPosition);
             _dirty = false;
             //将所有插入的节点更新数据
-            CurrentIndex = insertIndex;
+            currentIndex = insertIndex;
             _dirty = false;
             //将所有插入的节点更新数据
         }
         
-        public void AddNode(double time, Vector3 directionVector)
+        /*public void AddNode(double time, Vector3 directionVector)该方法已迁移至BaseLinePool
         {
-            LineNode newNode = new LineNode(time, directionVector, tailHolder);
+            _lineFactory.NewNode(out var newNode);//new LineNode(time, directionVector, tailHolder);
+            
             AddNode(newNode);
-        }
+        }*/
         
         public override Vector3 GetPosition(double time)
         {
             Validate();
-            if (LineNodes.Count == 0) return Vector3.zero;
-            while (CurrentIndex > 0 && LineNodes[CurrentIndex].BeginTime > time)
+            if (lineNodes.Count == 0) return Vector3.zero;
+            while (currentIndex > 0 && lineNodes[currentIndex].BeginTime > time)
             {
-                LineNodes[CurrentIndex].UpdateNode(time);
-                CurrentIndex--;
+                lineNodes[currentIndex].UpdatePosition(time);
+                currentIndex--;
             }//currentIndex达到目标项或0
-            while (CurrentIndex < LineNodes.Count - 1 && LineNodes[CurrentIndex + 1].BeginTime <= time)
+            while (currentIndex < lineNodes.Count - 1 && lineNodes[currentIndex + 1].BeginTime <= time)
             {
-                var nextBegin = LineNodes[CurrentIndex].UpdateNode(LineNodes[CurrentIndex + 1].BeginTime);
-                LineNodes[CurrentIndex + 1].AdjustNode(nextBegin);
+                var nextBegin = lineNodes[currentIndex].UpdatePosition(lineNodes[currentIndex + 1].BeginTime);
+                lineNodes[currentIndex + 1].AdjustNode(nextBegin);
                 Debug.Log("SetBeginPosition:" + nextBegin);
-                CurrentIndex++;
+                currentIndex++;
             }//currentIndex达到目标项或末尾
-            var targetUnit = LineNodes[CurrentIndex];
-            return targetUnit.UpdateNode(time);
+            var targetUnit = lineNodes[currentIndex];
+            return targetUnit.UpdatePosition(time);
+        }
+        
+        [Button("清除当前时间点之后的节点")]
+        public void ClearLaterNodes(double time)
+        {
+            Validate();
+            for (int i = lineNodes.Count - 1; i >= 0; i--)
+            {
+                if (lineNodes[i].BeginTime >= time)
+                {
+                    lineNodes[i].DeleteNode();
+                    lineNodes.RemoveAt(i);
+                }
+            }
         }
     }
 }

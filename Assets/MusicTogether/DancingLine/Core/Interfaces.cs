@@ -23,8 +23,9 @@ namespace MusicTogether.DancingLine.Core
     {
         
         /// <summary>注册方向改变回调</summary>
-        void Register(Action<IDirection> callback);
-        
+        void RegisterTurn(Action<IDirection> callback);
+        IDirection CurrentDirection();
+        void SetCurrentDirection(int ID);
         /// <summary>检测输入（每帧调用）</summary>
         void DetectInput();
     }
@@ -35,7 +36,7 @@ namespace MusicTogether.DancingLine.Core
     /// </summary>
     public interface ILineTail
     {
-        void Init(Vector3 direction);
+        void Init(Vector3 directionVector);
         void SetBeginPosition(Vector3 position);
         void SetActive(bool active);
         void UpdateTail(float deltaTime);
@@ -56,9 +57,10 @@ namespace MusicTogether.DancingLine.Core
     public interface ILineNode
     {
         public double BeginTime { get; set; }
-        void Init(double time, Vector3 direction);
-        bool AssignTailType(Type tailType);
-        void AdjustNode(Vector3 position);
+        public IDirection Direction { get; set; }
+        void Init(double time, IDirection direction);
+        //bool AssignTailType(Type tailType);
+        void AdjustNode(Vector3 beginPosition);
         void AdjustNode(double time, Vector3 position);
         
         void SetActive(bool active);
@@ -71,6 +73,8 @@ namespace MusicTogether.DancingLine.Core
     /// </summary>
     public interface ILinePool
     {
+        int CurrentIndex { get; }
+        List<ILineNode> LineNodes { get; }
         void AddNode(double time, IDirection direction);
         Vector3 GetPosition(double time);
     }
