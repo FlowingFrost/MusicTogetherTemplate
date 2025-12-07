@@ -83,17 +83,20 @@ namespace MusicTogether.DancingLine.Core
         public virtual Vector3 UpdatePosition(double time)
         {
             float deltaTime = (float)(time - BeginTime);
+            /*超前节点隐藏判断由pool完成
             if (deltaTime >= 0)
             {
                 Tail.SetActive(true);
                 Tail.UpdateTail(deltaTime);
                 return GetNodePosition(time);
             }
-            else
+            else 
             {
                 Tail.SetActive(false);
                 return BeginPosition;
-            }
+            }*/
+            Tail.UpdateTail(deltaTime);
+            return GetNodePosition(time);
         }
 
         public virtual void DeleteNode()

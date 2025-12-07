@@ -12,14 +12,18 @@ namespace MusicTogether.DancingLine.Core
     /// </summary>
     /// <typeparam name="TNode">节点类型</typeparam>
     /// <typeparam name="TTail">线尾类型</typeparam>
-    public abstract class BaseLineComponent : SerializedMonoBehaviour 
+    public abstract class BaseLineComponent : SerializedMonoBehaviour, ILineComponent
     {
         public ILevelManager LevelManager => SimpleLevelManager.Instance;
-        public ILinePool pool;
-        public ILineController controller;
+        [SerializeField]internal ILinePool pool;
+        [SerializeField]internal ILineController controller;
+        public ILinePool Pool => pool;
+        public ILineController Controller => controller;
         //public ILineFactory factory;
 
         public abstract void Move();
+
+        public abstract void Turn();
         public abstract void Turn(IDirection direction);
     }
 }

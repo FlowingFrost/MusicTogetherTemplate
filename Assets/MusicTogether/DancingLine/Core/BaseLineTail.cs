@@ -20,6 +20,7 @@ namespace MusicTogether.DancingLine.Core
         public virtual void Init(Vector3 directionVector)
         {
             DirectionVector = directionVector;
+            _lineTailObject.gameObject.SetActive(false);
             _lineTailObject.transform.localRotation = Quaternion.LookRotation(DirectionVector);
         }
         public virtual void SetBeginPosition(Vector3 position)

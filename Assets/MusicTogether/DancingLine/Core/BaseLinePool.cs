@@ -14,9 +14,10 @@ namespace MusicTogether.DancingLine.Core
     public class BaseLinePool : SerializedMonoBehaviour, ILinePool
     {
         //[SerializeField]internal ILineFactory _lineFactory;
+        public ILineController LineController;
         public Transform tailHolder;
         [SerializeField, Required] internal GameObject lineTailPrefab;
-        public int CurrentIndex => lineNodes.Count - 1;
+        public virtual int CurrentIndex => lineNodes.Count - 1;
         public List<ILineNode> LineNodes => lineNodes;
         internal readonly List<ILineNode> lineNodes = new List<ILineNode>();
         internal readonly List<ILineNode> PendingNodes = new List<ILineNode>();
@@ -76,6 +77,23 @@ namespace MusicTogether.DancingLine.Core
             //将所有插入的节点更新数据
         }
 
+        public virtual void AddNode(double time)
+        {
+            if (lineNodes.Count == 0)
+            {
+                Debug.LogError("线条池中无节点，无法添加仅含时间的节点，请使用AddNode(double time, IDirection direction)方法");
+                return;
+            }
+            if (LineController.GetDirectionByID(lineNodes[CurrentIndex].Direction.NextDirectionID, out var newDirection))
+            {
+                AddNode(time, newDirection);
+                Debug.Log($"根据ID{CurrentIndex}（时间：{lineNodes[CurrentIndex].BeginTime}方向：{lineNodes[CurrentIndex].Direction.ID}）成功获取下一个方向，添加节点，时间：{time}方向：{newDirection.ID}");
+            }
+            else
+            {
+                Debug.LogError("无法根据ID获取下一个方向，添加节点失败");
+            }
+        }
         //外部工具
         public virtual void AddNode(double time, IDirection direction)
         {

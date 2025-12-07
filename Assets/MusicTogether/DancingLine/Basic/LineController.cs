@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MusicTogether.DancingLine.Core;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace MusicTogether.DancingLine.Basic
 {
@@ -10,10 +11,11 @@ namespace MusicTogether.DancingLine.Basic
     {
         public override void DetectInput()
         {
-
             if (!Input.GetMouseButtonDown(0) && !Input.GetKeyDown(KeyCode.Space)) return;
-            CurrentDirectionIndex = Directions[CurrentDirectionIndex].NextDirectionID;
-            OnDirectionChanged?.Invoke(Directions[CurrentDirectionIndex]);
+            if (EventSystem.current.IsPointerOverGameObject()) return;
+            OnInputDetected?.Invoke();
+            /*CurrentDirectionIndex = Directions[CurrentDirectionIndex].NextDirectionID;
+            OnDirectionChanged?.Invoke(Directions[CurrentDirectionIndex]);*/
         }
     }
 }

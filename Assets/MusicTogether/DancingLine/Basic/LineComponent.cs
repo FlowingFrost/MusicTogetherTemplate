@@ -2,25 +2,29 @@ using System;
 using System.Collections.Generic;
 using MusicTogether.DancingLine.Core;
 using Sirenix.OdinInspector;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Playables;
 
 namespace MusicTogether.DancingLine.Basic
 {
-    #if UNITY_EDITOR
-    [ExecuteInEditMode]
-    #endif
     public class LineComponent : BaseLineComponent
     {
-        public bool RefreshOnEditorChange = true;
-        public PlayableDirector timeLine;
+        public TimeLinePlayerBehaviour timeLine;
         public CanvasCounter canvasCounter;
+        public TextMeshProUGUI debugText;
         private double Time => LevelManager.LevelProgress;
         private double PauseTime;
         public override void Move()
         {
             transform.position = pool.GetPosition(Time);
         }
+
+        public override void Turn()
+        {
+            pool.AddNode(Time);
+        }
+
         public override void Turn(IDirection direction)
         {
             pool.AddNode(Time,direction);
@@ -30,20 +34,19 @@ namespace MusicTogether.DancingLine.Basic
         {
             if (pool.LineNodes.Count == 0)
                 pool.AddNode(0,controller.CurrentDirection());
-            controller.RegisterTurn(Turn);
+            controller.Register(Turn, Turn);
         }
         void Update()
         {
-            if (!RefreshOnEditorChange && !Application.isPlaying) return;
             if (Input.GetKeyDown(KeyCode.Escape)) //写在这里是不合适的，只作为临时方案
             {
-                if (timeLine.state == PlayState.Playing)
+                if (timeLine.NowPlayState == PlayState.Playing)
                 {
                     timeLine.Pause();
-                    PauseTime = timeLine.time;
+                    PauseTime = timeLine.NowTime;
                     
-                    timeLine.initialTime = PauseTime - 2f;
-                    timeLine.time = PauseTime - 2f;
+                    timeLine.InitialTime = PauseTime - 2f;
+                    timeLine.NowTime = PauseTime - 2f;
                     
                     canvasCounter.beginTime = PauseTime;
                     
@@ -52,12 +55,13 @@ namespace MusicTogether.DancingLine.Basic
                 {
                     int currentDirectionID = pool.LineNodes[pool.CurrentIndex].Direction.ID;
                     controller.SetCurrentDirection(currentDirectionID);
-                    ClearNodesAfterTime(PauseTime - 1f);
+                    ClearNodesAfterTime(PauseTime);
                     timeLine.Play();
                 }
             }
             controller.DetectInput();
             Move();
+            debugText.text = ((LinePool)pool).DebugInformation();
             canvasCounter.UpdateProgress(Time);
         }
         
