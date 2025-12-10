@@ -105,11 +105,18 @@ namespace MusicTogether.DancingLine.Core
             _dirty = true;
         }
         
-        /*public virtual void AddNode(List<ILineNode> units)
+        public void ClearLaterNodes(double time)
         {
-            PendingNodes.AddRange(units);
-            _dirty = true;
-        }*/
+            Validate();
+            for (int i = lineNodes.Count - 1; i >= 0; i--)
+            {
+                if (lineNodes[i].BeginTime >= time)
+                {
+                    lineNodes[i].DeleteNode();
+                    lineNodes.RemoveAt(i);
+                }
+            }
+        }
         
         //生命周期
         public virtual Vector3 GetPosition(double time)

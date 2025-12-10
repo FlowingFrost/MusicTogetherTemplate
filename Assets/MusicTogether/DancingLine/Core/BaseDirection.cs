@@ -1,17 +1,18 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MusicTogether.DancingLine.Core
 {
     [Serializable]
     public class BaseDirection : IDirection
     {
-        [SerializeField] private int _id;
-        [SerializeField] private int _nextDirectionID;
-        [SerializeField] private Vector3 _directionVector;
+        [FormerlySerializedAs("_id")] [SerializeField] private int id;
+        [FormerlySerializedAs("_nextDirectionID")] [SerializeField] private int nextDirectionID;
+        [FormerlySerializedAs("_directionVector")] [SerializeField] private Vector3 directionVector;
         
-        public int ID { get => _id; set => _id = value; }
-        public int NextDirectionID { get => _nextDirectionID; set => _nextDirectionID = value; }
-        public Vector3 DirectionVector { get => _directionVector; set => _directionVector = value; }
+        public int ID { get => id; set => id = value; }
+        public int NextDirectionID { get => nextDirectionID; set => nextDirectionID = value; }
+        public Vector3 DirectionVector { get => directionVector; set => directionVector = value; }
     }
 }

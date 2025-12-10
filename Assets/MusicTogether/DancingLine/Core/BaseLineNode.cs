@@ -57,6 +57,10 @@ namespace MusicTogether.DancingLine.Core
             Direction = direction;
             DirectionVector = direction.DirectionVector;
             Tail.Init(DirectionVector);
+            if (direction == null) 
+                throw new ArgumentNullException(nameof(direction));
+            if (Tail == null)
+                throw new InvalidOperationException("Tail未初始化");
         }
         public virtual void AdjustNode(Vector3 beginPosition)
         {

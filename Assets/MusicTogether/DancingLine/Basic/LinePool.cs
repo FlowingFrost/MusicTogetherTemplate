@@ -12,65 +12,6 @@ namespace MusicTogether.DancingLine.Basic
         internal int currentIndex = 0;
         public override int CurrentIndex => currentIndex;
         
-        internal override void Validate()
-        {
-            if (!_dirty) return;
-            if (PendingNodes.Count == 0) { _dirty = false; return; }
-            //没有待添加节点，直接返回
-            
-            PendingNodes.Sort((a, b) => a.BeginTime.CompareTo(b.BeginTime));
-            int insertIndex = 0;
-            
-            //准备插入节点
-            if (lineNodes.Count == 0)
-            {
-                lineNodes.AddRange(PendingNodes);
-                PendingNodes.Clear();
-                _dirty = false;
-                return;
-            }//最简单的情况，当前列表为空，直接添加
-            if (PendingNodes[0].BeginTime >= lineNodes[^1].BeginTime)
-            {
-                insertIndex = lineNodes.Count;
-                lineNodes.AddRange(PendingNodes);
-                PendingNodes.Clear();
-            }//次之简单的情况，直接添加到末尾
-            else
-            {
-                insertIndex = lineNodes.BinarySearch(PendingNodes[0], Comparer<ILineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
-                if (insertIndex < 0) insertIndex = ~insertIndex;
-                
-                int insertIndexInLoop = 0;
-                while (PendingNodes.Count > 0)
-                {
-                    insertIndexInLoop = lineNodes.BinarySearch(PendingNodes[0], Comparer<ILineNode>.Create((a, b) => a.BeginTime.CompareTo(b.BeginTime)));
-                    if (insertIndexInLoop < 0) insertIndexInLoop = ~insertIndexInLoop;
-                    lineNodes.Insert(insertIndex, PendingNodes[0]);
-                    PendingNodes.RemoveAt(0);
-                }
-            }//否则用二分查找添加到中间
-            Vector3 newPosition = Vector3.zero;
-            if(insertIndex - 1 >= 0) newPosition = lineNodes[insertIndex - 1].UpdatePosition(lineNodes[insertIndex].BeginTime);
-            for(int i = insertIndex; i < lineNodes.Count - 1; i++)
-            {
-                lineNodes[i].AdjustNode(newPosition);
-                newPosition = lineNodes[i].UpdatePosition(lineNodes[i+1].BeginTime);
-            }
-            lineNodes[^1].AdjustNode(newPosition);
-            _dirty = false;
-            //将所有插入的节点更新数据
-            currentIndex = insertIndex;
-            _dirty = false;
-            //将所有插入的节点更新数据
-        }
-        
-        /*public void AddNode(double time, Vector3 directionVector)该方法已迁移至BaseLinePool
-        {
-            _lineFactory.NewNode(out var newNode);//new LineNode(time, directionVector, tailHolder);
-            
-            AddNode(newNode);
-        }*/
-        
         public override Vector3 GetPosition(double time)
         {
             Validate();
@@ -100,15 +41,9 @@ namespace MusicTogether.DancingLine.Basic
         [Button("清除当前时间点之后的节点")]
         public void ClearLaterNodes(double time)
         {
-            Validate();
-            for (int i = lineNodes.Count - 1; i >= 0; i--)
-            {
-                if (lineNodes[i].BeginTime >= time)
-                {
-                    lineNodes[i].DeleteNode();
-                    lineNodes.RemoveAt(i);
-                }
-            }
+            base.ClearLaterNodes(time);
+            if (currentIndex >= lineNodes.Count)
+                currentIndex = Math.Max(0, lineNodes.Count - 1);
         }
 
         public string DebugInformation()

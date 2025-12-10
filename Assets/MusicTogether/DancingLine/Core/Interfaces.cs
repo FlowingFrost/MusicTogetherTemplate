@@ -79,6 +79,7 @@ namespace MusicTogether.DancingLine.Core
         List<ILineNode> LineNodes { get; }
         void AddNode(double time);
         void AddNode(double time, IDirection direction);
+        void ClearLaterNodes(double time);
         Vector3 GetPosition(double time);
     }
     
