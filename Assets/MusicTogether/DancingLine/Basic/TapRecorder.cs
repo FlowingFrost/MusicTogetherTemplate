@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MusicTogether.DancingLine.Core;
+using MusicTogether.DancingLine.Classic;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
@@ -9,7 +9,7 @@ namespace MusicTogether.DancingLine.Basic
 {
     public class TapRecorder : SerializedMonoBehaviour
     {
-        public BaseLinePool LinePool;
+        public ClassicLinePool LinePool;
         public List<Tuple<double,IDirection>> TapTimes = new ();
 
         [Button]
@@ -27,7 +27,7 @@ namespace MusicTogether.DancingLine.Basic
         {
             foreach (var time in TapTimes)
             {
-                LinePool.AddNode(time.Item1,time.Item2);
+                //LinePool.AddNode(time.Item1,time.Item2);
             }
         }
     }

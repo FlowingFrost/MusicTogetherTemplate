@@ -1,42 +1,54 @@
 using System;
 using System.Collections.Generic;
-using MusicTogether.DancingLine.Core;
+using MusicTogether.DancingLine.Classic;
+using MusicTogether.LevelManagement;
 using Sirenix.OdinInspector;
 using TMPro;
+using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
 
 namespace MusicTogether.DancingLine.Basic
 {
-    public class LineComponent : BaseLineComponent
+    public class LineComponent : ClassicLineComponent
     {
         public TimeLinePlayerBehaviour timeLine;
         public CanvasCounter canvasCounter;
         public TextMeshProUGUI debugText;
-        private double Time => LevelManager.LevelProgress;
+        public Material lineMaterial;
+        public Color playingColor = Color.white;
+        public Color previewingColor = Color.gray;
+        public Color pausedColor = Color.yellow;
+        private string stateText = "游玩中";
         private double PauseTime;
-        public override void Move()
+
+        public override void OnLevelStateChanged(LevelState newState)
         {
-            transform.position = pool.GetPosition(Time);
+            stateText = "游玩中";
+            Color targetColor = playingColor;
+            switch (newState)
+            {
+                case LevelState.Previewing:
+                    stateText = "预览中";
+                    targetColor = previewingColor;
+                    break;
+                case LevelState.Paused:
+                    stateText = "已暂停";
+                    targetColor = pausedColor;
+                    break;
+            }
+            lineMaterial.color = targetColor;
+            debugText.color = targetColor;
+            debugText.text = $"当前关卡状态 : {stateText}\n当前线运动状态 : {CurrentMotionType}";
         }
 
-        public override void Turn()
+        public override void OnGroundedChanged(IDirection direction, bool grounded, float groundHeight)
         {
-            pool.AddNode(Time);
+            base.OnGroundedChanged(direction, grounded, groundHeight);
+            debugText.text = $"当前关卡状态 : {stateText}\n当前线运动状态 : {CurrentMotionType}";
         }
-
-        public override void Turn(IDirection direction)
-        {
-            pool.AddNode(Time,direction);
-        }
-
-        private void Awake()
-        {
-            if (pool.LineNodes.Count == 0)
-                pool.AddNode(0,controller.CurrentDirection());
-            controller.Register(Turn, Turn);
-        }
-        void Update()
+        
+        protected override void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape)) //写在这里是不合适的，只作为临时方案
             {
@@ -47,7 +59,7 @@ namespace MusicTogether.DancingLine.Basic
                     
                     timeLine.InitialTime = PauseTime - 2f;
                     timeLine.NowTime = PauseTime - 2f;
-                    
+                    LevelManager.LevelProgress = PauseTime;
                     canvasCounter.beginTime = PauseTime;
                     
                 }
@@ -59,23 +71,19 @@ namespace MusicTogether.DancingLine.Basic
                     timeLine.Play();
                 }
             }
-            controller.DetectInput();
-            Move();
-            debugText.text = ((LinePool)pool).DebugInformation();
-            canvasCounter.UpdateProgress(Time);
-        }
-        
-        [Button("清除当前时间点之后的节点")]
-        public void ClearNodesAfterNow()
-        {
-            ClearNodesAfterTime(Time);
-        }
-        public void ClearNodesAfterTime(double time)
-        {
-            if (pool.GetType().IsAssignableFrom(typeof(LinePool)))
-            { 
-                ((LinePool)pool).ClearLaterNodes(time);
+            base.Update();
+            //debugText.text = ((LinePool)pool).DebugInformation();
+            //debugText.text = $"当前关卡状态：{LevelState}";
+            switch (LevelState)
+            {
+                case LevelState.Previewing:
+                    canvasCounter.UpdateProgress(Time);
+                    break;
+                default:
+                    canvasCounter.UpdateProgress(PauseTime+1);
+                    break;
             }
+            
         }
     }
 }
