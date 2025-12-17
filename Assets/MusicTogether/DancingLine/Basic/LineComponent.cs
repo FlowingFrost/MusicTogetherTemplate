@@ -12,7 +12,9 @@ namespace MusicTogether.DancingLine.Basic
 {
     public class LineComponent : ClassicLineComponent
     {
+        public override Vector3 Gravity => gravity;
         public TimeLinePlayerBehaviour timeLine;
+        public Vector3 gravity = new Vector3(0, -9.81f, 0);
         public CanvasCounter canvasCounter;
         public TextMeshProUGUI debugText;
         public Material lineMaterial;
@@ -42,12 +44,19 @@ namespace MusicTogether.DancingLine.Basic
             debugText.text = $"当前关卡状态 : {stateText}\n当前线运动状态 : {CurrentMotionType}";
         }
 
-        public override void OnGroundedChanged(IDirection direction, bool grounded, float groundHeight)
+        public override void OnGroundedChanged(IDirection direction, bool grounded, Vector3 groundPoint)
         {
-            base.OnGroundedChanged(direction, grounded, groundHeight);
+            base.OnGroundedChanged(direction, grounded, groundPoint);
             debugText.text = $"当前关卡状态 : {stateText}\n当前线运动状态 : {CurrentMotionType}";
         }
         
+        public void OnGravityChanged(Vector3 newGravity)
+        {
+            gravity = newGravity;
+            Quaternion rotation = Quaternion.FromToRotation(Vector3.down, newGravity);
+            transform.rotation = rotation;
+            pool.AddNodeByBeginTime(Time,controller.CurrentDirection,CurrentMotionType,acceleration:gravity);
+        }
         protected override void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape)) //写在这里是不合适的，只作为临时方案
