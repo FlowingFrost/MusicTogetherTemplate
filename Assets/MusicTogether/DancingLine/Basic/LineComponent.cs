@@ -1,29 +1,35 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MusicTogether.DancingLine.Classic;
 using MusicTogether.LevelManagement;
 using Sirenix.OdinInspector;
 using TMPro;
+using UnityEditor;
 using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
 
 namespace MusicTogether.DancingLine.Basic
 {
+    [ExecuteAlways]
     public class LineComponent : ClassicLineComponent
     {
-        public override Vector3 Gravity => gravity;
+        //绑定信息
         public TimeLinePlayerBehaviour timeLine;
-        public Vector3 gravity = new Vector3(0, -9.81f, 0);
         public CanvasCounter canvasCounter;
         public TextMeshProUGUI debugText;
         public Material lineMaterial;
+        //参数设置
+        public Vector3 gravity = new Vector3(0, -9.81f, 0);
         public Color playingColor = Color.white;
         public Color previewingColor = Color.gray;
         public Color pausedColor = Color.yellow;
+        //运行数据
         private string stateText = "游玩中";
         private double PauseTime;
-
+        //API
+        public override Vector3 Gravity => gravity;
         public override void OnLevelStateChanged(LevelState newState)
         {
             stateText = "游玩中";
@@ -43,31 +49,32 @@ namespace MusicTogether.DancingLine.Basic
             debugText.color = targetColor;
             debugText.text = $"当前关卡状态 : {stateText}\n当前线运动状态 : {CurrentMotionType}";
         }
-
         public override void OnGroundedChanged(IDirection direction, bool grounded, Vector3 groundPoint)
         {
             base.OnGroundedChanged(direction, grounded, groundPoint);
             debugText.text = $"当前关卡状态 : {stateText}\n当前线运动状态 : {CurrentMotionType}";
         }
-        
         public void OnGravityChanged(Vector3 newGravity)
         {
+            if (LevelManager.IsEditorPreviewing) return;
+            
             gravity = newGravity;
             Quaternion rotation = Quaternion.FromToRotation(Vector3.down, newGravity);
             transform.rotation = rotation;
             pool.AddNodeByBeginTime(Time,controller.CurrentDirection,CurrentMotionType,acceleration:gravity);
         }
-        protected override void Update()
+        public override void UpdateUnion()
         {
             if (Input.GetKeyDown(KeyCode.Escape)) //写在这里是不合适的，只作为临时方案
             {
                 if (timeLine.NowPlayState == PlayState.Playing)
                 {
-                    timeLine.Pause();
-                    PauseTime = timeLine.NowTime;
+                    LevelManager.SetLevelState(LevelState.Paused);
+                    PauseTime = LevelManager.LevelTime;
                     
                     timeLine.InitialTime = PauseTime - 2f;
                     timeLine.NowTime = PauseTime - 2f;
+                    
                     LevelManager.LevelProgress = PauseTime;
                     canvasCounter.beginTime = PauseTime;
                     
@@ -77,10 +84,10 @@ namespace MusicTogether.DancingLine.Basic
                     int currentDirectionID = pool.LineNodes[pool.CurrentIndex].Direction.ID;
                     controller.SetCurrentDirection(currentDirectionID);
                     ClearNodesAfterTime(PauseTime);
-                    timeLine.Play();
+                    LevelManager.SetLevelState(LevelState.Playing);
                 }
             }
-            base.Update();
+            base.UpdateUnion();
             //debugText.text = ((LinePool)pool).DebugInformation();
             //debugText.text = $"当前关卡状态：{LevelState}";
             switch (LevelState)
@@ -92,7 +99,6 @@ namespace MusicTogether.DancingLine.Basic
                     canvasCounter.UpdateProgress(PauseTime+1);
                     break;
             }
-            
         }
     }
 }

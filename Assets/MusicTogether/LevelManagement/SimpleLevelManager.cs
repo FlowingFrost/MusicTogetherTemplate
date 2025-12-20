@@ -1,21 +1,31 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using LiteGameFrame.CoreInfrastructure;
+using Sirenix.OdinInspector;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Serialization;
 
 namespace MusicTogether.LevelManagement
 {
-    public class SimpleLevelManager : Singleton<SimpleLevelManager>, ILevelManager//, IStateHandler
+#if UNITY_EDITOR
+    [ExecuteAlways]
+#endif
+    public class SimpleLevelManager : SerializedMonoBehaviour, ILevelManager//, IStateHandler,Singleton<SimpleLevelManager>
     {
         //绑定
         public PlayableDirector levelDirector;
-
         public float fps;
         //参数
         private double previousTime;
         private LevelState currentLevelState = LevelState.Paused;
-
+        //API
+        public ILevelManager LevelManager => this;
+        public event Action<LevelState> OnLevelStateChanged;
+        public event Action OnEditorModeEnter;
+        public bool IsEditorPreviewing => Application.isEditor && !Application.isPlaying;
         public LevelState CurrentLevelState
         {
             get => currentLevelState;
@@ -27,9 +37,19 @@ namespace MusicTogether.LevelManagement
         }
         public double LevelTime => levelDirector.time;
         public double LevelProgress { get; set; } = 0;
-        public event Action<LevelState> OnLevelStateChanged;
-
-
+        
+        public void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            Debug.Log("PlayMode State Changed: " + state);
+#if UNITY_EDITOR
+            if (state == PlayModeStateChange.EnteredEditMode)
+            {
+                RefreshEditorMode();
+                //StartCoroutine(WaitForEditModeEnter());
+            }
+#endif
+        }
+        
         public void SetLevelState(LevelState state)
         {
             switch (state)
@@ -49,7 +69,21 @@ namespace MusicTogether.LevelManagement
                     break;
             }
         }
-        
+
+        [Button("重新刷新")]
+        public void RefreshEditorMode()
+        {
+            OnEditorModeEnter?.Invoke();
+        }
+
+        private void OnEnable()
+        {
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+        private void OnDisable()
+        {
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+        }
         private void Update()
         {
             switch (CurrentLevelState)
@@ -95,5 +129,8 @@ namespace MusicTogether.LevelManagement
             }
             previousTime = LevelTime;
         }
+
+        // ILevelUnion 实现 - LevelManager 本身不需要主动更新子 Union
+        // 子 Union 由 Timeline 上的 LevelUnionTrack Clip 独立驱动
     }
 }
