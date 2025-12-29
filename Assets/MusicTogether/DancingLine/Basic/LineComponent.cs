@@ -5,8 +5,6 @@ using MusicTogether.DancingLine.Classic;
 using MusicTogether.LevelManagement;
 using Sirenix.OdinInspector;
 using TMPro;
-using UnityEditor;
-using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -21,7 +19,6 @@ namespace MusicTogether.DancingLine.Basic
         public TextMeshProUGUI debugText;
         public Material lineMaterial;
         //参数设置
-        public Vector3 gravity = new Vector3(0, -9.81f, 0);
         public Color playingColor = Color.white;
         public Color previewingColor = Color.gray;
         public Color pausedColor = Color.yellow;
@@ -49,20 +46,12 @@ namespace MusicTogether.DancingLine.Basic
             debugText.color = targetColor;
             debugText.text = $"当前关卡状态 : {stateText}\n当前线运动状态 : {CurrentMotionType}";
         }
-        public override void OnGroundedChanged(IDirection direction, bool grounded, Vector3 groundPoint)
+        public override void OnGroundedChanged(bool grounded, Vector3 groundPoint)
         {
-            base.OnGroundedChanged(direction, grounded, groundPoint);
+            base.OnGroundedChanged(grounded, groundPoint);
             debugText.text = $"当前关卡状态 : {stateText}\n当前线运动状态 : {CurrentMotionType}";
         }
-        public void OnGravityChanged(Vector3 newGravity)
-        {
-            if (LevelManager.IsEditorPreviewing) return;
-            
-            gravity = newGravity;
-            Quaternion rotation = Quaternion.FromToRotation(Vector3.down, newGravity);
-            transform.rotation = rotation;
-            pool.AddNodeByBeginTime(Time,controller.CurrentDirection,CurrentMotionType,acceleration:gravity);
-        }
+
         public override void UpdateUnion()
         {
             if (Input.GetKeyDown(KeyCode.Escape)) //写在这里是不合适的，只作为临时方案

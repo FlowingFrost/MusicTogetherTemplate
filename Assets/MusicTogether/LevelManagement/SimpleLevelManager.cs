@@ -20,6 +20,7 @@ namespace MusicTogether.LevelManagement
         public float fps;
         //参数
         private double previousTime;
+        private double levelProgress;
         private LevelState currentLevelState = LevelState.Paused;
         //API
         public ILevelManager LevelManager => this;
@@ -36,7 +37,19 @@ namespace MusicTogether.LevelManagement
             }
         }
         public double LevelTime => levelDirector.time;
-        public double LevelProgress { get; set; } = 0;
+
+        public double LevelProgress
+        {
+            get
+            {
+                if (IsEditorPreviewing)
+                {
+                    return levelDirector.time;
+                }
+                return levelProgress;
+            }
+            set => levelProgress = value;
+        }
         
         public void OnPlayModeStateChanged(PlayModeStateChange state)
         {
