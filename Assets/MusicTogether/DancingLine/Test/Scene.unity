@@ -484,7 +484,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2a5620f21881b734bb27e43e74f5c8a1, type: 2}
+  - {fileID: 2100000, guid: 7f4dc37281a10f0458b864f6301ec8fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -618,90 +618,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdc8ed859afa07f4f918709c4f4041ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: directions
-      Entry: 7
-      Data: 0|System.Collections.Generic.List`1[[MusicTogether.DancingLine.Classic.ClassicDirection,
-        Assembly-CSharp]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 2
-    - Name: 
-      Entry: 7
-      Data: 1|MusicTogether.DancingLine.Classic.ClassicDirection, Assembly-CSharp
-    - Name: id
-      Entry: 3
-      Data: 0
-    - Name: nextDirectionID
-      Entry: 3
-      Data: 1
-    - Name: directionVector
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 12
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 2|MusicTogether.DancingLine.Classic.ClassicDirection, Assembly-CSharp
-    - Name: id
-      Entry: 3
-      Data: 1
-    - Name: nextDirectionID
-      Entry: 3
-      Data: 0
-    - Name: directionVector
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 12
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-  scopeName: NewScope
-  priority: 0
-  startTime: 0
-  endTime: 1.7976931348623157e+308
-  localStartPosition: {x: 0, y: 0, z: 0}
-  localGravity: {x: 0, y: -9.8, z: 0}
-  transitionEase: 7
-  transitionDuration: 0.5
 --- !u!114 &157384304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -714,19 +630,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 445c10d7c15c4b0d89719d13d687ddae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
-  lineTailPrefab: {fileID: 643423393537028292, guid: f529007800615214c8a750f7dcec64a0, type: 3}
-  tailHolder: {fileID: 157384302}
-  startTime: 0
-  endTime: 1.7976931348623157e+308
 --- !u!65 &157384305
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1869,7 +1772,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bf8a5bd80b7cbcc4d93b0100fe9d7abe, type: 2}
+  - {fileID: 2100000, guid: 398bf41373457b1439aa1cadd59d224a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1906,7 +1809,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 743484151}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1915,7 +1818,7 @@ Transform:
   - {fileID: 833547953}
   m_Father: {fileID: 1017440801}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &743484156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1933,38 +1836,94 @@ MonoBehaviour:
     SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 1718498977}
+    - {fileID: 743484159}
+    - {fileID: 743484158}
     - {fileID: 743484160}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
-    - Name: _levelManager
-      Entry: 10
-      Data: 0
-    - Name: _pool
-      Entry: 6
-      Data: 
-    - Name: _controller
-      Entry: 6
-      Data: 
-    - Name: _physicsDetector
-      Entry: 10
-      Data: 1
-    - Name: classicDirections
+    - Name: directions
       Entry: 7
-      Data: 0|System.Collections.Generic.List`1[[MusicTogether.DancingLine.Classic.ClassicDirection,
+      Data: 0|System.Collections.Generic.List`1[[MusicTogether.DancingLine.IDirection,
         Assembly-CSharp]], mscorlib
     - Name: 
       Entry: 12
+      Data: 2
+    - Name: 
+      Entry: 7
+      Data: 1|MusicTogether.DancingLine.Classic.ClassicDirection, Assembly-CSharp
+    - Name: id
+      Entry: 3
       Data: 0
+    - Name: nextDirectionID
+      Entry: 3
+      Data: 1
+    - Name: directionVector
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 12
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 2|MusicTogether.DancingLine.Classic.ClassicDirection, Assembly-CSharp
+    - Name: id
+      Entry: 3
+      Data: 1
+    - Name: nextDirectionID
+      Entry: 3
+      Data: 0
+    - Name: directionVector
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 12
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
     - Name: 
       Entry: 13
       Data: 
     - Name: 
       Entry: 8
       Data: 
-  _gravity: {x: 0, y: -9.81, z: 0}
+    - Name: levelManager
+      Entry: 10
+      Data: 0
+    - Name: pool
+      Entry: 10
+      Data: 1
+    - Name: controller
+      Entry: 10
+      Data: 2
+    - Name: physicsDetector
+      Entry: 10
+      Data: 3
+  gravity: {x: 0, y: -9.81, z: 0}
   timeLine: {fileID: 250303346}
   canvasCounter: {fileID: 1879879517}
   debugText: {fileID: 1332642942}
@@ -1992,74 +1951,7 @@ MonoBehaviour:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes:
-    - Name: classicDirections
-      Entry: 7
-      Data: 0|System.Collections.Generic.List`1[[MusicTogether.DancingLine.Classic.ClassicDirection,
-        Assembly-CSharp]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 2
-    - Name: 
-      Entry: 7
-      Data: 1|MusicTogether.DancingLine.Classic.ClassicDirection, Assembly-CSharp
-    - Name: id
-      Entry: 3
-      Data: 0
-    - Name: nextDirectionID
-      Entry: 3
-      Data: 1
-    - Name: directionVector
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 12
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 2|MusicTogether.DancingLine.Classic.ClassicDirection, Assembly-CSharp
-    - Name: id
-      Entry: 3
-      Data: 1
-    - Name: nextDirectionID
-      Entry: 3
-      Data: 0
-    - Name: directionVector
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 12
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
+    SerializationNodes: []
 --- !u!114 &743484159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2082,11 +1974,11 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
-    - Name: _lineComponent
+    - Name: LineComponent
       Entry: 10
       Data: 0
-  _tailHolder: {fileID: 345491661}
-  _lineTailPrefab: {fileID: 643423393537028292, guid: f529007800615214c8a750f7dcec64a0, type: 3}
+  tailHolder: {fileID: 345491661}
+  lineTailPrefab: {fileID: 643423393537028292, guid: f529007800615214c8a750f7dcec64a0, type: 3}
 --- !u!114 &743484160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2099,22 +1991,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cc2474143c84c718f55153e2322bc44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
-  _lineCollider: {fileID: 743484152}
-  _groundTestDistance: 2
-  _groundLayer:
+  lineCollider: {fileID: 743484152}
+  groundTestDistance: 2
+  groundLayer:
     serializedVersion: 2
     m_Bits: 1
-  _debugFallPoint: {fileID: 0}
-  _debug: 0
+  debugFallPoint: {fileID: 0}
+  debug: 0
 --- !u!1 &788105208
 GameObject:
   m_ObjectHideFlags: 0
@@ -3925,7 +3808,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2a5620f21881b734bb27e43e74f5c8a1, type: 2}
+  - {fileID: 2100000, guid: 7f4dc37281a10f0458b864f6301ec8fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -64,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bf8a5bd80b7cbcc4d93b0100fe9d7abe, type: 2}
+  - {fileID: 2100000, guid: 398bf41373457b1439aa1cadd59d224a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -121,9 +121,17 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
-    - Name: _tail
+    - Name: direction
+      Entry: 6
+      Data: 
+    - Name: Tail
       Entry: 10
       Data: 0
+  beginTime: 0
+  nodeType: 0
+  beginPosition: {x: 0, y: 0, z: 0}
+  beginVelocity: {x: 0, y: 0, z: 0}
+  acceleration: {x: 0, y: 0, z: 0}
 --- !u!114 &8507091910793460682
 MonoBehaviour:
   m_ObjectHideFlags: 0
