@@ -121,7 +121,7 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
-    - Name: Tail
+    - Name: _tail
       Entry: 10
       Data: 0
 --- !u!114 &8507091910793460682
@@ -136,4 +136,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ba1656f096443d5b93841121af07845, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lineTailObject: {fileID: 643423393537028292}
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _lineTailObject: {fileID: 643423393537028292}

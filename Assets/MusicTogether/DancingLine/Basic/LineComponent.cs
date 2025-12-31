@@ -26,7 +26,7 @@ namespace MusicTogether.DancingLine.Basic
         private string stateText = "游玩中";
         private double PauseTime;
         //API
-        public override Vector3 Gravity => gravity;
+        //public override Vector3 Gravity => gravity;
         public override void OnLevelStateChanged(LevelState newState)
         {
             stateText = "游玩中";
@@ -70,8 +70,8 @@ namespace MusicTogether.DancingLine.Basic
                 }
                 else
                 {
-                    int currentDirectionID = pool.LineNodes[pool.CurrentIndex].Direction.ID;
-                    controller.SetCurrentDirection(currentDirectionID);
+                    //int currentDirectionID = pool.LineNodes[pool.CurrentIndex].Direction.ID;
+                    //controller.SetCurrentDirection(currentDirectionID);
                     ClearNodesAfterTime(PauseTime);
                     LevelManager.SetLevelState(LevelState.Playing);
                 }
