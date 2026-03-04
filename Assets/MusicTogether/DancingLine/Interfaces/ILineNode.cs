@@ -18,7 +18,7 @@ namespace MusicTogether.DancingLine.Interfaces
         public IDirection Direction { get; }
         public MotionState CachedBeginMotionState { get; }
         public PhysicsState InitialPhysicsState { get; }
-        public MotionType NodeMotionType { get;}
+        public NodeMotionType NodeMotionType { get;}
         
         //void Init(NodeInputType nodeType, double beginTime, IDirection direction, IPhysicsDetector physicsDetector);
         void InitMotion(IPhysicsDetector physicsDetector, PhysicsState initialPhysicsState);
@@ -27,6 +27,7 @@ namespace MusicTogether.DancingLine.Interfaces
         void SetDirection(IDirection newDirection);
         void SetNodeType(NodeInputType newNodeType);
         void SetBeginTime(double newBeginTime);
+        void SetEndTime(double newEndTime);//这两个之后需要改成属性访问器
         void SetBeginPosition(Vector3 newBeginPosition);
         
         MotionState UpdatePosition(double time);

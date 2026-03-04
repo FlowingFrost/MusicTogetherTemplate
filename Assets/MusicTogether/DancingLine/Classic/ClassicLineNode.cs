@@ -24,7 +24,7 @@ namespace MusicTogether.DancingLine.Classic
         protected Vector3 cachedBeginPosition => cachedBeginMotionState.ParentSpacePosition;
         protected MotionState cachedBeginMotionState = new MotionState();
         protected PhysicsState cachedPhysicsState;
-        protected MotionType cachedNodeMotionType => cachedPhysicsState.NodeMotionType;
+        protected NodeMotionType CachedNodeNodeMotionType => cachedPhysicsState.NodeMotionType;
         protected Vector3 cachedBeginVelocity => cachedPhysicsState.Velocity;
         protected Vector3 cachedGravity => cachedPhysicsState.Gravity;
         
@@ -37,7 +37,7 @@ namespace MusicTogether.DancingLine.Classic
         public IDirection Direction => direction;
         public MotionState CachedBeginMotionState => cachedBeginMotionState;
         public PhysicsState InitialPhysicsState => cachedPhysicsState;
-        public MotionType NodeMotionType => cachedNodeMotionType;
+        public NodeMotionType NodeMotionType => CachedNodeNodeMotionType;
         
         //Debug
         [SerializeField] internal string debugInfo;
@@ -78,6 +78,11 @@ namespace MusicTogether.DancingLine.Classic
         {
             this.beginTime = newBeginTime;
         }
+        
+        public void SetEndTime(double newEndTime)
+        {
+            this.endTime = newEndTime;
+        }
 
         public void SetBeginPosition(Vector3 newBeginPosition)
         {
@@ -97,19 +102,19 @@ namespace MusicTogether.DancingLine.Classic
             headMotion.SelfTransform = transform;
 
             //处理物理逻辑
-            switch (cachedNodeMotionType)
+            switch (CachedNodeNodeMotionType)
             {
-                case MotionType.Grounded:
+                case NodeMotionType.Grounded:
                     if(!physicsDetector.IsGrounded(headMotion, out var displacement))
                     {
                         if (!hasInitialized)
                         {
-                            cachedPhysicsState.NodeMotionType = MotionType.Falling;
+                            cachedPhysicsState.NodeMotionType = NodeMotionType.Falling;
                             cachedPhysicsState.Velocity = Vector3.zero;
                         }
                         else
                         {
-                            cachedPhysicsState.NodeMotionType = MotionType.GroundedToFalling;
+                            cachedPhysicsState.NodeMotionType = NodeMotionType.GroundedToFalling;
                             hasLimitedLength = true;
                             endTime = time;
                         }
@@ -121,25 +126,25 @@ namespace MusicTogether.DancingLine.Classic
                         CachedEndDisplacement = displacement;
                     }
                     break;
-                case MotionType.Falling:
+                case NodeMotionType.Falling:
                     var deltaH = PhysicsHelper.CalculateDisplacement(cachedBeginVelocity, cachedGravity, deltaTime);
                     headMotion.ParentSpacePosition += deltaH;
                     //需要估算落地位置
                     if (physicsDetector.GetLandingPoint(cachedBeginMotionState, cachedPhysicsState, deltaTime, direction, out var result))
                     {
-                        cachedPhysicsState.NodeMotionType = MotionType.FallingToGrounded;
+                        cachedPhysicsState.NodeMotionType = NodeMotionType.FallingToGrounded;
                         hasLimitedLength = true;
                         endTime = time + result.FinalT;
                     }
                     else if (result != null)
                     {
-                        cachedPhysicsState.NodeMotionType = MotionType.FallingToGrounded;
+                        cachedPhysicsState.NodeMotionType = NodeMotionType.FallingToGrounded;
                         hasLimitedLength = true;
                         endTime = time + result.FinalT;
                         CachedEndDisplacement = result.Displacement;
                     }
                     break;
-                case MotionType.FallingToGrounded:
+                case NodeMotionType.FallingToGrounded:
                     var deltaH2 = PhysicsHelper.CalculateDisplacement(cachedBeginVelocity, cachedGravity, deltaTime);
                     headMotion.ParentSpacePosition += deltaH2;
                     if (physicsDetector.IsGrounded(headMotion, out var displacement2, true))
@@ -167,9 +172,9 @@ namespace MusicTogether.DancingLine.Classic
             //if (hasLimitedLength && cachedTime >= endTime) onNodeEnd?.Invoke(this);
             if (!hasInitialized)
             {
-                switch (cachedNodeMotionType)
+                switch (CachedNodeNodeMotionType)
                 {
-                    case MotionType.Grounded:
+                    case NodeMotionType.Grounded:
                         tail.SetActive(true);
                         break;
                     default:
@@ -187,28 +192,28 @@ namespace MusicTogether.DancingLine.Classic
         public PhysicsState GetPhysicsState(double time)
         {
             var deltaTime = (float)(time - beginTime);
-            switch (cachedNodeMotionType)
+            switch (CachedNodeNodeMotionType)
             {
-                case MotionType.Grounded:
-                    return new PhysicsState(){Velocity = Vector3.zero, Gravity = cachedGravity, NodeMotionType = MotionType.Grounded};
-                case MotionType.GroundedToFalling://当前节点刚失去地面接触，开始自由落体
-                    if (time < endTime) goto case MotionType.Grounded;//没有完全离地前仍然按照贴地计算
-                    return new PhysicsState(){Velocity = Vector3.zero, Gravity = cachedGravity, NodeMotionType = MotionType.Falling};
-                case MotionType.Falling://当前节点降落中
+                case NodeMotionType.Grounded:
+                    return new PhysicsState(){Velocity = Vector3.zero, Gravity = cachedGravity, NodeMotionType = NodeMotionType.Grounded};
+                case NodeMotionType.GroundedToFalling://当前节点刚失去地面接触，开始自由落体
+                    if (time < endTime) goto case NodeMotionType.Grounded;//没有完全离地前仍然按照贴地计算
+                    return new PhysicsState(){Velocity = Vector3.zero, Gravity = cachedGravity, NodeMotionType = NodeMotionType.Falling};
+                case NodeMotionType.Falling://当前节点降落中
                     return new PhysicsState()
                     {
                         Velocity = PhysicsHelper.CalculateVelocity(cachedBeginVelocity, cachedGravity, deltaTime),
                         Gravity = cachedGravity,
-                        NodeMotionType = MotionType.Falling
+                        NodeMotionType = NodeMotionType.Falling
                     };
-                case MotionType.FallingToGrounded://当前节点成功找到落地地点
-                    if (time < endTime) goto case MotionType.Falling;//没有完全落地前仍然按照自由落体计算
+                case NodeMotionType.FallingToGrounded://当前节点成功找到落地地点
+                    if (time < endTime) goto case NodeMotionType.Falling;//没有完全落地前仍然按照自由落体计算
                     deltaTime = (float)(endTime - beginTime);
                     return new PhysicsState()
                     {
                         Velocity = PhysicsHelper.CalculateVelocity(cachedBeginVelocity, cachedGravity, deltaTime),
                         Gravity = cachedGravity,
-                        NodeMotionType = MotionType.Grounded
+                        NodeMotionType = NodeMotionType.Grounded
                     };
                 default:
                     throw new ArgumentOutOfRangeException();

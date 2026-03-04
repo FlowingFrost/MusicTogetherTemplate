@@ -5,6 +5,7 @@ using Sirenix.OdinInspector;
 using Sirenix.Serialization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MusicTogether.DancingLine.Classic
 {
@@ -16,10 +17,12 @@ namespace MusicTogether.DancingLine.Classic
         //预设参数
         [SerializeField, Required] internal GameObject lineTailPrefab;
         [SerializeField] internal IPhysicsDetector physicsDetector;
+        [SerializeField] internal ILineNode preNode;
         
         [SerializeField] internal NodeInputType firstNodeType = NodeInputType.Continue;
         [SerializeField] internal double beginTime;
         [SerializeField] internal Vector3 beginPoint;
+        [SerializeField] internal NodeMotionType firstNodeMotionType;
         [SerializeField] internal Vector3 beginVelocity;
         [SerializeField] internal Vector3 gravity;
         [OdinSerialize] protected List<IDirection> directions = new List<IDirection>();
@@ -28,11 +31,11 @@ namespace MusicTogether.DancingLine.Classic
         
         //运行信息
         internal int currentNodeIndex;
-        internal ILineNode currentNode => lineNodes[currentNodeIndex];
+        internal ILineNode currentNode => currentNodeIndex >= 0 ? lineNodes[currentNodeIndex] : preNode;
         internal bool isEmpty => lineNodes.Count == 0;
         internal bool hasPendingNodes => pendingNodes.Count > 0;
         //数据存储
-        internal ILineNode preNode;
+        
         internal readonly List<ILineNode> lineNodes = new List<ILineNode>();
         internal readonly List<ILineNode> pendingNodes = new List<ILineNode>();
         
@@ -50,22 +53,26 @@ namespace MusicTogether.DancingLine.Classic
         [SerializeField] internal TextMeshProUGUI debugText;
         internal string debugInfo;
 
-        public MotionState Init()
+        public void Init()
         {
             lineNodes.Clear();
-            currentNodeIndex = 0;
-            var rootNode = AddNode(NodeInputType.Continue, beginTime);
-            rootNode.SetBeginPosition(beginPoint);
-            rootNode.SetDirection(directions[0]);
-            var physicsState = new PhysicsState(){NodeMotionType = MotionType.Grounded, Velocity = Vector3.zero, Gravity = gravity};
-            rootNode.InitMotion(physicsDetector, physicsState);
-            ProcessPendingNodes(beginTime);
+            currentNodeIndex = -1;
+
+            //AddNode(NodeInputType.Continue, beginTime);
+            preNode.SetEndTime(beginTime);
+            preNode.SetBeginPosition(beginPoint);
+            preNode.SetDirection(directions[0]);
+            var physicsState = new PhysicsState(){NodeMotionType = firstNodeMotionType, Velocity = beginVelocity, Gravity = gravity};
+            preNode.InitMotion(physicsDetector, physicsState);
+            
+            //ProcessPendingNodes(beginTime);
             
             debugInfo += $"Pool initialized at time {beginTime} with direction {directions[0].ID}\n";
-            return UpdatePool(beginTime);
+            //return UpdatePool(beginTime);
         }
         public ILineNode AddNode(NodeInputType nodeType, double time, bool isPending = true)
         {
+            //if (time < beginTime) { return null; } 择机加入。需要考虑项目设计并评估最佳做法
             var newNodeObj = Instantiate(lineTailPrefab, tailHolder);
             var newNode = newNodeObj.GetComponent<ILineNode>();
             
@@ -166,10 +173,7 @@ namespace MusicTogether.DancingLine.Classic
         public MotionState UpdatePool(double time)
         {
             MotionState currentMotion = null;
-            if (isEmpty)
-            {
-                Init();
-            }
+            //if (isEmpty) { Init(); }
             
             if (hasPendingNodes) { ProcessPendingNodes(time); }
             
@@ -206,7 +210,7 @@ namespace MusicTogether.DancingLine.Classic
                     currentMotion = currentNode.UpdatePosition(time);
                     break;
                 }
-                else if (lineNodes[currentNodeIndex + 1].BeginTime <= time)//下一节点时间未超前，更新当前节点位置并修正下一节点起始信息。
+                else if (lineNodes[currentNodeIndex + 1].BeginTime <= time)//已到达下一节点，更新当前节点位置并修正下一节点起始信息。
                 {
                     RefreshNodeByFormer(lineNodes[currentNodeIndex + 1], currentNode);
                     currentNodeIndex++;
@@ -266,6 +270,12 @@ namespace MusicTogether.DancingLine.Classic
                 }
             }
             if (currentNodeIndex >= lineNodes.Count) { currentNodeIndex = lineNodes.Count - 1; }
+        }
+
+
+        public void Awake()
+        {
+            Init();
         }
     }
 }

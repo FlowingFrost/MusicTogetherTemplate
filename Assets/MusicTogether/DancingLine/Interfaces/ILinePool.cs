@@ -24,7 +24,7 @@ namespace MusicTogether.DancingLine.Interfaces
         
         void ClearNodesAfterTime(double? time);
         //void GetPosition(double time, out Vector3 position, out Vector3 velocity);
-        MotionState Init();
+        void Init();
         MotionState UpdatePool(double time);
     }
 }

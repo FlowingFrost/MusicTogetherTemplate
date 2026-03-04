@@ -143,7 +143,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &94550801
 Transform:
   m_ObjectHideFlags: 0
@@ -1208,7 +1208,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 394713670}
   m_Father: {fileID: 724224060}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &345491662
@@ -1228,6 +1229,7 @@ MonoBehaviour:
     SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 743484156}
+    - {fileID: 394713671}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -1236,6 +1238,9 @@ MonoBehaviour:
     - Name: physicsDetector
       Entry: 10
       Data: 0
+    - Name: preNode
+      Entry: 10
+      Data: 1
     - Name: directions
       Entry: 7
       Data: 0|System.Collections.Generic.List`1[[MusicTogether.DancingLine.Interfaces.IDirection,
@@ -1304,10 +1309,66 @@ MonoBehaviour:
       Entry: 8
       Data: 
   lineTailPrefab: {fileID: 6261077722012965637, guid: f33ff8ea964fc4b4a9e6f0f268c6e49e, type: 3}
-  beginTime: 0
+  firstNodeType: 1
+  beginTime: 5
   beginPoint: {x: 0, y: 0, z: 0}
+  firstNodeMotionType: 0
+  beginVelocity: {x: 0, y: -5, z: 0}
   gravity: {x: 0, y: -9.8, z: 0}
   debugText: {fileID: 1332642942}
+--- !u!1 &394713669
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 394713670}
+  - component: {fileID: 394713671}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &394713670
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394713669}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 345491661}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &394713671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394713669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 784e7274f85b4988871119016ee904bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
 --- !u!1 &428692102
 GameObject:
   m_ObjectHideFlags: 0
@@ -4270,6 +4331,9 @@ MonoBehaviour:
     - Name: physicsDetector
       Entry: 10
       Data: 0
+    - Name: preNode
+      Entry: 6
+      Data: 
     - Name: directions
       Entry: 7
       Data: 0|System.Collections.Generic.List`1[[MusicTogether.DancingLine.Interfaces.IDirection,
@@ -4338,8 +4402,11 @@ MonoBehaviour:
       Entry: 8
       Data: 
   lineTailPrefab: {fileID: 6261077722012965637, guid: f33ff8ea964fc4b4a9e6f0f268c6e49e, type: 3}
+  firstNodeType: 1
   beginTime: 0
   beginPoint: {x: 2, y: 0, z: 0}
+  firstNodeMotionType: 0
+  beginVelocity: {x: 0, y: 0, z: 0}
   gravity: {x: 0, y: -9.8, z: 0}
   debugText: {fileID: 1332642942}
 --- !u!4 &1488198026
@@ -5202,7 +5269,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1718498977
 MonoBehaviour:
   m_ObjectHideFlags: 0

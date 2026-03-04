@@ -32,7 +32,7 @@ namespace MusicTogether.DancingLine.Interfaces
     {
         public Vector3 Velocity { get; set; }
         public Vector3 Gravity { get; set; }
-        public MotionType NodeMotionType { get; set; }
+        public NodeMotionType NodeMotionType { get; set; }
     }
     
     public record MotionCalculationResult
@@ -44,7 +44,7 @@ namespace MusicTogether.DancingLine.Interfaces
         public Vector3 Displacement { get; set; }
     }
     
-    public enum MotionType
+    public enum NodeMotionType
     {
         Grounded,
         GroundedToFalling,
