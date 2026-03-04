@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09cc033c9f6b2954aa0519cbb5e14f6e, type: 3}
+  m_Name: PhysicsDetectorDebugConfig
+  m_EditorClassIdentifier: 
+  rayHitColor: {r: 0, g: 1, b: 0, a: 1}
+  rayMissColor: {r: 1, g: 0.5, b: 0.5, a: 0.5}
+  hitPointColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  upslopeArrowColor: {r: 0, g: 1, b: 1, a: 1}
+  upslopeStartColor: {r: 0, g: 1, b: 1, a: 1}
+  upslopeEndColor: {r: 0, g: 1, b: 0, a: 1}
+  landingTrajectoryColor: {r: 0, g: 1, b: 0, a: 1}
+  landingPointColor: {r: 0, g: 1, b: 0, a: 1}
+  landingCircleColor: {r: 0, g: 1, b: 0, a: 1}
+  fallingArrowColor: {r: 0.5, g: 1, b: 0.5, a: 1}
+  correctionArrowColor: {r: 1, g: 0.6, b: 0, a: 1}
+  correctionStartColor: {r: 1, g: 0, b: 0, a: 1}
+  correctionEndColor: {r: 1, g: 0.6, b: 0, a: 1}
+  groundDetectPointColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  detectLineColor: {r: 1, g: 1, b: 0, a: 0.5}
+  hitPointRadius: 0.05
+  markerSphereRadius: 0.08
+  landingPointRadius: 0.1
+  landingCircleRadius: 0.3
+  arrowHeadLength: 0.2
+  arrowHeadAngle: 20
+  trajectorySegments: 20
+  fontSize: 12
