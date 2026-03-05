@@ -39,7 +39,15 @@ namespace MusicTogether.DancingLine.Classic
             time = time > endTime ? endTime : time;
             var deltaTime = time - endTime;
             var ms = direction.GetLineHeadMotionState(endPosition, deltaTime);
-            ms.ParentSpacePosition += PhysicsHelper.CalculateDisplacement(endVelocity, gravity, (float)deltaTime);
+            switch (NodeMotionType)
+            {
+                case NodeMotionType.Falling:
+                    ms.ParentSpacePosition += PhysicsHelper.CalculateDisplacement(endVelocity, gravity, (float)deltaTime);
+                    break;
+                case NodeMotionType.GroundedToFalling:
+                    goto case NodeMotionType.Falling;
+            }
+            
             ms.SelfTransform = transform;
             return ms;
         }

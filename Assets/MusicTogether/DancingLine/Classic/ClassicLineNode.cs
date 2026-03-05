@@ -127,6 +127,15 @@ namespace MusicTogether.DancingLine.Classic
                     }
                     break;
                 case NodeMotionType.Falling:
+                    if (!hasInitialized)
+                    {
+                        if (physicsDetector.IsGrounded(headMotion, out var displacement1))
+                        {
+                            cachedPhysicsState.NodeMotionType = NodeMotionType.Grounded;
+                            cachedPhysicsState.Velocity = Vector3.zero;
+                            break;
+                        }
+                    }
                     var deltaH = PhysicsHelper.CalculateDisplacement(cachedBeginVelocity, cachedGravity, deltaTime);
                     headMotion.ParentSpacePosition += deltaH;
                     //需要估算落地位置

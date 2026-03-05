@@ -12,17 +12,6 @@ namespace MusicTogether.DancingLine.TimeLine
     {
         public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
         {
-            // 遍历所有 Clip 并注入时间信息
-            foreach (var clip in GetClips())
-            {
-                var lineAsset = clip.asset as LineAsset;
-                if (lineAsset != null)
-                {
-                    lineAsset.clipStart = clip.start;
-                    lineAsset.clipEnd = clip.end;
-                }
-            }
-
             // 创建 Mixer
             var mixer = ScriptPlayable<LineMixerBehaviour>.Create(graph, inputCount);
             var mixerBehaviour = mixer.GetBehaviour();
@@ -54,6 +43,26 @@ namespace MusicTogether.DancingLine.TimeLine
                 }
             }
             
+            // 遍历所有 Clip 并注入时间信息
+            if (mixerBehaviour.cachedLineComponent != null)
+            {
+                var controller = mixerBehaviour.cachedLineComponent.Controller;
+                foreach (var clip in GetClips())
+                {
+                    var lineAsset = clip.asset as LineAsset;
+                    if (lineAsset != null)
+                    {
+                        lineAsset.clipStart = clip.start;
+                        lineAsset.clipEnd = clip.end;
+                        lineAsset.controller = controller;
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[LineTrack] Cannot inject controller: cachedLineComponent is null");
+            }
+
             return mixer;
         }
     }

@@ -6,6 +6,7 @@ namespace MusicTogether.DancingLine.TimeLine
 {
     public class LineBehaviour : PlayableBehaviour
     {
+        public ILineController lineController;
         public ILinePool linePool;
         public double clipStart;
         public double clipEnd;
@@ -23,6 +24,12 @@ namespace MusicTogether.DancingLine.TimeLine
             if (linePool == null) return;
             
             linePool.AwakeUnion();
+
+            if (lineController != null)
+            {
+                lineController.RegisterPool(linePool, linePool.BeginTime, clipEnd);
+            }
+            
             isInitialized = false;
         }
         
@@ -47,6 +54,11 @@ namespace MusicTogether.DancingLine.TimeLine
         
         public override void OnBehaviourPause(Playable playable, FrameData info)
         {
+            if (lineController != null && linePool != null)
+            {
+                lineController.UnregisterPool(linePool);
+            }
+            
             isInitialized = false;
         }
     }

@@ -41,6 +41,7 @@ namespace MusicTogether.DancingLine.Classic
         internal readonly List<ILineNode> pendingNodes = new List<ILineNode>();
         
         //接口
+        public double BeginTime => beginTime;
         public MotionState CurrentMotionState => currentMotionState;
         public IDirection CurrentDirection => currentNode.Direction;
         public int CurrentNodeIndex => currentNodeIndex;
@@ -57,6 +58,7 @@ namespace MusicTogether.DancingLine.Classic
 
         public void Init()
         {
+            pendingNodes.Clear();
             lineNodes.Clear();
             currentNodeIndex = -1;
 

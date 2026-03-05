@@ -3,7 +3,6 @@ using MusicTogether.DancingLine.Interfaces;
 using MusicTogether.LevelManagement;
 using Sirenix.OdinInspector;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace MusicTogether.DancingLine.Classic
@@ -12,8 +11,8 @@ namespace MusicTogether.DancingLine.Classic
     {
         //绑定信息
         [SerializeField]protected ILevelManager levelManager;
-        [SerializeField]protected ILinePool pool;
-        //[SerializeField]protected ILineController controller;
+        //[SerializeField]protected ILinePool pool;
+        [SerializeField]protected ILineController controller;
         [SerializeField]protected Transform lineHeadTransform;
 
         //临时数据
@@ -24,8 +23,10 @@ namespace MusicTogether.DancingLine.Classic
 
         [SerializeField] internal TextMeshProUGUI debugText;
         internal string debugInfo;
+        //API
+        public ILineController Controller => controller;
         
-        public void Turn()
+        /*public void Turn()
         {
             debugInfo += $"[{LevelState.ToString()}] Turn input received at time {time} in state {LevelState}\n";
             debugText.text = debugInfo;
@@ -43,9 +44,9 @@ namespace MusicTogether.DancingLine.Classic
                 default:
                     break;        
             }
-        }
+        }*/
         
-        public void ClearNodesAfterTime(double? time)
+        /*public void ClearNodesAfterTime(double? time)
         {
             pool.ClearNodesAfterTime(time);
         }
@@ -53,14 +54,14 @@ namespace MusicTogether.DancingLine.Classic
         public void ClearNodesAfterNow()
         {
             pool.ClearNodesAfterTime(time);
-        }
+        }*/
         
-        public void Move()
+        /*public void Move()
         {
             var currentMotion = pool.CurrentMotionState;//UpdatePool(time);
             lineHeadTransform.position = currentMotion.WorldSpacePosition;
             lineHeadTransform.rotation = currentMotion.WorldSpaceRotation;
-        }
+        }*/
         
         public void UpdatePosition(MotionState motionState)
         {

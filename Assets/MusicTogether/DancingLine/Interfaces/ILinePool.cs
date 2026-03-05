@@ -10,6 +10,7 @@ namespace MusicTogether.DancingLine.Interfaces
     /// </summary>
     public interface ILinePool : ILevelUnion
     {
+        double BeginTime { get; }
         MotionState CurrentMotionState { get; }
         IDirection CurrentDirection { get; }
         int CurrentNodeIndex { get; }
