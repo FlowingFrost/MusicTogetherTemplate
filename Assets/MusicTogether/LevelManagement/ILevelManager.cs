@@ -31,7 +31,7 @@ namespace MusicTogether.LevelManagement
         // ILevelManager LevelManager { get; }
         public void AwakeUnion();
         public void StartUnion(double startTime = 0d);
-        public void UpdateUnion();
+        public void UpdateUnion(double currentTime);
     }
     
     [Serializable]

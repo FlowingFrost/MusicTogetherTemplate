@@ -26,6 +26,10 @@ namespace MusicTogether.DancingLine.Interfaces
         
         public Vector3 ObjectPosToWorld(Vector3 objPos) => ParentPosToWorld(ObjectVecToParent(objPos) + ParentSpacePosition);
         public Vector3 ParentPosToWorld(Vector3 parentPos) => ParentTransform.TransformPoint(parentPos);
+        
+        public Quaternion WorldRotToParent(Quaternion worldRot) => Quaternion.Inverse(ParentTransform.rotation) * worldRot;
+        public Quaternion ParentRotToWorld(Quaternion parentRot) => ParentTransform.rotation * parentRot;
+        
     }
     
     public record PhysicsState

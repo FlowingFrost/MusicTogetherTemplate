@@ -179,7 +179,6 @@ MonoBehaviour:
     ReferencedUnityObjects:
     - {fileID: 1718498977}
     - {fileID: 1488198025}
-    - {fileID: 743484158}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -191,9 +190,6 @@ MonoBehaviour:
     - Name: pool
       Entry: 10
       Data: 1
-    - Name: controller
-      Entry: 10
-      Data: 2
   lineHeadTransform: {fileID: 1419169137}
   debugText: {fileID: 154201598}
 --- !u!1 &133225789
@@ -648,7 +644,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: '[Paused] UpdatePosition: Pos=(0.00, -22.50, -60.00), Rot=(0.00, 0.00,
+    0.00) at time 0
+
+    [Paused] UpdatePosition: Pos=(0.00, -22.50, -60.00), Rot=(0.00,
+    0.00, 0.00) at time 0
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1313,7 +1315,7 @@ MonoBehaviour:
   beginTime: 5
   beginPoint: {x: 0, y: 0, z: 0}
   firstNodeMotionType: 0
-  beginVelocity: {x: 0, y: -5, z: 0}
+  beginVelocity: {x: 0, y: -20, z: 0}
   gravity: {x: 0, y: -9.8, z: 0}
   debugText: {fileID: 1332642942}
 --- !u!1 &394713669
@@ -2225,7 +2227,6 @@ GameObject:
   - component: {fileID: 743484153}
   - component: {fileID: 743484152}
   - component: {fileID: 743484156}
-  - component: {fileID: 743484158}
   m_Layer: 2
   m_Name: LineHead
   m_TagString: Untagged
@@ -2312,8 +2313,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 743484151}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -22.5, z: -60}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2342,19 +2343,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   debug: 1
---- !u!114 &743484158
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 743484151}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41ccd5808ef543d187eb815a2797bd74, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  debugText: {fileID: 1579444706}
 --- !u!1 &788105208
 GameObject:
   m_ObjectHideFlags: 0
@@ -2508,7 +2496,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7860bf8575942098576f96d61cc711b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 1419169137}
+  target: {fileID: 743484155}
 --- !u!1 &936070550
 GameObject:
   m_ObjectHideFlags: 0
@@ -2795,7 +2783,6 @@ MonoBehaviour:
     ReferencedUnityObjects:
     - {fileID: 1718498977}
     - {fileID: 345491662}
-    - {fileID: 743484158}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -2807,9 +2794,6 @@ MonoBehaviour:
     - Name: pool
       Entry: 10
       Data: 1
-    - Name: controller
-      Entry: 10
-      Data: 2
   lineHeadTransform: {fileID: 743484155}
   debugText: {fileID: 154201598}
 --- !u!1 &1020036446
@@ -3729,7 +3713,14 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: 'Pool initialized at time 5 with direction 0
+
+    Pool initialized at time
+    5 with direction 0
+
+    Pool initialized at time 5 with direction 0
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5263,6 +5254,7 @@ GameObject:
   - component: {fileID: 1718498979}
   - component: {fileID: 1718498978}
   - component: {fileID: 1718498977}
+  - component: {fileID: 1718498980}
   m_Layer: 0
   m_Name: LevelHolder
   m_TagString: Untagged
@@ -5310,15 +5302,19 @@ PlayableDirector:
   m_SceneBindings:
   - key: {fileID: 3675080402201327130, guid: 901e66057e134ee40aa811bea1a50b2a, type: 2}
     value: {fileID: 0}
-  - key: {fileID: -1957767736756730305, guid: 901e66057e134ee40aa811bea1a50b2a, type: 2}
+  - key: {fileID: 0}
     value: {fileID: 0}
   - key: {fileID: 890148208770069072, guid: 901e66057e134ee40aa811bea1a50b2a, type: 2}
     value: {fileID: 724224061}
+  - key: {fileID: -5106607862109434452, guid: 901e66057e134ee40aa811bea1a50b2a, type: 2}
+    value: {fileID: 1017440800}
   m_ExposedReferences:
     m_References:
-    - d70f4337732f5174982bb4710299cf3b: {fileID: 94550802}
+    - d70f4337732f5174982bb4710299cf3b: {fileID: 345491662}
+    - 539ac51ccf444054e80346614b50a1b7: {fileID: 345491662}
     - 3092d20001065df408ec7a830002d285: {fileID: 1017440802}
     - 99f7c44d02a0dcd4eb24e3c82d427626: {fileID: 0}
+    - 3978272b2a078d4408bbc5abe77e2047: {fileID: 1017440802}
     - df1e09dbecb9d0b4787a86f41739b260: {fileID: 0}
 --- !u!4 &1718498979
 Transform:
@@ -5338,6 +5334,45 @@ Transform:
   - {fileID: 94550801}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1718498980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1718498976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41ccd5808ef543d187eb815a2797bd74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects:
+    - {fileID: 1017440802}
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: lineComponents
+      Entry: 7
+      Data: 0|System.Collections.Generic.List`1[[MusicTogether.DancingLine.Interfaces.ILineComponent,
+        Assembly-CSharp]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  debugText: {fileID: 1579444706}
 --- !u!1 &1724308779
 GameObject:
   m_ObjectHideFlags: 0

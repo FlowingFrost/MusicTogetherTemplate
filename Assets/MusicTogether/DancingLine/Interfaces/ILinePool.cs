@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MusicTogether.LevelManagement;
 using UnityEngine;
 
 namespace MusicTogether.DancingLine.Interfaces
@@ -7,8 +8,9 @@ namespace MusicTogether.DancingLine.Interfaces
     /// 线条池接口
     /// 管理所有节点并计算当前位置
     /// </summary>
-    public interface ILinePool
+    public interface ILinePool : ILevelUnion
     {
+        MotionState CurrentMotionState { get; }
         IDirection CurrentDirection { get; }
         int CurrentNodeIndex { get; }
         ILineNode CurrentNode { get; }

@@ -30,6 +30,7 @@ namespace MusicTogether.DancingLine.Classic
         internal Transform tailHolder => transform;
         
         //运行信息
+        internal MotionState currentMotionState;
         internal int currentNodeIndex;
         internal ILineNode currentNode => currentNodeIndex >= 0 ? lineNodes[currentNodeIndex] : preNode;
         internal bool isEmpty => lineNodes.Count == 0;
@@ -40,6 +41,7 @@ namespace MusicTogether.DancingLine.Classic
         internal readonly List<ILineNode> pendingNodes = new List<ILineNode>();
         
         //接口
+        public MotionState CurrentMotionState => currentMotionState;
         public IDirection CurrentDirection => currentNode.Direction;
         public int CurrentNodeIndex => currentNodeIndex;
         public ILineNode CurrentNode => currentNode;
@@ -240,6 +242,7 @@ namespace MusicTogether.DancingLine.Classic
             debugText.text = debugInfo;
             
             //return currentNode.UpdatePosition(time);
+            currentMotionState = currentMotion;
             return currentMotion;
         }
         
@@ -273,9 +276,15 @@ namespace MusicTogether.DancingLine.Classic
         }
 
 
-        public void Awake()
+        public void AwakeUnion()
         {
             Init();
+        }
+        public void StartUnion(double startTime = 0d) { }
+
+        public void UpdateUnion(double currentTime)
+        {
+            UpdatePool(currentTime);
         }
     }
 }

@@ -29,19 +29,19 @@ namespace MusicTogether.LevelManagement.Timeline
             {
                 case UnionUpdateMode.PlayMode:
                     if (Application.isPlaying)
-                        Update(info);
+                        Update(info, playable.GetTime());
                     break;
                 case UnionUpdateMode.EditorMode:
                     if (!Application.isPlaying)
-                        Update(info);
+                        Update(info, playable.GetTime());
                     break;
                 case UnionUpdateMode.Both:
-                    Update(info);
+                    Update(info, playable.GetTime());
                     break;
             }
         }
         
-        void Update(FrameData info)
+        void Update(FrameData info, double currentTime = -1d)
         {
             //Debug.Log($"LevelUnionBehaviour ProcessFrame - Mode: {Mode}, IsPlaying: {Application.isPlaying}");
             if (union == null) return;
@@ -49,10 +49,9 @@ namespace MusicTogether.LevelManagement.Timeline
             {
                 union.StartUnion(clipStart);
                 isInitialized = true;
-                return;
             }
             //Debug.Log("LevelUnionBehaviour UpdateUnion called");
-            union.UpdateUnion();
+            union.UpdateUnion(currentTime);
         }
     }
 }

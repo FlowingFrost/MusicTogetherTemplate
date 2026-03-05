@@ -13,7 +13,7 @@ namespace MusicTogether.DancingLine.Classic
         //绑定信息
         [SerializeField]protected ILevelManager levelManager;
         [SerializeField]protected ILinePool pool;
-        [SerializeField]protected ILineController controller;
+        //[SerializeField]protected ILineController controller;
         [SerializeField]protected Transform lineHeadTransform;
 
         //临时数据
@@ -57,13 +57,29 @@ namespace MusicTogether.DancingLine.Classic
         
         public void Move()
         {
-            var currentMotion = pool.UpdatePool(time);
+            var currentMotion = pool.CurrentMotionState;//UpdatePool(time);
             lineHeadTransform.position = currentMotion.WorldSpacePosition;
             lineHeadTransform.rotation = currentMotion.WorldSpaceRotation;
         }
         
+        public void UpdatePosition(MotionState motionState)
+        {
+            if (motionState == null)
+            {
+                debugInfo += $"[{LevelState}] UpdatePosition: Received null MotionState at time {time}\n";
+                debugText.text = debugInfo;
+                return;
+            }
+            
+            lineHeadTransform.position = motionState.WorldSpacePosition;
+            lineHeadTransform.rotation = motionState.WorldSpaceRotation;
+            
+            debugInfo += $"[{LevelState}] UpdatePosition: Pos={motionState.ParentSpacePosition}, Rot={motionState.ParentSpaceRotation.eulerAngles} at time {time}\n";
+            debugText.text = debugInfo;
+        }
+        
         //生命周期
-        public virtual void AwakeUnion()
+        /*public virtual void AwakeUnion()
         {
             // 先取消订阅，防止重复订阅
             controller.OnInputDetected -= Turn;
@@ -74,19 +90,19 @@ namespace MusicTogether.DancingLine.Classic
         public void StartUnion(double startTime = 0d)
         {
             cachedBeginTime = startTime;
-            /*var currentMotion = pool.Init();
-            transform.localPosition = currentMotion.Position;
-            lineHeadTransform.localRotation = currentMotion.Rotation;*/
+            //var currentMotion = pool.Init();
+            //transform.localPosition = currentMotion.Position;
+            //lineHeadTransform.localRotation = currentMotion.Rotation;
         }
 
-        public virtual void UpdateUnion()
+        public virtual void UpdateUnion(double currentTime)
         {
-            //Move();
-        }
+            Move();
+        }*/
 
         private void Update()
         {
-            Move();
+            //Move();
         }
     }
 }
