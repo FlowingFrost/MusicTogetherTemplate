@@ -1,0 +1,31 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/MusicTogether/MusicSampling/Editor/MusicSamplingWindow.uss?fileID=7433441132597879392&amp;guid=07a23f2c66a603a45a7e82cc64ff9bbc&amp;type=3#MusicSamplingWindow" />
+    <ui:VisualElement name="root" class="root">
+        <!-- 控制面板 -->
+        <ui:VisualElement name="control-panel" class="control-panel">
+            <uie:ObjectField name="data-field" class="data-field" label="Sampling Data" />
+            <ui:VisualElement name="buttons" class="button-group">
+                <ui:Button name="play-button" class="play-button" text="▶ Play" />
+                <ui:Button name="stop-button" class="stop-button" text="■ Stop" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- 时间轴区域 -->
+        <ui:VisualElement name="timeline-area" class="timeline-area">
+            <ui:VisualElement name="info-row" class="info-row">
+                <ui:Label name="time-label" class="time-label" text="00:00.000 / 00:00.000" />
+                <ui:Label name="bpm-label" class="bpm-label" text="BPM: --" />
+                <ui:Label name="note-index-label" class="note-index-label" text="Note: --" />
+            </ui:VisualElement>
+            <ui:Slider name="timeline-slider" class="timeline-slider" low-value="0" high-value="100" />
+        </ui:VisualElement>
+        
+        <!-- 波形显示区域 -->
+        <ui:ScrollView name="waveform-container" class="waveform-container" mode="Horizontal">
+            <ui:Label name="hint-label" class="hint-label" text="请选择 AudioSamplingData 资源文件" />
+        </ui:ScrollView>
+        
+        <!-- 快速标记按钮 -->
+        <ui:Button name="mark-current-button" class="mark-current-button" text="标记当前音符 (Space)" />
+    </ui:VisualElement>
+</ui:UXML>

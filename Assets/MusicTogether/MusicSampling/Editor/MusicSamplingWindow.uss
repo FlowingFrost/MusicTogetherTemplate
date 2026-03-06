@@ -1,0 +1,209 @@
+.root {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.control-panel {
+    flex-direction: row;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgb(51, 51, 51);
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.data-field {
+    flex-grow: 1;
+    margin-right: 10px;
+    flex-shrink: 1;
+}
+
+.button-group {
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.play-button {
+    width: 80px;
+    margin-right: 5px;
+}
+
+.stop-button {
+    width: 80px;
+}
+
+.timeline-area {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgb(64, 64, 64);
+}
+
+.info-row {
+    flex-direction: row;
+    margin-bottom: 5px;
+    align-items: center;
+}
+
+.time-label {
+    flex-grow: 1;
+    -unity-font-style: bold;
+    font-size: 12px;
+}
+
+.bpm-label {
+    margin-right: 20px;
+    font-size: 11px;
+    color: rgb(180, 180, 180);
+}
+
+.note-index-label {
+    font-size: 11px;
+    color: rgb(180, 180, 180);
+}
+
+.timeline-slider {
+    flex-grow: 1;
+    margin-top: 5px;
+}
+
+.timeline-background {
+    background-color: rgb(64, 64, 64);
+}
+
+.waveform-container {
+    flex-grow: 1;
+    background-color: rgb(38, 38, 38);
+}
+
+.waveform-preview {
+    flex-grow: 1;
+    background-color: rgb(38, 38, 38);
+}
+
+.hint-label {
+    align-self: center;
+    -unity-text-align: middle-center;
+    font-size: 16px;
+    color: rgb(128, 128, 128);
+    flex-grow: 1;
+    margin: auto;
+}
+
+.playhead {
+    position: absolute;
+    width: 2px;
+    background-color: rgb(255, 0, 0);
+    height: 100%;
+    left: 0;
+}
+
+.waveform-element {
+    flex-direction: row;
+    height: 300px;
+    min-height: 300px;
+}
+
+.bar-container {
+    flex-direction: column;
+    border-left-width: 3px;
+    border-left-color: rgb(200, 200, 200);
+    position: relative;
+}
+
+.bar-marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 100%;
+    background-color: rgba(200, 200, 200, 0.1);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(200, 200, 200, 0.3);
+}
+
+.bar-label {
+    font-size: 11px;
+    color: rgb(200, 200, 200);
+    -unity-font-style: bold;
+    padding-left: 5px;
+    padding-top: 2px;
+    -unity-text-align: upper-left;
+}
+
+.beats-container {
+    flex-direction: row;
+    padding-top: 20px;
+    flex-grow: 1;
+}
+
+.beat-container {
+    flex-direction: row;
+    border-left-width: 1px;
+    border-left-color: rgba(128, 128, 128, 0.5);
+}
+
+.note-element {
+    border-right-width: 1px;
+    border-right-color: rgb(51, 51, 51);
+    height: 100%;
+    width: 40px;
+}
+
+.note-normal {
+    background-color: rgb(77, 77, 77);
+}
+
+.note-marked {
+    background-color: rgb(51, 153, 255);
+}
+
+.note-hover {
+    opacity: 0.8;
+}
+
+.note-current {
+    background-color: rgb(255, 204, 0);
+    border-left-width: 2px;
+    border-left-color: rgb(255, 255, 0);
+    border-right-width: 2px;
+    border-right-color: rgb(255, 255, 0);
+}
+
+.waveform-color {
+    color: rgb(153, 204, 255);
+}
+
+.beat-separator {
+    border-left-width: 1px;
+    border-left-color: rgba(128, 128, 128, 0.5);
+}
+
+.mark-current-button {
+    height: 50px;
+    font-size: 16px;
+    -unity-font-style: bold;
+    background-color: rgb(64, 128, 255);
+    color: white;
+    border-width: 0;
+    margin: 10px;
+    border-radius: 5px;
+}
+
+.mark-current-button:hover {
+    background-color: rgb(80, 144, 255);
+}
+
+.mark-current-button:active {
+    background-color: rgb(48, 112, 240);
+}
+
+.mark-current-button:disabled {
+    background-color: rgb(64, 64, 64);
+    color: rgb(128, 128, 128);
+}
