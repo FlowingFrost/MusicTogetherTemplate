@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MusicTogether.DancingBall.Interfaces
+namespace MusicTogether.DancingBallOld.Interfaces
 {
     public class MovingData
     {
@@ -32,7 +32,7 @@ namespace MusicTogether.DancingBall.Interfaces
         {
             if (currentTime <= beginTime) return beginPosition;
             if (currentTime >= endTime) return endPosition;
-            
+            return Vector3.zero;
         }
     }
     public interface IBallPlayer

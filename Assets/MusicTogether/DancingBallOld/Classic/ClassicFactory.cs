@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using MusicTogether.DancingBall.Interfaces;
+using MusicTogether.DancingBallOld.Interfaces;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace MusicTogether.DancingBall.Classic
+namespace MusicTogether.DancingBallOld.Classic
 {
     public class ClassicFactory : MonoBehaviour, IFactory
     {

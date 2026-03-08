@@ -1,4 +1,4 @@
-namespace MusicTogether.DancingBall.Interfaces
+namespace MusicTogether.DancingBallOld.Interfaces
 {
     public interface IRoadMakerData
     {
