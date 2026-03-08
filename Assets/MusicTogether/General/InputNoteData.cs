@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace MusicTogether.General
 {
@@ -152,6 +155,14 @@ namespace MusicTogether.General
     [CreateAssetMenu(menuName = "MusicTogether/NoteData", fileName = "NewNoteData")]
     public class InputNoteData : ScriptableObject
     {
+        [Header("采音数据转换")]
+        [Tooltip("从AudioSamplingData转换音符数据")]
+        public MusicTogether.MusicSampling.AudioSamplingData audioSamplingData;
+        
+        [Tooltip("音符类型(默认16分音符)")]
+        public NoteType targetNoteType = NoteType.Semi;
+        
+        [Header("音符数据")]
         [Tooltip("多个音符列表,可以包含不同BPM的段落")]
         public List<InputNotes> noteLists = new List<InputNotes>();
         
@@ -290,7 +301,96 @@ namespace MusicTogether.General
             MarkDirty();
         }
         
+        /// <summary>
+        /// 从AudioSamplingData转换音符数据
+        /// </summary>
+        public void ConvertFromAudioSamplingData()
+        {
+            if (audioSamplingData == null)
+            {
+                Debug.LogError($"[InputNoteData] {name}: AudioSamplingData未设置!");
+                return;
+            }
+            
+            if (audioSamplingData.markedNoteIndices == null || audioSamplingData.markedNoteIndices.Count == 0)
+            {
+                Debug.LogWarning($"[InputNoteData] {name}: AudioSamplingData中没有标记的音符!");
+                return;
+            }
+            
+            // 清空现有数据
+            noteLists.Clear();
+            
+            // 创建新的音符段落
+            InputNotes newNotes = new InputNotes
+            {
+                bpm = audioSamplingData.bpm,
+                noteType = targetNoteType,
+                notes = new List<int>()
+            };
+            
+            // AudioSamplingData使用的是beatDivision细分的音符索引
+            // 需要根据beatDivision和目标NoteType进行转换
+            
+            // 计算转换比例
+            // AudioSamplingData的beatDivision表示每拍有多少个音符
+            // 例如：beatDivision=4表示16分音符，beatDivision=2表示8分音符
+            
+            // 目标NoteType对应的每拍音符数
+            int targetNotesPerBeat = GetNotesPerBeatForNoteType(targetNoteType);
+            
+            // 转换比例 = 目标音符数 / 源音符数
+            float conversionRatio = (float)targetNotesPerBeat / audioSamplingData.beatDivision;
+            
+            // 转换每个标记的音符索引
+            foreach (int sourceIndex in audioSamplingData.markedNoteIndices)
+            {
+                int targetIndex = Mathf.RoundToInt(sourceIndex * conversionRatio);
+                newNotes.AddNote(targetIndex);
+            }
+            
+            // 添加到列表
+            noteLists.Add(newNotes);
+            MarkDirty();
+            
+            Debug.Log($"[InputNoteData] 成功从 {audioSamplingData.name} 转换音符数据!");
+            Debug.Log($"BPM: {newNotes.bpm}, 音符类型: {newNotes.noteType}, 音符数量: {newNotes.NoteCount}");
+            
 #if UNITY_EDITOR
+            EditorUtility.SetDirty(this);
+#endif
+        }
+        
+        /// <summary>
+        /// 获取指定音符类型每拍的音符数
+        /// </summary>
+        private int GetNotesPerBeatForNoteType(NoteType noteType)
+        {
+            switch (noteType)
+            {
+                case NoteType.Quarter:
+                    return 1;  // 四分音符：每拍1个
+                case NoteType.Eighth:
+                    return 2;  // 八分音符：每拍2个
+                case NoteType.Semi:
+                    return 4;  // 十六分音符：每拍4个
+                case NoteType.ThirtySecond:
+                    return 8;  // 三十二分音符：每拍8个
+                default:
+                    return 4;
+            }
+        }
+        
+#if UNITY_EDITOR
+        /// <summary>
+        /// 从AudioSamplingData转换（右键菜单）
+        /// </summary>
+        [ContextMenu("Convert From Audio Sampling Data")]
+        private void ConvertFromAudioSamplingDataMenu()
+        {
+            ConvertFromAudioSamplingData();
+        }
+        
         /// <summary>
         /// 调试信息
         /// </summary>
