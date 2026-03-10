@@ -330,22 +330,13 @@ namespace MusicTogether.General
             };
             
             // AudioSamplingData使用的是beatDivision细分的音符索引
-            // 需要根据beatDivision和目标NoteType进行转换
-            
-            // 计算转换比例
-            // AudioSamplingData的beatDivision表示每拍有多少个音符
-            // 例如：beatDivision=4表示16分音符，beatDivision=2表示8分音符
-            
-            // 目标NoteType对应的每拍音符数
-            int targetNotesPerBeat = GetNotesPerBeatForNoteType(targetNoteType);
-            
-            // 转换比例 = 目标音符数 / 源音符数
-            float conversionRatio = (float)targetNotesPerBeat / audioSamplingData.beatDivision;
+            // 需要根据beatDivision推导出源NoteType，再转换为目标NoteType的索引
+            NoteType sourceNoteType = GetNoteTypeForBeatDivision(audioSamplingData.beatDivision);
             
             // 转换每个标记的音符索引
             foreach (int sourceIndex in audioSamplingData.markedNoteIndices)
             {
-                int targetIndex = Mathf.RoundToInt(sourceIndex * conversionRatio);
+                int targetIndex = NoteConverter.ConvertNoteIndex(sourceIndex, sourceNoteType, targetNoteType);
                 newNotes.AddNote(targetIndex);
             }
             
@@ -362,22 +353,22 @@ namespace MusicTogether.General
         }
         
         /// <summary>
-        /// 获取指定音符类型每拍的音符数
+        /// 根据beatDivision（每拍音符数）推导对应的NoteType
         /// </summary>
-        private int GetNotesPerBeatForNoteType(NoteType noteType)
+        private NoteType GetNoteTypeForBeatDivision(int beatDivision)
         {
-            switch (noteType)
+            switch (beatDivision)
             {
-                case NoteType.Quarter:
-                    return 1;  // 四分音符：每拍1个
-                case NoteType.Eighth:
-                    return 2;  // 八分音符：每拍2个
-                case NoteType.Semi:
-                    return 4;  // 十六分音符：每拍4个
-                case NoteType.ThirtySecond:
-                    return 8;  // 三十二分音符：每拍8个
+                case 1:  return NoteType.Quarter;       // 每拍1个 = 四分音符
+                case 2:  return NoteType.Eighth;        // 每拍2个 = 八分音符
+                case 4:  return NoteType.Semi;          // 每拍4个 = 十六分音符
+                case 8:  return NoteType.ThirtySecond;  // 每拍8个 = 三十二分音符
                 default:
-                    return 4;
+                    // 就近匹配
+                    if (beatDivision <= 1)  return NoteType.Quarter;
+                    if (beatDivision <= 3)  return NoteType.Eighth;
+                    if (beatDivision <= 6)  return NoteType.Semi;
+                    return NoteType.ThirtySecond;
             }
         }
         

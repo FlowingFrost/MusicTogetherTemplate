@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56779dc5f0c645a29713060425f41642, type: 3}
+  m_Name: NewMapPlacementData
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: roadDataList
+      Entry: 7
+      Data: 0|System.Collections.Generic.List`1[[MusicTogether.DancingBall.RoadData,
+        Assembly-CSharp]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 7
+      Data: 1|MusicTogether.DancingBall.RoadData, Assembly-CSharp
+    - Name: index
+      Entry: 3
+      Data: 0
+    - Name: beginBlockIndex
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  inputNoteData: {fileID: 11400000, guid: d06f88f96aee3794685c2cb1c698a10b, type: 2}
+  totalBlockCount: 100
+  blockDataList:
+  - blockGlobalIndex: 0
+    turnType: 0
+    displacementType: 0
+  - blockGlobalIndex: 4
+    turnType: 2
+    displacementType: 0
+  - blockGlobalIndex: 9
+    turnType: 1
+    displacementType: 0
+  - blockGlobalIndex: 14
+    turnType: 0
+    displacementType: 1
+  - blockGlobalIndex: 19
+    turnType: 0
+    displacementType: 2
+  - blockGlobalIndex: 23
+    turnType: 1
+    displacementType: 1
+  - blockGlobalIndex: 28
+    turnType: 1
+    displacementType: 0
+  - blockGlobalIndex: 37
+    turnType: 0
+    displacementType: 1
+  - blockGlobalIndex: 44
+    turnType: 0
+    displacementType: 0
+  - blockGlobalIndex: 51
+    turnType: 3
+    displacementType: 0
+  - blockGlobalIndex: 56
+    turnType: 2
+    displacementType: 0
+  - blockGlobalIndex: 60
+    turnType: 2
+    displacementType: 0
+  - blockGlobalIndex: 67
+    turnType: 0
+    displacementType: 0
+  - blockGlobalIndex: 74
+    turnType: 0
+    displacementType: 1
+  - blockGlobalIndex: 82
+    turnType: 0
+    displacementType: 0

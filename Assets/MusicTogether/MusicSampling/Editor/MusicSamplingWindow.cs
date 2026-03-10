@@ -36,9 +36,18 @@ namespace MusicTogether.MusicSampling.Editor
         private int _currentNoteIndex = -1;
         private int _highlightedNoteIndex = -1;
 
+        // 平滑滚动状态
+        private float _targetScrollX = 0f;       // 目标滚动位置（由音频时间驱动）
+        private float _currentScrollX = 0f;      // 当前插值滚动位置
+        private bool _scrollInitialized = false; // 是否已初始化滚动位置
+
         // 常量
-        private const float PLAYHEAD_UPDATE_INTERVAL = 0.03f; // 约 30fps
+        private const float PLAYHEAD_UPDATE_INTERVAL = 0.00f;
+        private const float SCROLL_SMOOTH_SPEED = 8f; // 平滑追踪速度（越大越快跟上）
         private double _lastUpdateTime = 0;
+
+        // 是否启用指数平滑滚动追踪（false = 直接跳到目标位置）
+        private bool _enableSmoothScroll = true;
 
         [MenuItem("Window/MusicTogether/Music Sampling Window")]
         public static void ShowWindow()
@@ -315,6 +324,10 @@ namespace MusicTogether.MusicSampling.Editor
                 return;
 
             _audioPlayer.Stop();
+            // 重置平滑滚动状态，让下次播放从头开始
+            _targetScrollX = 0f;
+            _currentScrollX = 0f;
+            _scrollInitialized = false;
         }
 
         /// <summary>
@@ -358,22 +371,28 @@ namespace MusicTogether.MusicSampling.Editor
                 _timelineSlider.SetValueWithoutNotify((float)time);
             }
 
-            // 更新播放头位置和滚动
+            // 更新播放头位置和滚动目标
             if (_playhead != null && _samplingData != null)
             {
                 float noteWidth = _samplingData.noteWidth;
-                int noteIndex = _samplingData.GetNoteIndexAtTime(time);
-                _playhead.style.left = noteIndex * noteWidth;
+                // 用连续浮点时间换算像素位置，避免跳格
+                float exactPixelX = (float)(time / _samplingData.SecondsPerNote) * noteWidth;
+                _playhead.style.left = exactPixelX;
 
-                // 更新高亮状态
+                // 高亮仍然用整数音符索引
+                int noteIndex = _samplingData.GetNoteIndexAtTime(time);
                 UpdateHighlightedNote(noteIndex);
 
-                // 直接更新滚动位置（播放头居中）
+                // 只写入目标值，实际滚动由 OnEditorUpdate 平滑完成
                 if (_waveformContainer != null)
                 {
-                    float targetScrollX = noteIndex * noteWidth - _waveformContainer.contentRect.width / 2;
-                    targetScrollX = Mathf.Max(0, targetScrollX);
-                    _waveformContainer.scrollOffset = new Vector2(targetScrollX, 0);
+                    float raw = exactPixelX - _waveformContainer.contentRect.width / 2;
+                    _targetScrollX = Mathf.Max(0, raw);
+                    if (!_scrollInitialized)
+                    {
+                        _currentScrollX = _targetScrollX;
+                        _scrollInitialized = true;
+                    }
                 }
             }
 
@@ -389,8 +408,28 @@ namespace MusicTogether.MusicSampling.Editor
         /// </summary>
         private void OnEditorUpdate()
         {
-            // 移除平滑滚动逻辑，改为直接跟踪
-            // 所有滚动更新都在 OnAudioTimeChanged 中处理
+            if (_waveformContainer == null || _isDraggingTimeline)
+                return;
+
+            if (_enableSmoothScroll)
+            {
+                // 指数平滑追踪：1 - e^(-k * dt)
+                float dt = (float)(EditorApplication.timeSinceStartup - _lastUpdateTime);
+                dt = Mathf.Clamp(dt, 0.001f, 0.05f);
+                _currentScrollX = Mathf.Lerp(_currentScrollX, _targetScrollX, 1f - Mathf.Exp(-SCROLL_SMOOTH_SPEED * dt));
+
+                // 只有差异超过 0.5px 才写入，避免无意义的脏帧
+                if (Mathf.Abs(_currentScrollX - _waveformContainer.scrollOffset.x) > 0.5f)
+                {
+                    _waveformContainer.scrollOffset = new Vector2(_currentScrollX, 0);
+                }
+            }
+            else
+            {
+                // 直接跳到目标位置（无平滑）
+                _currentScrollX = _targetScrollX;
+                _waveformContainer.scrollOffset = new Vector2(_currentScrollX, 0);
+            }
         }
 
         /// <summary>
