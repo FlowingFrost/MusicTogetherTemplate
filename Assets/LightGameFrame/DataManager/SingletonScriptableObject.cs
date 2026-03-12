@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEngine;
+using Sirenix.OdinInspector;
 
 namespace LightGameFrame.DataManager
 {
@@ -205,6 +206,44 @@ namespace LightGameFrame.DataManager
                 Debug.LogError($"[{TName}] 删除持久化数据失败: {e.Message}");
             }
         }
+
+        /// <summary>
+        /// Editor 中修改原始 .asset 字段时自动触发，将新值同步到运行时副本。
+        /// 仅在编辑器运行模式下、且单例已初始化、且当前对象不是副本本身时生效。
+        /// </summary>
+        protected virtual void OnValidate()
+        {
+#if UNITY_EDITOR
+            if (!_initialized || _instance == null) return;
+            if (this == _instance) return;
+
+            string json = JsonUtility.ToJson(this);
+            JsonUtility.FromJsonOverwrite(json, _instance);
+            Debug.Log($"[{TName}] Editor 修改已同步到运行时副本");
+#endif
+        }
+
+#if UNITY_EDITOR
+        [Button("同步到运行时副本", ButtonSizes.Large), PropertyOrder(-1)]
+        [InfoBox("将此 .asset 的当前值覆写到内存中的单例实例。", InfoMessageType.Info)]
+        private void SyncToRuntimeInstance()
+        {
+            if (!_initialized || _instance == null)
+            {
+                Debug.LogWarning($"[{TName}] 单例尚未初始化");
+                return;
+            }
+            if (this == _instance)
+            {
+                Debug.LogWarning($"[{TName}] 当前查看的已是运行时副本，无需同步");
+                return;
+            }
+
+            string json = JsonUtility.ToJson(this);
+            JsonUtility.FromJsonOverwrite(json, _instance);
+            Debug.Log($"[{TName}] ✅ 已同步到运行时副本");
+        }
+#endif
 
         /// <summary>
         /// 检查单例是否已初始化

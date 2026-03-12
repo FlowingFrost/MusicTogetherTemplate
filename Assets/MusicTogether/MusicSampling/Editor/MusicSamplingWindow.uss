@@ -1,5 +1,5 @@
 .root {
-    flex-direction: column;
+    flex-direction: row;
     flex-grow: 1;
 }
 
@@ -27,13 +27,9 @@
     flex-shrink: 0;
 }
 
-.play-button {
+.control-buttons {
     width: 80px;
     margin-right: 5px;
-}
-
-.stop-button {
-    width: 80px;
 }
 
 .timeline-area {
@@ -47,24 +43,16 @@
 .info-row {
     flex-direction: row;
     margin-bottom: 5px;
-    align-items: center;
+    align-items: stretch;
+    justify-content: space-around;
 }
 
-.time-label {
+.play-info-label {
     flex-grow: 1;
     -unity-font-style: bold;
     font-size: 12px;
-}
-
-.bpm-label {
-    margin-right: 20px;
-    font-size: 11px;
-    color: rgb(180, 180, 180);
-}
-
-.note-index-label {
-    font-size: 11px;
-    color: rgb(180, 180, 180);
+    justify-content: flex-start;
+    align-self: auto;
 }
 
 .timeline-slider {
@@ -104,16 +92,47 @@
 }
 
 .waveform-element {
+    flex-direction: column;
+}
+
+.track-row {
     flex-direction: row;
-    height: 300px;
-    min-height: 300px;
+    height: 150px;
+    min-height: 150px;
+    position: relative;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(80, 80, 80, 0.8);
+    background-color: rgb(38, 38, 38);
+}
+
+.track-label {
+    position: absolute;
+    left: 2px;
+    bottom: 4px;
+    font-size: 9px;
+    color: rgba(160, 160, 160, 0.4);
+    -unity-font-style: bold;
+}
+
+.segment-container {
+    position: absolute;
+    top: 0;
+    flex-direction: row;
+    height: 100%;
 }
 
 .bar-container {
     flex-direction: column;
-    border-left-width: 3px;
-    border-left-color: rgb(200, 200, 200);
     position: relative;
+}
+
+.bar-left-border {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background-color: rgb(200, 200, 200);
 }
 
 .bar-marker {
@@ -133,7 +152,7 @@
     -unity-font-style: bold;
     padding-left: 5px;
     padding-top: 2px;
-    -unity-text-align: upper-left;
+    -unity-text-align: upper-center;
 }
 
 .beats-container {
@@ -144,8 +163,16 @@
 
 .beat-container {
     flex-direction: row;
-    border-left-width: 1px;
-    border-left-color: rgba(128, 128, 128, 0.5);
+    position: relative;
+}
+
+.beat-left-border {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background-color: rgba(128, 128, 128, 0.5);
 }
 
 .note-element {
@@ -153,6 +180,21 @@
     border-right-color: rgb(51, 51, 51);
     height: 100%;
     width: 40px;
+    overflow: hidden;
+}
+
+.note-index-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    font-size: 8px;
+    color: rgba(200, 200, 200, 0.55);
+    -unity-text-align: upper-center;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 0;
+    margin: 0;
 }
 
 .note-normal {
@@ -199,6 +241,34 @@
     background-color: rgb(80, 144, 255);
 }
 
+.segment-separator {
+    width: 6px;
+    background-color: rgb(220, 160, 40);
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.segment-separator--first {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.segment-label {
+    writing-mode: vertical-lr;
+    font-size: 10px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    padding-top: 4px;
+    -unity-text-align: upper-left;
+    white-space: nowrap;
+    -unity-text-outline-color: rgb(255, 255, 255);
+    -unity-text-outline-width: 0;
+    align-self: flex-start;
+    padding-right: 0;
+    padding-left: 12px;
+}
+
 .mark-current-button:active {
     background-color: rgb(48, 112, 240);
 }
@@ -206,4 +276,39 @@
 .mark-current-button:disabled {
     background-color: rgb(64, 64, 64);
     color: rgb(128, 128, 128);
+}
+
+.segment-gap {
+    flex-shrink: 0;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0);
+    border-right-width: 1px;
+    border-right-color: rgba(100, 100, 100, 0.3);
+    border-left-width: 1px;
+    border-left-color: rgba(100, 100, 100, 0.3);
+}
+
+.main-panel {
+    flex-grow: 1;
+}
+
+.video-area {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 240px;
+    max-width: 480px;
+    background-color: rgb(20, 20, 20);
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    border-left-width: 2px;
+    border-left-color: rgb(60, 60, 60);
+}
+
+.video-display {
+    flex-grow: 1;
+}
+
+.hidden {
+    display: none;
 }

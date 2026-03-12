@@ -6,18 +6,30 @@ using System.Collections.Generic;
 namespace MusicTogether.MusicSampling.Editor
 {
     /// <summary>
-    /// 波形可视化 VisualElement
-    /// 显示音频波形和音符标记
+    /// 波形可视化 VisualElement。
+    /// 支持多 Segment，每个 Segment 可以拥有独立的 BPM、拍型与细分粒度。
+    /// 当 Segment 之间存在时间重叠时，自动分配到不同的水平轨道行（垂直堆叠）。
+    /// 每个 Segment 在轨道内使用绝对定位，水平位置与实际时间对齐。
     /// </summary>
     public class WaveformVisualElement : VisualElement
     {
         private AudioSamplingData _data;
         private float[] _audioSamples;
-        private List<NoteVisualElement> _noteElements = new List<NoteVisualElement>();
-        private List<VisualElement> _barMarkers = new List<VisualElement>();
 
-        // 事件
-        public event Action<int> OnNoteClicked;
+        // 二维存储：[segmentIndex][localNoteIndex]
+        private List<List<NoteVisualElement>> _noteElementsBySegment = new();
+
+        // 每个轨道行的 VisualElement
+        private List<VisualElement> _trackRows = new();
+
+        // 轨道分配结果：segIdx → trackIndex
+        private int[] _segmentTrackMap;
+
+        // 每条轨道当前末尾的像素 X（用于贪心分配）
+        private List<float> _trackEndPixels = new();
+
+        // 事件：(segmentIndex, localNoteIndex)
+        public event Action<int, int> OnNoteClicked;
 
         public WaveformVisualElement(AudioSamplingData data, float[] audioSamples)
         {
@@ -25,286 +37,363 @@ namespace MusicTogether.MusicSampling.Editor
             _audioSamples = audioSamples;
 
             AddToClassList("waveform-element");
-            style.flexDirection = FlexDirection.Row;
-            style.height = 300;
-            style.minHeight = 300;
+            // flex-direction: column 由 USS .waveform-element 控制
 
             BuildWaveform();
         }
 
-        /// <summary>
-        /// 构建波形显示
-        /// </summary>
+        // ── 构建 ─────────────────────────────────────────────────────────────
+
         private void BuildWaveform()
         {
             if (_data == null || _audioSamples == null || _data.audioClip == null)
                 return;
 
-            // 计算总音符数
-            int totalNotes = Mathf.CeilToInt((float)(_data.audioClip.length * _data.bpm * _data.beatDivision / 60.0));
+            _noteElementsBySegment.Clear();
+            _trackRows.Clear();
+            _trackEndPixels.Clear();
 
-            // 计算总小节数
-            int notesPerBar = _data.NotesPerBar;
-            int totalBars = Mathf.CeilToInt((float)totalNotes / notesPerBar);
+            int segCount = _data.segments?.Count ?? 0;
+            if (segCount == 0) return;
 
-            // 创建小节单元
-            for (int barIndex = 0; barIndex < totalBars; barIndex++)
+            // ── 第一步：为每个 segment 分配轨道（贪心）─────────────────────
+            _segmentTrackMap = new int[segCount];
+            for (int segIdx = 0; segIdx < segCount; segIdx++)
             {
-                var barElement = CreateBarElement(barIndex, notesPerBar);
-                Add(barElement);
+                var seg = _data.segments[segIdx];
+                float segStartPx = _data.GetSegmentPixelStartX(segIdx);
+                // 用时间终点映射像素，保证跨段 BPM/拍型不同时仍正确
+                double segEndTime = _data.GetSegmentStartTime(segIdx) + _data.GetSegmentDuration(segIdx);
+                float segEndPx   = _data.GetPixelXAtTime(segEndTime);
+
+                // 找第一个末尾 ≤ 当前段起始的轨道
+                int assignedTrack = -1;
+                for (int t = 0; t < _trackEndPixels.Count; t++)
+                {
+                    if (_trackEndPixels[t] <= segStartPx)
+                    {
+                        assignedTrack = t;
+                        break;
+                    }
+                }
+
+                if (assignedTrack == -1)
+                {
+                    // 没有空闲轨道，新建一条
+                    assignedTrack = _trackRows.Count;
+                    var trackRow = CreateTrackRow(assignedTrack);
+                    _trackRows.Add(trackRow);
+                    _trackEndPixels.Add(0f);
+                    Add(trackRow);
+                }
+
+                _segmentTrackMap[segIdx] = assignedTrack;
+                _trackEndPixels[assignedTrack] = segEndPx;
+            }
+
+            // ── 第二步：向各轨道中填充 segment 内容 ─────────────────────────
+            for (int segIdx = 0; segIdx < segCount; segIdx++)
+            {
+                var seg = _data.segments[segIdx];
+                var noteElements = new List<NoteVisualElement>();
+                _noteElementsBySegment.Add(noteElements);
+
+                int trackIdx     = _segmentTrackMap[segIdx];
+                var trackRow     = _trackRows[trackIdx];
+                float startPixel = _data.GetSegmentPixelStartX(segIdx);
+
+                // segment 容器：绝对定位到轨道内的正确水平位置
+                // position: absolute; top: 0; height: 100%; flex-direction: row 由 USS .segment-container 控制
+                var segContainer = new VisualElement();
+                segContainer.AddToClassList("segment-container");
+                segContainer.style.left = startPixel;  // 动态值，必须保留
+
+                // segment 信息头
+                segContainer.Add(CreateSegmentSeparator(segIdx, seg));
+
+                // 小节内容
+                int totalNotes = _data.GetSegmentTotalNotes(segIdx);
+                int notesPerBar = seg.NotesPerBar;
+                int totalBars   = Mathf.CeilToInt((float)totalNotes / notesPerBar);
+
+                for (int barIndex = 0; barIndex < totalBars; barIndex++)
+                {
+                    var barElement = CreateBarElement(segIdx, barIndex, seg, noteElements);
+                    segContainer.Add(barElement);
+                }
+
+                trackRow.Add(segContainer);
             }
         }
 
-        /// <summary>
-        /// 创建小节单元
-        /// </summary>
-        private VisualElement CreateBarElement(int barIndex, int notesPerBar)
+        /// <summary>创建一条轨道行</summary>
+        private VisualElement CreateTrackRow(int trackIdx)
+        {
+            var row = new VisualElement();
+            row.AddToClassList("track-row");
+            // position: relative 和 flex-direction: row 由 USS .track-row 控制
+
+            // 轨道序号标签（左侧固定）
+            var trackLabel = new Label($"Track {trackIdx + 1}");
+            trackLabel.AddToClassList("track-label");
+            row.Add(trackLabel);
+
+            return row;
+        }
+
+        /// <summary>创建段落信息头（含段落序号、BPM、拍型），绝对定位叠在 segment 左侧，不占 flex 空间</summary>
+        private VisualElement CreateSegmentSeparator(int segIdx, SamplingSegment seg)
+        {
+            var sep = new VisualElement();
+            sep.AddToClassList("segment-separator");
+
+            // position: absolute; left: 0; top: 0; height: 100% 由 USS .segment-separator 控制
+
+            var label = new Label($"[{segIdx + 1}] {seg.name}  {seg.bpm} BPM  {seg.beatsPerBar}/{seg.beatDivision}");
+            label.AddToClassList("segment-label");
+            sep.Add(label);
+
+            return sep;
+        }
+
+        private VisualElement CreateBarElement(int segIdx, int barIndex,
+            SamplingSegment seg, List<NoteVisualElement> noteElements)
         {
             var barContainer = new VisualElement();
             barContainer.AddToClassList("bar-container");
 
-            // 添加小节标记（左边框 + 小节号）
+            // 左侧竖线：absolute 叠加，不占 flex 宽度，避免推移后续小节导致跨 segment 错位
+            var leftBorder = new VisualElement();
+            leftBorder.AddToClassList("bar-left-border");
+            barContainer.Add(leftBorder);
+
+            // 小节顶部标记行
             var barMarker = new VisualElement();
             barMarker.AddToClassList("bar-marker");
-            
-            var barLabel = new Label($"{barIndex + 1}");
+            var barLabel = new Label($"{seg.startBarIndex + barIndex + 1}");
             barLabel.AddToClassList("bar-label");
             barMarker.Add(barLabel);
-            
             barContainer.Add(barMarker);
-            _barMarkers.Add(barMarker);
 
-            // 创建拍容器
+            // 拍容器行
             var beatsContainer = new VisualElement();
             beatsContainer.AddToClassList("beats-container");
 
-            int notesPerBeat = _data.beatDivision;
-            int beatsPerBar = _data.beatsPerBar;
-
-            // 创建该小节下的所有拍
-            for (int beatIndex = 0; beatIndex < beatsPerBar; beatIndex++)
+            for (int beatIndex = 0; beatIndex < seg.beatsPerBar; beatIndex++)
             {
-                var beatElement = CreateBeatElement(barIndex, beatIndex, notesPerBeat);
+                var beatElement = CreateBeatElement(segIdx, barIndex, beatIndex, seg, noteElements);
                 beatsContainer.Add(beatElement);
             }
 
             barContainer.Add(beatsContainer);
-
             return barContainer;
         }
 
-        /// <summary>
-        /// 创建节拍单元
-        /// </summary>
-        private VisualElement CreateBeatElement(int barIndex, int beatInBar, int notesPerBeat)
+        private VisualElement CreateBeatElement(int segIdx, int barIndex, int beatInBar,
+            SamplingSegment seg, List<NoteVisualElement> noteElements)
         {
             var beatContainer = new VisualElement();
             beatContainer.AddToClassList("beat-container");
 
-            // 创建该节拍下的所有音符
-            for (int i = 0; i < notesPerBeat; i++)
+            // 左侧竖线：absolute 叠加，不占 flex 宽度
+            var leftBorder = new VisualElement();
+            leftBorder.AddToClassList("beat-left-border");
+            beatContainer.Add(leftBorder);
+
+            for (int i = 0; i < seg.beatDivision; i++)
             {
-                int noteIndex = barIndex * _data.NotesPerBar + beatInBar * notesPerBeat + i;
-                var noteElement = CreateNoteElement(noteIndex);
+                int localNoteIndex = barIndex * seg.NotesPerBar + beatInBar * seg.beatDivision + i;
+                var noteElement = CreateNoteElement(segIdx, localNoteIndex, seg);
                 beatContainer.Add(noteElement);
-                _noteElements.Add(noteElement);
+                noteElements.Add(noteElement);
             }
 
             return beatContainer;
         }
 
-        /// <summary>
-        /// 创建音符元素
-        /// </summary>
-        private NoteVisualElement CreateNoteElement(int noteIndex)
+        private NoteVisualElement CreateNoteElement(int segIdx, int localNoteIndex, SamplingSegment seg)
         {
-            var noteElement = new NoteVisualElement(_data, _audioSamples, noteIndex);
-            noteElement.OnClicked += () => OnNoteClicked?.Invoke(noteIndex);
+            var noteElement = new NoteVisualElement(_data, _audioSamples, segIdx, localNoteIndex, seg);
+            noteElement.OnClicked += () => OnNoteClicked?.Invoke(segIdx, localNoteIndex);
             return noteElement;
         }
 
-        /// <summary>
-        /// 刷新指定音符的标记状态（性能优化：只更新单个音符）
-        /// </summary>
-        public void RefreshNoteMarkedState(int noteIndex)
+        // ── 外部接口 ──────────────────────────────────────────────────────────
+
+        /// <summary>返回所有轨道的总高度（用于播放头高度设置）</summary>
+        public float TotalHeight => resolvedStyle.height;
+
+        /// <summary>刷新指定音符的标记状态（性能优化：只更新单个音符）</summary>
+        public void RefreshNoteMarkedState(int segIdx, int localNoteIndex)
         {
-            if (noteIndex >= 0 && noteIndex < _noteElements.Count)
-            {
-                var noteElement = _noteElements[noteIndex];
-                bool isMarked = _data.IsNoteMarked(noteIndex);
-                noteElement.UpdateMarkedState(isMarked);
-            }
+            var noteElement = GetNoteElement(segIdx, localNoteIndex);
+            if (noteElement == null) return;
+            bool isMarked = _data.IsNoteMarked(segIdx, localNoteIndex);
+            noteElement.UpdateMarkedState(isMarked);
         }
 
-        /// <summary>
-        /// 设置音符高亮状态（当前播放位置）
-        /// </summary>
-        public void SetNoteHighlight(int noteIndex, bool isHighlighted)
+        /// <summary>设置音符高亮状态（当前播放位置）</summary>
+        public void SetNoteHighlight(int segIdx, int localNoteIndex, bool isHighlighted)
         {
-            if (noteIndex >= 0 && noteIndex < _noteElements.Count)
-            {
-                var noteElement = _noteElements[noteIndex];
-                noteElement.SetHighlight(isHighlighted);
-            }
+            GetNoteElement(segIdx, localNoteIndex)?.SetHighlight(isHighlighted);
+        }
+
+        // ── 向后兼容（单段）──────────────────────────────────────────────────
+
+        /// <summary>向后兼容：操作 Segment 0</summary>
+        public void RefreshNoteMarkedState(int noteIndex)
+            => RefreshNoteMarkedState(0, noteIndex);
+
+        /// <summary>向后兼容：操作 Segment 0</summary>
+        public void SetNoteHighlight(int noteIndex, bool isHighlighted)
+            => SetNoteHighlight(0, noteIndex, isHighlighted);
+
+        // ── 私有工具 ──────────────────────────────────────────────────────────
+
+        private NoteVisualElement GetNoteElement(int segIdx, int localNoteIndex)
+        {
+            if (_noteElementsBySegment == null ||
+                segIdx < 0 || segIdx >= _noteElementsBySegment.Count)
+                return null;
+
+            var list = _noteElementsBySegment[segIdx];
+            if (localNoteIndex < 0 || localNoteIndex >= list.Count)
+                return null;
+
+            return list[localNoteIndex];
         }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+
     /// <summary>
-    /// 单个音符的可视化元素
+    /// 单个音符的可视化元素。
+    /// 持有所属 Segment 的引用，用于正确计算波形采样范围。
     /// </summary>
     public class NoteVisualElement : VisualElement
     {
         private AudioSamplingData _data;
         private float[] _audioSamples;
-        private int _noteIndex;
+        private int _segIdx;
+        private int _localNoteIndex;
+        private SamplingSegment _seg;
         private bool _isMarked;
         private bool _isHighlighted;
 
-        // 颜色定义
-        private static readonly Color NormalColor = new Color(0.3f, 0.3f, 0.3f, 1f);
-        private static readonly Color MarkedColor = new Color(0.2f, 0.6f, 1f, 1f);
         private static readonly Color WaveformColor = new Color(0.6f, 0.8f, 1f, 1f);
 
         public event Action OnClicked;
 
-        public NoteVisualElement(AudioSamplingData data, float[] audioSamples, int noteIndex)
+        public NoteVisualElement(AudioSamplingData data, float[] audioSamples,
+            int segIdx, int localNoteIndex, SamplingSegment seg)
         {
             _data = data;
             _audioSamples = audioSamples;
-            _noteIndex = noteIndex;
-            _isMarked = data.IsNoteMarked(noteIndex);
+            _segIdx = segIdx;
+            _localNoteIndex = localNoteIndex;
+            _seg = seg;
+            _isMarked = data.IsNoteMarked(segIdx, localNoteIndex);
 
-            // 设置宽度（动态值，无法在 USS 中设置）
             style.width = data.noteWidth;
-            
-            // 使用样式类
             AddToClassList("note-element");
             AddToClassList(_isMarked ? "note-marked" : "note-normal");
 
-            // 添加点击事件
+            // ── 顶端全局序号标签 ──────────────────────────────────────────────
+            int globalIdx = data.GetGlobalNoteIndex(segIdx, localNoteIndex);
+            var indexLabel = new Label(globalIdx.ToString());
+            indexLabel.AddToClassList("note-index-label");
+            Add(indexLabel);
+            // ────────────────────────────────────────────────────────────────
+
             RegisterCallback<MouseDownEvent>(evt =>
             {
-                if (evt.button == 0) // 左键点击
+                if (evt.button == 0)
                 {
                     OnClicked?.Invoke();
                     evt.StopPropagation();
                 }
             });
+            RegisterCallback<MouseEnterEvent>(_ => AddToClassList("note-hover"));
+            RegisterCallback<MouseLeaveEvent>(_ => RemoveFromClassList("note-hover"));
 
-            // 添加悬停效果
-            RegisterCallback<MouseEnterEvent>(evt =>
-            {
-                AddToClassList("note-hover");
-            });
-
-            RegisterCallback<MouseLeaveEvent>(evt =>
-            {
-                RemoveFromClassList("note-hover");
-            });
-
-            // 生成波形图
             generateVisualContent += GenerateWaveform;
         }
 
-        /// <summary>
-        /// 绘制波形
-        /// </summary>
         private void GenerateWaveform(MeshGenerationContext ctx)
         {
             if (_audioSamples == null || _data == null || _data.audioClip == null)
                 return;
 
-            // 计算该音符对应的采样范围
             int sampleRate = _data.audioClip.frequency;
-            int channels = _data.audioClip.channels;
-            
-            double noteStartTime = _data.GetTimeAtNoteIndex(_noteIndex);
-            double noteEndTime = _data.GetTimeAtNoteIndex(_noteIndex + 1);
+            int channels   = _data.audioClip.channels;
 
-            int sampleStart = Mathf.Clamp((int)(noteStartTime * sampleRate * channels), 0, _audioSamples.Length - 1);
-            int sampleEnd = Mathf.Clamp((int)(noteEndTime * sampleRate * channels), 0, _audioSamples.Length - 1);
+            // 用所属 Segment 的 SecondsPerNote 来确定采样范围
+            double noteStart = _data.GetSegmentStartTime(_segIdx)
+                               + _localNoteIndex       * _seg.SecondsPerNote;
+            double noteEnd   = _data.GetSegmentStartTime(_segIdx)
+                               + (_localNoteIndex + 1) * _seg.SecondsPerNote;
 
-            if (sampleStart >= sampleEnd)
-                return;
+            int sampleStart = Mathf.Clamp((int)(noteStart * sampleRate * channels), 0, _audioSamples.Length - 1);
+            int sampleEnd   = Mathf.Clamp((int)(noteEnd   * sampleRate * channels), 0, _audioSamples.Length - 1);
 
-            // 分段采样
-            int samplesPerSegment = _data.samplesPerNote;
-            float segmentWidth = contentRect.width / samplesPerSegment;
-            int samplesPerDivision = Mathf.Max(1, (sampleEnd - sampleStart) / samplesPerSegment);
+            if (sampleStart >= sampleEnd) return;
+
+            int   samplesPerSegment  = _data.samplesPerNote;
+            float segmentWidth       = contentRect.width / samplesPerSegment;
+            int   samplesPerDivision = Mathf.Max(1, (sampleEnd - sampleStart) / samplesPerSegment);
 
             var painter = ctx.painter2D;
             painter.strokeColor = WaveformColor;
-            painter.lineWidth = segmentWidth * 0.8f;
-            painter.lineCap = LineCap.Round;
+            painter.lineWidth   = segmentWidth * 0.8f;
+            painter.lineCap     = LineCap.Round;
 
-            // 绘制每个采样段
             for (int i = 0; i < samplesPerSegment; i++)
             {
-                int segmentStart = sampleStart + i * samplesPerDivision;
-                int segmentEnd = Mathf.Min(segmentStart + samplesPerDivision, sampleEnd);
+                int segStart = sampleStart + i * samplesPerDivision;
+                int segEnd   = Mathf.Min(segStart + samplesPerDivision, sampleEnd);
 
-                // 计算该段的平均振幅
                 float sum = 0;
-                for (int j = segmentStart; j < segmentEnd; j++)
-                {
+                for (int j = segStart; j < segEnd; j++)
                     sum += Mathf.Abs(_audioSamples[j]);
-                }
-                float amplitude = (sum / (segmentEnd - segmentStart)) * _data.waveformZoom;
+
+                float amplitude = (sum / (segEnd - segStart)) * _data.waveformZoom;
                 amplitude = Mathf.Clamp01(amplitude);
 
-                // 绘制垂直线条
-                float x = i * segmentWidth + segmentWidth / 2;
+                float x       = i * segmentWidth + segmentWidth / 2;
                 float centerY = contentRect.height / 2;
-                float halfHeight = amplitude * contentRect.height / 2;
+                float half    = amplitude * contentRect.height / 2;
 
                 painter.BeginPath();
-                painter.MoveTo(new Vector2(x, centerY - halfHeight));
-                painter.LineTo(new Vector2(x, centerY + halfHeight));
+                painter.MoveTo(new Vector2(x, centerY - half));
+                painter.LineTo(new Vector2(x, centerY + half));
                 painter.Stroke();
             }
         }
 
-        /// <summary>
-        /// 更新标记状态
-        /// </summary>
         public void UpdateMarkedState(bool isMarked)
         {
             _isMarked = isMarked;
             UpdateVisualState();
         }
 
-        /// <summary>
-        /// 设置高亮状态
-        /// </summary>
         public void SetHighlight(bool isHighlighted)
         {
             _isHighlighted = isHighlighted;
             UpdateVisualState();
         }
 
-        /// <summary>
-        /// 更新视觉状态
-        /// </summary>
         private void UpdateVisualState()
         {
-            // 移除所有状态类
             RemoveFromClassList("note-normal");
             RemoveFromClassList("note-marked");
             RemoveFromClassList("note-current");
 
-            // 高亮状态优先级最高
             if (_isHighlighted)
-            {
                 AddToClassList("note-current");
-            }
             else if (_isMarked)
-            {
                 AddToClassList("note-marked");
-            }
             else
-            {
                 AddToClassList("note-normal");
-            }
         }
     }
 }

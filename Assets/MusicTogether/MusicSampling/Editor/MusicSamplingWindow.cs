@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using System;
 using System.Collections.Generic;
 using UnityEditor.UIElements;
+using UnityEngine.Video;
 
 namespace MusicTogether.MusicSampling.Editor
 {
@@ -22,6 +23,7 @@ namespace MusicTogether.MusicSampling.Editor
         private ObjectField _dataField;
         private Button _playButton;
         private Button _stopButton;
+        private Button _refreshButton;
         private Button _markCurrentButton;
         private Slider _timelineSlider;
         private Label _timeLabel;
@@ -31,22 +33,30 @@ namespace MusicTogether.MusicSampling.Editor
         private VisualElement _playhead;
         private WaveformVisualElement _waveformElement;
 
+        // 视频播放
+        private GameObject _videoObject;
+        private VideoPlayer _videoPlayer;
+        private RenderTexture _videoRenderTexture;
+        private IMGUIContainer _videoContainer;
+        private VisualElement _videoArea;
+
         // 状态
         private bool _isDraggingTimeline = false;
-        private int _currentNoteIndex = -1;
-        private int _highlightedNoteIndex = -1;
+        private (int seg, int note) _currentNote   = (-1, -1);
+        // 每个 segIdx 当前高亮的 localNoteIdx（-1 表示未高亮）
+        private Dictionary<int, int> _highlightedNotes = new Dictionary<int, int>();
 
         // 平滑滚动状态
-        private float _targetScrollX = 0f;       // 目标滚动位置（由音频时间驱动）
-        private float _currentScrollX = 0f;      // 当前插值滚动位置
-        private bool _scrollInitialized = false; // 是否已初始化滚动位置
+        private float _targetScrollX = 0f;
+        private float _currentScrollX = 0f;
+        private bool _scrollInitialized = false;
 
         // 常量
         private const float PLAYHEAD_UPDATE_INTERVAL = 0.00f;
-        private const float SCROLL_SMOOTH_SPEED = 8f; // 平滑追踪速度（越大越快跟上）
+        private const float SCROLL_SMOOTH_SPEED = 8f;
         private double _lastUpdateTime = 0;
 
-        // 是否启用指数平滑滚动追踪（false = 直接跳到目标位置）
+        // 是否启用指数平滑滚动追踪
         private bool _enableSmoothScroll = true;
 
         [MenuItem("Window/MusicTogether/Music Sampling Window")]
@@ -64,7 +74,8 @@ namespace MusicTogether.MusicSampling.Editor
             _audioPlayer.Initialize();
             _audioPlayer.OnTimeChanged += OnAudioTimeChanged;
             _audioPlayer.OnStateChanged += OnAudioStateChanged;
-            
+            _audioPlayer.OnSeeked += OnAudioSeeked;
+
             // 注册更新回调用于平滑滚动
             EditorApplication.update += OnEditorUpdate;
         }
@@ -73,14 +84,17 @@ namespace MusicTogether.MusicSampling.Editor
         {
             // 清理资源
             EditorApplication.update -= OnEditorUpdate;
-            
+
             if (_audioPlayer != null)
             {
                 _audioPlayer.OnTimeChanged -= OnAudioTimeChanged;
                 _audioPlayer.OnStateChanged -= OnAudioStateChanged;
+                _audioPlayer.OnSeeked -= OnAudioSeeked;
                 _audioPlayer.Dispose();
                 _audioPlayer = null;
             }
+
+            DisposeVideo();
         }
 
         private void CreateGUI()
@@ -120,12 +134,14 @@ namespace MusicTogether.MusicSampling.Editor
             _dataField = rootVisualElement.Q<ObjectField>("data-field");
             _playButton = rootVisualElement.Q<Button>("play-button");
             _stopButton = rootVisualElement.Q<Button>("stop-button");
+            _refreshButton = rootVisualElement.Q<Button>("refresh-button");
             _markCurrentButton = rootVisualElement.Q<Button>("mark-current-button");
             _timelineSlider = rootVisualElement.Q<Slider>("timeline-slider");
             _timeLabel = rootVisualElement.Q<Label>("time-label");
             _bpmLabel = rootVisualElement.Q<Label>("bpm-label");
             _noteIndexLabel = rootVisualElement.Q<Label>("note-index-label");
             _waveformContainer = rootVisualElement.Q<ScrollView>("waveform-container");
+            _videoArea = rootVisualElement.Q<VisualElement>("VideoArea");
 
             // 设置 ObjectField 类型
             if (_dataField != null)
@@ -153,7 +169,10 @@ namespace MusicTogether.MusicSampling.Editor
 
             if (_stopButton != null)
                 _stopButton.clicked += OnStopButtonClicked;
-            
+
+            if (_refreshButton != null)
+                _refreshButton.clicked += OnRefreshButtonClicked;
+
             if (_markCurrentButton != null)
                 _markCurrentButton.clicked += OnMarkCurrentButtonClicked;
 
@@ -202,22 +221,20 @@ namespace MusicTogether.MusicSampling.Editor
                 LoadAudioData();
                 UpdateWaveformDisplay();
                 UpdateInfoLabels();
-                
+                LoadVideo(_samplingData.referenceVideo);
+
                 // 启用标记按钮
                 if (_markCurrentButton != null)
-                {
                     _markCurrentButton.SetEnabled(true);
-                }
             }
             else
             {
                 ClearWaveformDisplay();
-                
+                LoadVideo(null);
+
                 // 禁用标记按钮
                 if (_markCurrentButton != null)
-                {
                     _markCurrentButton.SetEnabled(false);
-                }
             }
         }
 
@@ -283,10 +300,18 @@ namespace MusicTogether.MusicSampling.Editor
             _waveformElement.OnNoteClicked += OnNoteClicked;
             _waveformContainer.Add(_waveformElement);
 
-            // 创建播放头
+            // 创建播放头（高度覆盖所有轨道，等布局完成后调整）
             _playhead = new VisualElement();
             _playhead.AddToClassList("playhead");
             _waveformContainer.Add(_playhead);
+
+            // 布局完成后将播放头高度对齐到波形实际高度
+            _waveformElement.RegisterCallback<GeometryChangedEvent>(_ =>
+            {
+                float waveformH = _waveformElement.resolvedStyle.height;
+                if (waveformH > 0)
+                    _playhead.style.height = waveformH;
+            });
 
             // 添加点击留白区域选中当前音符的功能
             _waveformContainer.RegisterCallback<MouseDownEvent>(OnWaveformContainerClicked, TrickleDown.TrickleDown);
@@ -331,15 +356,70 @@ namespace MusicTogether.MusicSampling.Editor
         }
 
         /// <summary>
-        /// 标记当前音符按钮点击
+        /// 刷新按钮点击 —— 重新提取音频采样数据并重建波形显示。
+        /// 适用于在 Inspector 中修改了 AudioSamplingData 的段落配置后手动刷新。
+        /// 刷新后尝试恢复刷新前的播放进度和播放状态。
+        /// </summary>
+        private void OnRefreshButtonClicked()
+        {
+            if (_samplingData == null || _samplingData.audioClip == null) return;
+
+            // 记录刷新前的播放进度与状态
+            double savedTime    = _audioPlayer?.CurrentTime ?? 0.0;
+            bool   wasPlaying   = _audioPlayer?.IsPlaying  ?? false;
+
+            // 暂停（不 Stop，避免重置 CurrentTime）
+            if (wasPlaying) _audioPlayer?.Pause();
+
+            _highlightedNotes.Clear();
+            _currentNote = (-1, -1);
+
+            // 重新加载音频并重建波形
+            LoadAudioData();
+            UpdateWaveformDisplay();
+            UpdateInfoLabels();
+
+            // 恢复进度：将时间轴与播放器都定位到原来的时刻
+            if (_audioPlayer != null && savedTime > 0.0)
+            {
+                // 限制 savedTime 不超过新的音频总时长
+                double clampedTime = Math.Min(savedTime, _audioPlayer.Duration);
+                _audioPlayer.CurrentTime = clampedTime;
+
+                // 同步 slider 显示
+                if (_timelineSlider != null)
+                    _timelineSlider.SetValueWithoutNotify((float)clampedTime);
+
+                // 同步平滑滚动目标到原位置
+                if (_samplingData != null)
+                {
+                    float exactPixelX = _samplingData.GetPixelXAtTime(clampedTime);
+                    _targetScrollX  = Mathf.Max(0, exactPixelX - (_waveformContainer?.contentRect.width ?? 0) / 2);
+                    _currentScrollX = _targetScrollX;
+                    _scrollInitialized = true;
+
+                    if (_waveformContainer != null)
+                        _waveformContainer.scrollOffset = new Vector2(_currentScrollX, 0);
+                }
+            }
+            else
+            {
+                _targetScrollX    = 0f;
+                _currentScrollX   = 0f;
+                _scrollInitialized = false;
+            }
+
+            // 如果原本在播放，则继续播放
+            if (wasPlaying) _audioPlayer?.Play();
+        }
+
+        /// <summary>
+        /// 标记当前音符按钮点击 —— 对所有当前活跃段的当前音符执行只加不减的标记。
         /// </summary>
         private void OnMarkCurrentButtonClicked()
         {
-            if (_samplingData == null || _audioPlayer == null)
-                return;
-
-            int currentNoteIndex = _samplingData.GetNoteIndexAtTime(_audioPlayer.CurrentTime);
-            OnNoteClicked(currentNoteIndex);
+            if (_samplingData == null || _audioPlayer == null) return;
+            MarkCurrentNotes(_audioPlayer.CurrentTime);
         }
 
         /// <summary>
@@ -374,14 +454,16 @@ namespace MusicTogether.MusicSampling.Editor
             // 更新播放头位置和滚动目标
             if (_playhead != null && _samplingData != null)
             {
-                float noteWidth = _samplingData.noteWidth;
-                // 用连续浮点时间换算像素位置，避免跳格
-                float exactPixelX = (float)(time / _samplingData.SecondsPerNote) * noteWidth;
+                // 时间直接映射像素：段落位置已与时间轴对齐，无需复杂跨段计算
+                float exactPixelX = _samplingData.GetPixelXAtTime(time);
+
                 _playhead.style.left = exactPixelX;
 
-                // 高亮仍然用整数音符索引
-                int noteIndex = _samplingData.GetNoteIndexAtTime(time);
-                UpdateHighlightedNote(noteIndex);
+                // 间隙期间不高亮任何音符，否则高亮所有活跃段
+                if (_samplingData.IsTimeInGap(time))
+                    UpdateHighlightedNotes(null);
+                else
+                    UpdateHighlightedNotes(_samplingData.GetAllActiveNotesAtTime(time));
 
                 // 只写入目标值，实际滚动由 OnEditorUpdate 平滑完成
                 if (_waveformContainer != null)
@@ -433,24 +515,42 @@ namespace MusicTogether.MusicSampling.Editor
         }
 
         /// <summary>
-        /// 更新高亮的音符
+        /// 更新所有高亮音符。activeNotes 为当前时刻所有活跃段的 (segIdx, localNoteIdx) 列表；
+        /// 传 null 或空列表表示清除所有高亮。
         /// </summary>
-        private void UpdateHighlightedNote(int noteIndex)
+        private void UpdateHighlightedNotes(System.Collections.Generic.List<(int seg, int note)> activeNotes)
         {
-            if (_highlightedNoteIndex != noteIndex && _waveformElement != null)
-            {
-                // 移除旧的高亮
-                if (_highlightedNoteIndex >= 0)
-                {
-                    _waveformElement.SetNoteHighlight(_highlightedNoteIndex, false);
-                }
+            if (_waveformElement == null) return;
 
-                // 添加新的高亮
-                _highlightedNoteIndex = noteIndex;
-                if (_highlightedNoteIndex >= 0)
+            // 清除已不在活跃列表中的旧高亮
+            var toRemove = new System.Collections.Generic.List<int>();
+            foreach (var kv in _highlightedNotes)
+            {
+                int segIdx    = kv.Key;
+                int noteIdx   = kv.Value;
+                bool stillActive = activeNotes != null &&
+                                   activeNotes.Exists(n => n.seg == segIdx && n.note == noteIdx);
+                if (!stillActive)
                 {
-                    _waveformElement.SetNoteHighlight(_highlightedNoteIndex, true);
+                    _waveformElement.SetNoteHighlight(segIdx, noteIdx, false);
+                    toRemove.Add(segIdx);
                 }
+            }
+            foreach (var s in toRemove) _highlightedNotes.Remove(s);
+
+            // 点亮新增的活跃音符
+            if (activeNotes == null) return;
+            foreach (var (segIdx, noteIdx) in activeNotes)
+            {
+                if (_highlightedNotes.TryGetValue(segIdx, out int prev) && prev == noteIdx)
+                    continue; // 没变化，跳过
+
+                // 先摘掉同 seg 的旧高亮
+                if (_highlightedNotes.TryGetValue(segIdx, out int oldNote))
+                    _waveformElement.SetNoteHighlight(segIdx, oldNote, false);
+
+                _waveformElement.SetNoteHighlight(segIdx, noteIdx, true);
+                _highlightedNotes[segIdx] = noteIdx;
             }
         }
 
@@ -463,11 +563,154 @@ namespace MusicTogether.MusicSampling.Editor
             {
                 case EditorAudioPlayer.PlayState.Playing:
                     _playButton.text = "⏸ Pause";
+                    SyncVideoState(true);
                     break;
                 case EditorAudioPlayer.PlayState.Paused:
+                    _playButton.text = "▶ Play";
+                    SyncVideoState(false);
+                    break;
                 case EditorAudioPlayer.PlayState.Stopped:
                     _playButton.text = "▶ Play";
+                    SyncVideoState(false);
                     break;
+            }
+        }
+
+        // ── 视频同步 ──────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 加载（或卸载）参考视频。videoClip 为 null 时显示提示，否则初始化 VideoPlayer。
+        /// </summary>
+        private void LoadVideo(VideoClip videoClip)
+        {
+            DisposeVideo();
+
+            if (_videoArea == null) return;
+
+            if (videoClip == null)
+            {
+                // 无视频：隐藏整个区域
+                _videoArea.AddToClassList("hidden");
+                return;
+            }
+
+            // 有视频：显示区域
+            _videoArea.RemoveFromClassList("hidden");
+
+            // 创建 VideoPlayer GameObject（先不设 targetTexture，等 Prepare 完成后按真实尺寸创建 RenderTexture）
+            _videoObject = new GameObject("EditorVideoPlayer");
+            _videoObject.hideFlags = HideFlags.HideAndDontSave;
+            _videoPlayer = _videoObject.AddComponent<VideoPlayer>();
+            _videoPlayer.clip = videoClip;
+            _videoPlayer.renderMode = VideoRenderMode.RenderTexture;
+            _videoPlayer.audioOutputMode = VideoAudioOutputMode.None; // 静音
+            _videoPlayer.playOnAwake = false;
+            _videoPlayer.isLooping = false;
+
+            // Prepare 完成后再用视频真实尺寸创建 RenderTexture，避免竖屏/横屏尺寸错误
+            _videoPlayer.prepareCompleted += OnVideoPrepareCompleted;
+            _videoPlayer.Prepare();
+
+            // IMGUIContainer 是 UIToolkit 中渲染 RenderTexture 的唯一方式，无法在 UXML 中静态声明
+            _videoContainer = new IMGUIContainer(() =>
+            {
+                if (_videoRenderTexture != null)
+                    GUI.DrawTexture(
+                        new Rect(0, 0, _videoContainer.resolvedStyle.width, _videoContainer.resolvedStyle.height),
+                        _videoRenderTexture, ScaleMode.ScaleToFit);
+            });
+            _videoContainer.AddToClassList("video-display");
+            _videoArea.Add(_videoContainer);
+        }
+
+        /// <summary>
+        /// VideoPlayer Prepare 完成回调：用视频真实宽高创建 RenderTexture 并绑定。
+        /// </summary>
+        private void OnVideoPrepareCompleted(VideoPlayer vp)
+        {
+            vp.prepareCompleted -= OnVideoPrepareCompleted;
+
+            uint w = vp.texture != null ? (uint)vp.texture.width  : vp.width;
+            uint h = vp.texture != null ? (uint)vp.texture.height : vp.height;
+            if (w == 0 || h == 0) { w = 1080; h = 1920; } // 兜底
+
+            // 销毁旧的 RenderTexture（如有）
+            if (_videoRenderTexture != null)
+            {
+                _videoRenderTexture.Release();
+                UnityEngine.Object.DestroyImmediate(_videoRenderTexture);
+            }
+
+            _videoRenderTexture = new RenderTexture((int)w, (int)h, 0);
+            _videoRenderTexture.Create();
+            vp.targetTexture = _videoRenderTexture;
+        }
+
+        /// <summary>
+        /// 根据音频播放状态同步视频播放/暂停。
+        /// </summary>
+        private void SyncVideoState(bool playing)
+        {
+            if (_videoPlayer == null) return;
+
+            if (playing)
+            {
+                // 先对齐时间再播放
+                if (_audioPlayer != null)
+                    _videoPlayer.time = _audioPlayer.CurrentTime;
+                _videoPlayer.Play();
+            }
+            else
+            {
+                _videoPlayer.Pause();
+            }
+        }
+
+        /// <summary>
+        /// 音频跳转（Stop/Scrub）时同步视频时间。
+        /// </summary>
+        private void OnAudioSeeked(double time)
+        {
+            if (_videoPlayer == null) return;
+            _videoPlayer.time = time;
+            // 暂停一帧后更新，确保画面刷新
+            _videoPlayer.Play();
+            EditorApplication.delayCall += () =>
+            {
+                if (_videoPlayer != null && _audioPlayer?.IsPlaying == false)
+                    _videoPlayer.Pause();
+            };
+        }
+
+        /// <summary>
+        /// 销毁视频相关资源。
+        /// </summary>
+        private void DisposeVideo()
+        {
+            if (_videoContainer != null)
+            {
+                _videoContainer.RemoveFromHierarchy();
+                _videoContainer = null;
+            }
+
+            if (_videoPlayer != null)
+            {
+                _videoPlayer.prepareCompleted -= OnVideoPrepareCompleted;
+                _videoPlayer.Stop();
+                _videoPlayer = null;
+            }
+
+            if (_videoObject != null)
+            {
+                UnityEngine.Object.DestroyImmediate(_videoObject);
+                _videoObject = null;
+            }
+
+            if (_videoRenderTexture != null)
+            {
+                _videoRenderTexture.Release();
+                UnityEngine.Object.DestroyImmediate(_videoRenderTexture);
+                _videoRenderTexture = null;
             }
         }
 
@@ -476,20 +719,24 @@ namespace MusicTogether.MusicSampling.Editor
         /// </summary>
         private void UpdateInfoLabels()
         {
-            if (_audioPlayer == null || _samplingData == null)
-                return;
+            if (_audioPlayer == null || _samplingData == null) return;
 
             double currentTime = _audioPlayer.CurrentTime;
-            double duration = _audioPlayer.Duration;
+            double duration    = _audioPlayer.Duration;
 
             _timeLabel.text = $"{FormatTime(currentTime)} / {FormatTime(duration)}";
-            
-            int noteIndex = _samplingData.GetNoteIndexAtTime(currentTime);
-            int barIndex = _samplingData.GetBarIndexAtNote(noteIndex);
-            int noteInBar = noteIndex % _samplingData.NotesPerBar;
-            
-            _bpmLabel.text = $"BPM: {_samplingData.bpm} ({_samplingData.beatsPerBar}/4拍)";
-            _noteIndexLabel.text = $"小节: {barIndex + 1} | 音符: {noteIndex} ({noteInBar + 1}/{_samplingData.NotesPerBar})";
+
+            var (segIdx, localNoteIdx) = _samplingData.GetSegmentNoteAtTime(currentTime);
+
+            if (_samplingData.segments != null && segIdx < _samplingData.segments.Count)
+            {
+                var seg        = _samplingData.segments[segIdx];
+                int barIndex   = localNoteIdx / seg.NotesPerBar;
+                int noteInBar  = localNoteIdx % seg.NotesPerBar;
+
+                _bpmLabel.text      = $"[{segIdx + 1}] {seg.name}  BPM: {seg.bpm} ({seg.beatsPerBar}/{seg.beatDivision})";
+                _noteIndexLabel.text = $"小节: {barIndex + 1} | 音符: {localNoteIdx} ({noteInBar + 1}/{seg.NotesPerBar})";
+            }
         }
 
         /// <summary>
@@ -508,36 +755,48 @@ namespace MusicTogether.MusicSampling.Editor
         /// </summary>
         private void CheckCurrentNote(double time)
         {
-            if (_samplingData == null)
-                return;
+            if (_samplingData == null) return;
 
-            int noteIndex = _samplingData.GetNoteIndexAtTime(time);
-            
-            if (noteIndex != _currentNoteIndex)
-            {
-                _currentNoteIndex = noteIndex;
-                
-                // 这里可以添加音效提示
-                // 如果当前音符被标记，播放提示音
-            }
+            var note = _samplingData.GetSegmentNoteAtTime(time);
+            if (note != _currentNote)
+                _currentNote = note;
         }
 
         /// <summary>
-        /// 音符点击事件
+        /// 音符点击事件（直接点击音符格）—— Toggle 标记状态。
         /// </summary>
-        private void OnNoteClicked(int noteIndex)
+        private void OnNoteClicked(int segIdx, int localNoteIdx)
         {
-            if (_samplingData == null)
-                return;
+            if (_samplingData == null) return;
 
-            _samplingData.ToggleMarkedNote(noteIndex);
+            _samplingData.ToggleMarkedNote(segIdx, localNoteIdx);
             EditorUtility.SetDirty(_samplingData);
-            
-            // 只更新对应的音符元素，而不是重建整个波形
+
             if (_waveformElement != null)
+                _waveformElement.RefreshNoteMarkedState(segIdx, localNoteIdx);
+        }
+
+        /// <summary>
+        /// 对当前时刻所有活跃段的当前音符执行只加不减的标记。
+        /// 用于按钮/快捷键/点击留白区域触发的"标记当前"操作。
+        /// </summary>
+        private void MarkCurrentNotes(double time)
+        {
+            if (_samplingData == null) return;
+
+            var activeNotes = _samplingData.GetAllActiveNotesAtTime(time);
+            foreach (var (segIdx, localNoteIdx) in activeNotes)
             {
-                _waveformElement.RefreshNoteMarkedState(noteIndex);
+                if (_samplingData.IsNoteMarked(segIdx, localNoteIdx)) continue; // 已标记则跳过
+
+                _samplingData.AddMarkedNote(segIdx, localNoteIdx);
+
+                if (_waveformElement != null)
+                    _waveformElement.RefreshNoteMarkedState(segIdx, localNoteIdx);
             }
+
+            if (activeNotes.Count > 0)
+                EditorUtility.SetDirty(_samplingData);
         }
 
         /// <summary>
@@ -545,14 +804,9 @@ namespace MusicTogether.MusicSampling.Editor
         /// </summary>
         private void OnWaveformContainerClicked(MouseDownEvent evt)
         {
-            // 如果点击的是容器本身（留白区域），标记当前播放位置的音符
-            if (evt.target == _waveformContainer)
+            if (evt.target == _waveformContainer && _samplingData != null && _audioPlayer != null)
             {
-                if (_samplingData != null && _audioPlayer != null)
-                {
-                    int currentNoteIndex = _samplingData.GetNoteIndexAtTime(_audioPlayer.CurrentTime);
-                    OnNoteClicked(currentNoteIndex);
-                }
+                MarkCurrentNotes(_audioPlayer.CurrentTime);
             }
         }
 
@@ -561,16 +815,13 @@ namespace MusicTogether.MusicSampling.Editor
         /// </summary>
         private void Update()
         {
-            if (_samplingData == null || _audioPlayer == null)
-                return;
+            if (_samplingData == null || _audioPlayer == null) return;
 
-            // 空格键：标记当前音符
             if (Event.current != null && Event.current.type == EventType.KeyDown)
             {
                 if (Event.current.keyCode == KeyCode.Space)
                 {
-                    int noteIndex = _samplingData.GetNoteIndexAtTime(_audioPlayer.CurrentTime);
-                    OnNoteClicked(noteIndex);
+                    MarkCurrentNotes(_audioPlayer.CurrentTime);
                     Event.current.Use();
                 }
             }

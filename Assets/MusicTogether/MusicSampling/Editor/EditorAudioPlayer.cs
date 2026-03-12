@@ -30,6 +30,8 @@ namespace MusicTogether.MusicSampling.Editor
         // 事件
         public event Action<double> OnTimeChanged;
         public event Action<PlayState> OnStateChanged;
+        /// <summary>当播放位置被强制跳转（Stop/Scrub/CurrentTime.set）时触发，参数为新时间（秒）</summary>
+        public event Action<double> OnSeeked;
 
         // 属性
         public PlayState CurrentState => _playState;
@@ -61,6 +63,7 @@ namespace MusicTogether.MusicSampling.Editor
                     _audioSource.time = (float)value;
                     _pausedTime = value;
                     OnTimeChanged?.Invoke(value);
+                    OnSeeked?.Invoke(value);
                 }
             }
         }
@@ -170,6 +173,7 @@ namespace MusicTogether.MusicSampling.Editor
             _pausedTime = 0;
             _playState = PlayState.Stopped;
             CurrentTime = 0;
+            OnSeeked?.Invoke(0);
             OnStateChanged?.Invoke(_playState);
         }
 
