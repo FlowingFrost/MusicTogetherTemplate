@@ -29,12 +29,30 @@ namespace MusicTogether.General.Editor
             }
             else
             {
+                var asd = noteData.audioSamplingData;
+                int segmentCount = asd.segments?.Count ?? 0;
+                int markedTotal = 0;
+                if (asd.segments != null)
+                {
+                    foreach (var seg in asd.segments)
+                        markedTotal += seg?.markedNoteIndices?.Count ?? 0;
+                }
+                else
+                {
+                    markedTotal = asd.markedNoteIndices?.Count ?? 0;
+                }
+
                 EditorGUILayout.HelpBox(
-                    $"将从 {noteData.audioSamplingData.name} 转换音符数据\n" +
-                    $"源BPM: {noteData.audioSamplingData.bpm}\n" +
-                    $"源细分: 每拍{noteData.audioSamplingData.beatDivision}个音符\n" +
-                    $"标记音符数: {noteData.audioSamplingData.markedNoteIndices?.Count ?? 0}\n" +
-                    $"目标音符类型: {noteData.targetNoteType}",
+                    segmentCount > 0
+                        ? $"将从 {asd.name} 转换音符数据 (多段)\n" +
+                          $"段落数: {segmentCount}\n" +
+                          $"总标记音符数: {markedTotal}\n" +
+                          $"目标音符类型: {noteData.targetNoteType}"
+                        : $"将从 {asd.name} 转换音符数据 (单段兼容)\n" +
+                          $"源BPM: {asd.bpm}\n" +
+                          $"源细分: 每拍{asd.beatDivision}个音符\n" +
+                          $"标记音符数: {asd.markedNoteIndices?.Count ?? 0}\n" +
+                          $"目标音符类型: {noteData.targetNoteType}",
                     MessageType.Info);
             }
             

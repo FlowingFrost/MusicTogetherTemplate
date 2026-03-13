@@ -14,13 +14,16 @@ namespace MusicTogether.General
     [Serializable]
     public struct InputNotes
     {
+        public int Index;
+        public string name; // 可选的段落名称
+        
         [Tooltip("每分钟节拍数(Beats Per Minute)")]
         [Range(1, 999)]
         public int bpm;
         
         [Tooltip("音符类型(决定每个音符的时值)")]
         public NoteType noteType;
-        
+
         [Tooltip("音符位置索引列表(将自动排序)")]
         public List<int> notes;
         
@@ -312,41 +315,85 @@ namespace MusicTogether.General
                 return;
             }
             
-            if (audioSamplingData.markedNoteIndices == null || audioSamplingData.markedNoteIndices.Count == 0)
-            {
-                Debug.LogWarning($"[InputNoteData] {name}: AudioSamplingData中没有标记的音符!");
-                return;
-            }
-            
             // 清空现有数据
             noteLists.Clear();
-            
-            // 创建新的音符段落
-            InputNotes newNotes = new InputNotes
+
+            var segments = audioSamplingData.segments;
+            bool hasSegments = segments != null && segments.Count > 0;
+
+            // 若无多段数据，则回退到旧的单段标记逻辑
+            if (!hasSegments)
             {
-                bpm = audioSamplingData.bpm,
-                noteType = targetNoteType,
-                notes = new List<int>()
-            };
-            
-            // AudioSamplingData使用的是beatDivision细分的音符索引
-            // 需要根据beatDivision推导出源NoteType，再转换为目标NoteType的索引
-            NoteType sourceNoteType = GetNoteTypeForBeatDivision(audioSamplingData.beatDivision);
-            
-            // 转换每个标记的音符索引
-            foreach (int sourceIndex in audioSamplingData.markedNoteIndices)
-            {
-                int targetIndex = NoteConverter.ConvertNoteIndex(sourceIndex, sourceNoteType, targetNoteType);
-                newNotes.AddNote(targetIndex);
+                if (audioSamplingData.markedNoteIndices == null || audioSamplingData.markedNoteIndices.Count == 0)
+                {
+                    Debug.LogWarning($"[InputNoteData] {name}: AudioSamplingData中没有标记的音符!");
+                    return;
+                }
+
+                InputNotes legacyNotes = new InputNotes
+                {
+                    bpm = audioSamplingData.bpm,
+                    noteType = targetNoteType,
+                    notes = new List<int>()
+                };
+
+                NoteType legacySourceType = GetNoteTypeForBeatDivision(audioSamplingData.beatDivision);
+                foreach (int sourceIndex in audioSamplingData.markedNoteIndices)
+                {
+                    int targetIndex = NoteConverter.ConvertNoteIndex(sourceIndex, legacySourceType, targetNoteType);
+                    legacyNotes.AddNote(targetIndex);
+                }
+
+                noteLists.Add(legacyNotes);
+                MarkDirty();
+
+                Debug.Log($"[InputNoteData] 成功从 {audioSamplingData.name} 转换音符数据 (旧版单段)!");
+                Debug.Log($"BPM: {legacyNotes.bpm}, 音符类型: {legacyNotes.noteType}, 音符数量: {legacyNotes.NoteCount}");
+
+#if UNITY_EDITOR
+                EditorUtility.SetDirty(this);
+#endif
+                return;
             }
-            
-            // 添加到列表
-            noteLists.Add(newNotes);
+
+            // 多段转换：每个 SamplingSegment 生成一个 InputNotes
+            int totalNotes = 0;
+            var orderedSegments = segments.OrderBy(s => s.startBarIndex).ToList();
+            for (int i = 0; i < orderedSegments.Count; i++)
+            {
+                var seg = orderedSegments[i];
+                var segNotes = new InputNotes
+                {
+                    Index = i,
+                    name = seg.name,
+                    bpm = seg.bpm,
+                    noteType = targetNoteType,
+                    notes = new List<int>()
+                };
+
+                NoteType sourceType = GetNoteTypeForBeatDivision(seg.beatDivision);
+
+                if (seg.markedNoteIndices != null && seg.markedNoteIndices.Count > 0)
+                {
+                    int baseIndex = seg.startBarIndex * seg.NotesPerBar;
+                    foreach (int sourceIndex in seg.markedNoteIndices)
+                    {
+                        int sourceGlobalIndex = baseIndex + sourceIndex;
+                        int targetIndex = NoteConverter.ConvertNoteIndex(sourceGlobalIndex, sourceType, targetNoteType);
+                        segNotes.AddNote(targetIndex);
+                    }
+                }
+
+                noteLists.Add(segNotes);
+                totalNotes += segNotes.NoteCount;
+                noteLists.Sort((a,b)=> a.Index.CompareTo(b.Index)); // 确保段落按Index排序
+            }
+
             MarkDirty();
-            
-            Debug.Log($"[InputNoteData] 成功从 {audioSamplingData.name} 转换音符数据!");
-            Debug.Log($"BPM: {newNotes.bpm}, 音符类型: {newNotes.noteType}, 音符数量: {newNotes.NoteCount}");
-            
+
+            Debug.Log($"[InputNoteData] 成功从 {audioSamplingData.name} 转换音符数据 (多段)!");
+            Debug.Log($"段落数: {noteLists.Count}, 总音符数: {totalNotes}, 目标音符类型: {targetNoteType}");
+
 #if UNITY_EDITOR
             EditorUtility.SetDirty(this);
 #endif

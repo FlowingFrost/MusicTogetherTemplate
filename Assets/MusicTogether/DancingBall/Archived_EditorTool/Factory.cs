@@ -1,6 +1,10 @@
 using System.Collections.Generic;
-using MusicTogether.DancingBall.Archived_SceneMap;
+using MusicTogether.DancingBall.Scene;
 using UnityEngine;
+using Block = MusicTogether.DancingBall.Archived_SceneMap.Block;
+using Map = MusicTogether.DancingBall.Archived_SceneMap.Map;
+using Road = MusicTogether.DancingBall.Archived_SceneMap.Road;
+using TileHolder = MusicTogether.DancingBall.Archived_SceneMap.TileHolder;
 
 namespace MusicTogether.DancingBall.Archived_EditorTool
 {

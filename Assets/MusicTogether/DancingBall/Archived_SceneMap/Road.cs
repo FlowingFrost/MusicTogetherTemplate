@@ -9,7 +9,7 @@ namespace MusicTogether.DancingBall.Archived_SceneMap
     public class Road : MonoBehaviour
     {
         public Map map;
-        public EditorTool EditorTool => map.editorTool;
+        public Archived_EditorTool.EditorTool EditorTool => map.editorTool;
         public EditorActionDispatcher Dispatcher => map.dispatcher;
         [FormerlySerializedAs("roadIndex")] public int roadGlobalIndex = -1;
         public List<Block> blocks;

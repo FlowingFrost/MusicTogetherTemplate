@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MusicTogether.DancingBall
+namespace MusicTogether.DancingBall.Scene
 {
     public class BlockInformationDisplay : MonoBehaviour
     {

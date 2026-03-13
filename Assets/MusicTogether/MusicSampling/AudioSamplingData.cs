@@ -168,6 +168,35 @@ namespace MusicTogether.MusicSampling
 #endif
         }
 
+        [HorizontalGroup("SegmentButtons"), Button("✂ 删除超范围音符", ButtonSizes.Medium), GUIColor(1f, 0.6f, 0.6f)]
+        private void RemoveOutOfBoundsNotes()
+        {
+            if (segments == null) return;
+
+            bool changed = false;
+            foreach (var seg in segments)
+            {
+                // 只有当设置了有效的结束小节时才进行裁剪
+                if (seg.endBarIndex >= seg.startBarIndex)
+                {
+                    int maxNotes = seg.DeclaredBarCount * seg.NotesPerBar;
+                    int removedCount = seg.markedNoteIndices.RemoveAll(idx => idx >= maxNotes);
+                    if (removedCount > 0)
+                    {
+                        changed = true;
+                        Debug.Log($"[AudioSamplingData] Segment '{seg.name}': Removed {removedCount} out-of-bounds notes.");
+                    }
+                }
+            }
+
+#if UNITY_EDITOR
+            if (changed)
+            {
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+#endif
+        }
+
         // ── 向后兼容：把旧的单段属性重定向到 segments[0] ──────────────────────
 
         private SamplingSegment FirstSegment

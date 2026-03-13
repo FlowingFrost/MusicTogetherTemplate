@@ -8,7 +8,7 @@ namespace MusicTogether.DancingBall.Archived_SceneMap
     public class Map : MonoBehaviour
     {
         public Factory factory;
-        public EditorTool editorTool;
+        public Archived_EditorTool.EditorTool editorTool;
         public EditorActionDispatcher dispatcher;
         public DisplacementApplier displacementApplier;
         public MapData mapData;

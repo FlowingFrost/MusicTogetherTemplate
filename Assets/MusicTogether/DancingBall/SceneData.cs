@@ -21,6 +21,7 @@ namespace MusicTogether.DancingBall
         public int NoteBeginIndex;
         public int NoteEndIndex;
         public int BlockCount => NoteEndIndex - NoteBeginIndex + 1;
+        [ListDrawerSettings(DefaultExpandedState = false)]
         public List<BlockData> blockDataList = new List<BlockData>();
 
         public RoadData(int roadGlobalIndex, int targetSegmentIndex = 0, int noteBeginIndex = -1, int noteEndIndex = -1)
@@ -71,14 +72,38 @@ namespace MusicTogether.DancingBall
     {
         // ========== 可序列化字段 ==========
         public InputNoteData inputNoteData;
+        public List<InputNotes> InputNotes => inputNoteData.noteLists;
 
         [ListDrawerSettings(CustomAddFunction = nameof(AddRoadData))]
         public List<RoadData> roadDataList = new List<RoadData>();
 
-        // ========== 私有属性 ==========
-        private List<int> Notes => inputNoteData?.noteLists != null && inputNoteData.noteLists.Count > 0
-            ? inputNoteData.noteLists[0].notes
-            : null;
+        // ========== Note操作 ==========
+
+        private bool GetNoteList(int targetNoteListIndex, out List<int> notes)
+        {
+            var targetListIndex = InputNotes.FindIndex(l => l.Index == targetNoteListIndex);
+            if (targetListIndex > 0)
+            {
+                notes = InputNotes[targetListIndex].notes;
+                return true;
+            }
+            notes = null;
+            return false;
+        }
+        public bool HasTap(int roadIndex, int blockLocalIndex)
+        {
+            if (!InRange(roadIndex, blockLocalIndex) || !TryGetRoadData(roadIndex, out var roadData))
+            {
+                return false;
+            }
+            if (!GetNoteList(roadData.TargetSegmentIndex, out var Notes) || Notes == null || Notes.Count == 0)
+            {
+                return false;
+            }
+
+            int noteGlobalIndex = roadData.NoteBeginIndex + blockLocalIndex;
+            return Notes.Exists(n => n == noteGlobalIndex);
+        }
 
         // ========== 公共只读属性 ==========
         public int TotalRoadCount => roadDataList.Count;
@@ -130,29 +155,6 @@ namespace MusicTogether.DancingBall
                 roadDataList.RemoveAt(i);
                 MarkDirty();
             }
-        }
-
-        public List<int> RoadNotes(int roadGlobalIndex)
-        {
-            if (!TryGetRoadData(roadGlobalIndex, out var roadData))
-            {
-                return new List<int>();
-            }
-
-            if (Notes == null || Notes.Count == 0)
-            {
-                return new List<int>();
-            }
-
-            int globalBegin = roadData.NoteBeginIndex;
-            int globalEnd = roadData.NoteEndIndex;
-
-            if (globalBegin < 0 || globalEnd < globalBegin)
-            {
-                return new List<int>();
-            }
-
-            return Notes.Where(n => n >= globalBegin && n <= globalEnd).ToList();
         }
 
         // ========== Block 相关 CRUD ==========
@@ -223,6 +225,46 @@ namespace MusicTogether.DancingBall
             }
         }
 
+        public void SetBlockData_TurnType(int roadIndex, int localIndex, TurnType type)
+        {
+            if (!GetRoadData(roadIndex, out var roadData)) return;
+
+            var blockData = roadData.blockDataList.FirstOrDefault(b => b.blockLocalIndex == localIndex);
+            if (blockData == null)
+            {
+                if (type == TurnType.None) return;
+                blockData = new BlockData(localIndex);
+                roadData.blockDataList.Add(blockData);
+            }
+            blockData.turnType = type;
+
+            if (!blockData.HasTurn && !blockData.HasDisplacement)
+            {
+                roadData.blockDataList.Remove(blockData);
+            }
+            MarkDirty();
+        }
+
+        public void SetBlockData_DisplacementType(int roadIndex, int localIndex, DisplacementType type)
+        {
+            if (!GetRoadData(roadIndex, out var roadData)) return;
+
+            var blockData = roadData.blockDataList.FirstOrDefault(b => b.blockLocalIndex == localIndex);
+            if (blockData == null)
+            {
+                if (type == DisplacementType.None) return;
+                blockData = new BlockData(localIndex);
+                roadData.blockDataList.Add(blockData);
+            }
+            blockData.displacementType = type;
+
+            if (!blockData.HasTurn && !blockData.HasDisplacement)
+            {
+                roadData.blockDataList.Remove(blockData);
+            }
+            MarkDirty();
+        }
+
         public bool HasDisplacementRule(int roadIndex, int blockLocalIndex)
         {
             if (GetBlockData(roadIndex, blockLocalIndex, out var data))
@@ -232,21 +274,7 @@ namespace MusicTogether.DancingBall
             return false;
         }
 
-        public bool HasTap(int roadIndex, int blockLocalIndex)
-        {
-            if (!InRange(roadIndex, blockLocalIndex) || !TryGetRoadData(roadIndex, out var roadData))
-            {
-                return false;
-            }
 
-            if (Notes == null)
-            {
-                return false;
-            }
-
-            int noteGlobalIndex = roadData.NoteBeginIndex + blockLocalIndex;
-            return Notes.Exists(n => n == noteGlobalIndex);
-        }
 
         public bool IsBeginBlock(int roadIndex, int blockLocalIndex) => InRange(roadIndex, blockLocalIndex) && blockLocalIndex == 0;
 
