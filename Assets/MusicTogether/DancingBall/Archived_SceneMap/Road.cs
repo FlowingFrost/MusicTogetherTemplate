@@ -1,16 +1,15 @@
-using System;
 using System.Collections.Generic;
-using MusicTogether.DancingBall.EditorTool;
+using MusicTogether.DancingBall.Archived_EditorTool;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace MusicTogether.DancingBall.SceneMap
+namespace MusicTogether.DancingBall.Archived_SceneMap
 {
     public class Road : MonoBehaviour
     {
         public Map map;
-        public EditorTool.EditorTool EditorTool => map.editorTool;
+        public EditorTool EditorTool => map.editorTool;
         public EditorActionDispatcher Dispatcher => map.dispatcher;
         [FormerlySerializedAs("roadIndex")] public int roadGlobalIndex = -1;
         public List<Block> blocks;

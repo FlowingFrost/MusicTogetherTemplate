@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using MusicTogether.DancingBall.SceneMap;
+using MusicTogether.DancingBall.Archived_SceneMap;
 using UnityEngine;
 
-namespace MusicTogether.DancingBall.EditorTool
+namespace MusicTogether.DancingBall.Archived_EditorTool
 {
     public class Factory : MonoBehaviour
     {

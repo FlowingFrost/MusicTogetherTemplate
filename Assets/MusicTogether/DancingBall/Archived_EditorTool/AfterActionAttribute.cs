@@ -1,6 +1,6 @@
 using System;
 
-namespace MusicTogether.DancingBall.EditorTool
+namespace MusicTogether.DancingBall.Archived_EditorTool
 {
     /// <summary>
     /// 标注在 EditorTool 的方法上，声明该方法执行完毕后需要自动触发的后置方法。

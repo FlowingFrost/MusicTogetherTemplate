@@ -1,14 +1,14 @@
 using System.Collections.Generic;
-using MusicTogether.DancingBall.EditorTool;
+using MusicTogether.DancingBall.Archived_EditorTool;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-namespace MusicTogether.DancingBall.SceneMap
+namespace MusicTogether.DancingBall.Archived_SceneMap
 {
     public class Map : MonoBehaviour
     {
         public Factory factory;
-        public EditorTool.EditorTool editorTool;
+        public EditorTool editorTool;
         public EditorActionDispatcher dispatcher;
         public DisplacementApplier displacementApplier;
         public MapData mapData;

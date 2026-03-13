@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MusicTogether.DancingBall.SceneMap
+namespace MusicTogether.DancingBall.Archived_SceneMap
 {
     public class TileHolder : MonoBehaviour
     {

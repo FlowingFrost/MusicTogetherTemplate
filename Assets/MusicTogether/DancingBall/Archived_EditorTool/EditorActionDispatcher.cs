@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-namespace MusicTogether.DancingBall.EditorTool
+namespace MusicTogether.DancingBall.Archived_EditorTool
 {
     /// <summary>
     /// 编辑操作调度器。

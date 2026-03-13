@@ -1,6 +1,6 @@
-using MusicTogether.DancingBall.SceneMap;
+using MusicTogether.DancingBall.Archived_SceneMap;
 
-namespace MusicTogether.DancingBall.EditorTool
+namespace MusicTogether.DancingBall.Archived_EditorTool
 {
     /// <summary>
     /// 编辑操作的统一上下文，所有 EditorTool 方法均通过此对象传参。

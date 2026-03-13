@@ -1,14 +1,14 @@
-using MusicTogether.DancingBall.EditorTool;
+using MusicTogether.DancingBall.Archived_EditorTool;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-namespace MusicTogether.DancingBall.SceneMap
+namespace MusicTogether.DancingBall.Archived_SceneMap
 {
     public class Block : MonoBehaviour
     {
         public Map Map => HasValidReference ? road.map : null;
         public MapData MapData => HasValidReference ? Map.mapData : null;
-        public EditorTool.EditorTool EditorTool => HasValidReference ? Map.editorTool : null;
+        public EditorTool EditorTool => HasValidReference ? Map.editorTool : null;
         public EditorActionDispatcher Dispatcher => HasValidReference ? Map.dispatcher : null;
         public TileHolder tileHolder;
         public BlockInformationDisplay blockInformationDisplay;

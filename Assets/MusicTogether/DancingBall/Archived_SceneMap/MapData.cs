@@ -4,12 +4,11 @@ using System.Linq;
 using MusicTogether.General;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace MusicTogether.DancingBall
+namespace MusicTogether.DancingBall.Archived_SceneMap
 {
-    public enum TurnType { None, Forward, Left, Right, Jump }
-    public enum DisplacementType { None, Up, Down, ForwardUp, ForwardDown }
+    //public enum TurnType { None, Forward, Left, Right, Jump }
+    //public enum DisplacementType { None, Up, Down, ForwardUp, ForwardDown }
 
     /// <summary>
     /// Road数据

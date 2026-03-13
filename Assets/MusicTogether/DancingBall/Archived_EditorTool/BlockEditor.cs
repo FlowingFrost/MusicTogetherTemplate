@@ -1,10 +1,8 @@
-using MusicTogether.DancingBall.SceneMap;
-using UnityEngine;
-#if UNITY_EDITOR
+using MusicTogether.DancingBall.Archived_SceneMap;
 using UnityEditor;
-#endif
+using UnityEngine;
 
-namespace MusicTogether.DancingBall.EditorTool
+namespace MusicTogether.DancingBall.Archived_EditorTool
 {
     [ExecuteAlways]
     public class BlockEditor : MonoBehaviour

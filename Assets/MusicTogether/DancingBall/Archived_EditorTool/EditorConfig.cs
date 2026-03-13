@@ -1,7 +1,7 @@
 using LightGameFrame.DataManager;
 using UnityEngine;
 
-namespace MusicTogether.DancingBall.EditorTool
+namespace MusicTogether.DancingBall.Archived_EditorTool
 {
     /// <summary>
     /// UI全局配置 - 单例ScriptableObject
