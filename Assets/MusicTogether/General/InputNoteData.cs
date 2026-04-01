@@ -12,7 +12,7 @@ namespace MusicTogether.General
     /// 音符输入数据结构 - 存储特定BPM和节奏下的音符位置
     /// </summary>
     [Serializable]
-    public struct InputNotes
+    public struct Segemnt
     {
         public int Index;
         public string name; // 可选的段落名称
@@ -114,7 +114,7 @@ namespace MusicTogether.General
         /// <summary>
         /// 获取指定音符索引的时间点
         /// </summary>
-        public double GetNoteTimeAt(int noteIndex)
+        public double GetNoteTimeAt(float noteIndex)
         {
             return NoteConverter.GetNoteTime(bpm, noteType, noteIndex);
         }
@@ -167,7 +167,7 @@ namespace MusicTogether.General
         
         [Header("音符数据")]
         [Tooltip("多个音符列表,可以包含不同BPM的段落")]
-        public List<InputNotes> noteLists = new List<InputNotes>();
+        public List<Segemnt> noteLists = new List<Segemnt>();
         
         // 缓存机制
         private List<double> _cachedNoteTimes;
@@ -233,10 +233,10 @@ namespace MusicTogether.General
         /// <summary>
         /// 添加新的音符段落
         /// </summary>
-        public void AddSegment(InputNotes notes)
+        public void AddSegment(Segemnt notes)
         {
             if (noteLists == null)
-                noteLists = new List<InputNotes>();
+                noteLists = new List<Segemnt>();
             
             noteLists.Add(notes);
             MarkDirty();
@@ -330,7 +330,7 @@ namespace MusicTogether.General
                     return;
                 }
 
-                InputNotes legacyNotes = new InputNotes
+                Segemnt legacyNotes = new Segemnt
                 {
                     bpm = audioSamplingData.bpm,
                     noteType = targetNoteType,
@@ -362,7 +362,7 @@ namespace MusicTogether.General
             for (int i = 0; i < orderedSegments.Count; i++)
             {
                 var seg = orderedSegments[i];
-                var segNotes = new InputNotes
+                var segNotes = new Segemnt
                 {
                     Index = i,
                     name = seg.name,

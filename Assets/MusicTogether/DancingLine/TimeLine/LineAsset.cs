@@ -17,6 +17,7 @@ namespace MusicTogether.DancingLine.TimeLine
     
         [HideInInspector] public double clipStart;
         [HideInInspector] public double clipEnd;
+        [HideInInspector] public ILineComponent component;
         [HideInInspector] public ILineController controller;
         
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
@@ -35,6 +36,7 @@ namespace MusicTogether.DancingLine.TimeLine
             behaviour.clipStart = clipStart;
             behaviour.clipEnd = clipEnd;
             behaviour.blendCurve = blendCurve;
+            behaviour.component = component;
             behaviour.lineController = controller;
             
             return playable;

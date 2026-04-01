@@ -6,6 +6,7 @@ namespace MusicTogether.DancingLine.TimeLine
 {
     public class LineBehaviour : PlayableBehaviour
     {
+        public ILineComponent component;
         public ILineController lineController;
         public ILinePool linePool;
         public double clipStart;
@@ -23,8 +24,8 @@ namespace MusicTogether.DancingLine.TimeLine
         {
             if (linePool == null) return;
             
-            linePool.AwakeUnion();
-
+            //linePool.AwakeUnion();
+            linePool.Init(component, clipStart);
             if (lineController != null)
             {
                 lineController.RegisterPool(linePool, linePool.BeginTime, clipEnd);

@@ -1,0 +1,18 @@
+using System.Collections;
+using System.Collections.Generic;
+using MusicTogether.General;
+using UnityEngine;
+
+namespace MusicTogether.DancingBall
+{
+    [CreateAssetMenu(menuName = "MTDancingBal/TapStyle", fileName = "TapStyle_styleName")]
+    public class TapPlacerData : ScriptableObject
+    {
+        public Gradient tapColorGradient;
+        public TimeRange tapTimeRange=new TimeRange(-2,2);
+        public float beginRadius;
+        public AnimationCurve radiusCurve;
+        public float fadeTime;
+        public AnimationCurve fadeAlphaCurve;
+    }
+}

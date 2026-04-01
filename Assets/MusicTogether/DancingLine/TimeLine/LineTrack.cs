@@ -54,6 +54,7 @@ namespace MusicTogether.DancingLine.TimeLine
                     {
                         lineAsset.clipStart = clip.start;
                         lineAsset.clipEnd = clip.end;
+                        lineAsset.component = mixerBehaviour.cachedLineComponent;
                         lineAsset.controller = controller;
                     }
                 }

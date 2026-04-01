@@ -15,6 +15,7 @@ namespace MusicTogether.DancingLine.Classic
     public class ClassicLinePool : SerializedMonoBehaviour, ILinePool
     {
         //预设参数
+        [SerializeField, Required] internal Transform tailHolder;
         [SerializeField, Required] internal GameObject lineTailPrefab;
         [SerializeField] internal IPhysicsDetector physicsDetector;
         [SerializeField] internal ILineNode preNode;
@@ -26,8 +27,9 @@ namespace MusicTogether.DancingLine.Classic
         [SerializeField] internal Vector3 beginVelocity;
         [SerializeField] internal Vector3 gravity;
         [OdinSerialize] protected List<IDirection> directions = new List<IDirection>();
+        [SerializeField] internal bool getLinePositionAsBeginPosition;
         
-        internal Transform tailHolder => transform;
+        //internal Transform tailHolder => transform;
         
         //运行信息
         internal MotionState currentMotionState;
@@ -56,12 +58,20 @@ namespace MusicTogether.DancingLine.Classic
         [SerializeField] internal TextMeshProUGUI debugText;
         internal string debugInfo;
 
-        public void Init()
+        public void Init(ILineComponent lineComponent, double time)
         {
             pendingNodes.Clear();
             lineNodes.Clear();
             currentNodeIndex = -1;
 
+            if (getLinePositionAsBeginPosition)//折中方案，之后请使用新的实现方式。
+            {
+                var lineGlobalPosition = lineComponent.Transform.position;
+                var lineLocalPosition = tailHolder.InverseTransformPoint(lineGlobalPosition);
+                lineLocalPosition = directions[0].GetLineHeadMotionState(lineLocalPosition, beginTime - time).ParentSpacePosition;
+                beginPoint = lineLocalPosition;
+            }
+            
             //AddNode(NodeInputType.Continue, beginTime);
             preNode.SetEndTime(beginTime);
             preNode.SetBeginPosition(beginPoint);
@@ -280,7 +290,8 @@ namespace MusicTogether.DancingLine.Classic
 
         public void AwakeUnion()
         {
-            Init();
+            throw new NotImplementedException("ClassicLinePool does not support AwakeUnion. Please call Init() directly to initialize the pool.");
+            //Init();
         }
         public void StartUnion(double startTime = 0d) { }
 

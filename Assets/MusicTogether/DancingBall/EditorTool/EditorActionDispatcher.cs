@@ -9,7 +9,7 @@ namespace MusicTogether.DancingBall.EditorTool
     /// </summary>
     public class EditorActionDispatcher : MonoBehaviour
     {
-        [SerializeField] private EditorTool editorTool;
+        [SerializeField] private EditManager editManager;
 
         private Dictionary<string, MethodInfo> _methodCache;
         private HashSet<string> _executedInCurrentChain;
@@ -27,7 +27,7 @@ namespace MusicTogether.DancingBall.EditorTool
         private void BuildMethodCache()
         {
             _methodCache = new Dictionary<string, MethodInfo>();
-            var type = typeof(EditorTool);
+            var type = typeof(EditManager);
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 var ps = method.GetParameters();
@@ -41,9 +41,9 @@ namespace MusicTogether.DancingBall.EditorTool
         public void Dispatch(string methodName, EditorActionContext ctx)
         {
             EnsureMethodCache();
-            if (editorTool == null)
+            if (editManager == null)
             {
-                Debug.LogError("[EditorActionDispatcher] editorTool 未赋值。");
+                Debug.LogError("[EditorActionDispatcher] editManager 未赋值。");
                 return;
             }
 
@@ -67,7 +67,7 @@ namespace MusicTogether.DancingBall.EditorTool
             }
 
             _executedInCurrentChain.Add(methodName);
-            method.Invoke(editorTool, new object[] { ctx });
+            method.Invoke(editManager, new object[] { ctx });
 
             foreach (var attr in method.GetCustomAttributes<AfterActionAttribute>())
             {

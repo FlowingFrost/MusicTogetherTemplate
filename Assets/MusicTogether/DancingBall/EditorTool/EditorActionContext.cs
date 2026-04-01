@@ -7,17 +7,33 @@ namespace MusicTogether.DancingBall.EditorTool
     /// </summary>
     public class EditorActionContext
     {
-        public Map TargetMap;
+        public IMap TargetMap;
         public int RoadIndex = -1;
         public int BlockLocalIndex = -1;
 
-        public static EditorActionContext ForMap(Map map)
+        public static EditorActionContext ForMap(IMap map)
             => new EditorActionContext { TargetMap = map };
 
-        public static EditorActionContext ForRoad(Map map, int roadIndex)
+        public static EditorActionContext ForRoad(IMap map, int roadIndex)
             => new EditorActionContext { TargetMap = map, RoadIndex = roadIndex };
 
-        public static EditorActionContext ForRoadAndBlock(Map map, int roadIndex, int blockLocalIndex)
+        public static EditorActionContext ForRoadAndBlock(IMap map, int roadIndex, int blockLocalIndex)
             => new EditorActionContext { TargetMap = map, RoadIndex = roadIndex, BlockLocalIndex = blockLocalIndex };
+    }
+
+    public class EditorActionContextSerialized
+    {
+        public IMap TargetMap;
+        public IRoad TargetRoad;
+        public IBlock TargetBlock;
+
+        public static EditorActionContextSerialized ForMap(IMap map)
+            => new EditorActionContextSerialized { TargetMap = map };
+
+        public static EditorActionContextSerialized ForRoad(IMap map, IRoad road)
+            => new EditorActionContextSerialized { TargetMap = map, TargetRoad = road };
+
+        public static EditorActionContextSerialized ForRoadAndBlock(IMap map, IRoad road, IBlock block)
+            => new EditorActionContextSerialized { TargetMap = map, TargetRoad = road, TargetBlock = block };
     }
 }

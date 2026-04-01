@@ -1,9 +1,11 @@
 using MusicTogether.LevelManagement;
+using UnityEngine;
 
 namespace MusicTogether.DancingLine.Interfaces
 {
     public interface ILineComponent// : ILevelUnion
     {
+        Transform Transform { get; }
         //ILinePool Pool { get; }
         ILineController Controller { get; }
         //IPhysicsDetector PhysicsDetector { get; }

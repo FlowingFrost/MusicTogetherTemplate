@@ -24,6 +24,7 @@ namespace MusicTogether.DancingLine.Classic
         [SerializeField] internal TextMeshProUGUI debugText;
         internal string debugInfo;
         //API
+        public Transform Transform => lineHeadTransform;
         public ILineController Controller => controller;
         
         /*public void Turn()

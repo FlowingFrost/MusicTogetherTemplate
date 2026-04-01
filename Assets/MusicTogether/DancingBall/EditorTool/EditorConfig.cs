@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace MusicTogether.DancingBall.EditorTool
 {
-    // <summary>
+    /// <summary>
     /// UI全局配置 - 单例ScriptableObject
     /// 存储WindowChrome等UI组件的全局参数
     /// </summary>
-    [CreateAssetMenu(fileName = "EditorConfig", menuName = "MusicTogether/DB_Editor Config")]
+    [CreateAssetMenu(fileName = "EditorConfig", menuName = "MusicTogether/DancingBall/Editor Config")]
     public class EditorConfig : SingletonScriptableObject<EditorConfig>
     {
         //DebugColors

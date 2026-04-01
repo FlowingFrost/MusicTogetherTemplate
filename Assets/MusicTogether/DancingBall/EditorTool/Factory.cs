@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using MusicTogether.DancingBall.Data;
 using MusicTogether.DancingBall.Scene;
 using UnityEngine;
 
@@ -6,75 +8,110 @@ namespace MusicTogether.DancingBall.EditorTool
 {
     public class Factory : MonoBehaviour
     {
-        [SerializeField] public GameObject blockPrefab;
+        [SerializeField] private GameObject roadPrefab;
+        [SerializeField] private GameObject blockPrefab;
 
-        public Road CreateRoad(Map map, int roadIndex)
+        /// <summary>
+        /// 从prefab或空物体创建Road。未预装Road脚本时自动添加ClassicRoad
+        /// </summary>
+        [Obsolete] public IRoad CreateRoad(IMap map, RoadData roadData)
         {
-            if (map.Roads.Exists(r => r.RoadIndex == roadIndex))
+            //数据校验：空校验与重复校验
+            if (map == null || roadData == null) return null;
+            if (map.Roads.Exists(r => r.RoadData != null && r.RoadData.roadName == roadData.roadName))
             {
-                Debug.LogError($"Road with index {roadIndex} already exists in the map.");
+                Debug.LogError($"Road with name {roadData.roadName} already exists in the map.");
                 return null;
             }
 
-            GameObject roadObj = new GameObject($"Road_{roadIndex}");
-            roadObj.transform.SetParent(map.transform);
+            var parent = map.Transform;
 
-            var road = roadObj.AddComponent<Road>();
-            road.map = map;
-            road.RoadIndex = roadIndex;
+            GameObject roadObj = roadPrefab != null
+                ? Instantiate(roadPrefab, parent, false)
+                : new GameObject();
+            roadObj.name = string.IsNullOrEmpty(roadData.roadName) ? "Road" : $"Road_{roadData.roadName}";
+            if (roadPrefab == null && parent != null)
+            {
+                roadObj.transform.SetParent(parent);
+            }
+
+            if (!roadObj.TryGetComponent<IRoad>(out var road))
+            {
+                road = roadObj.AddComponent<ClassicRoad>();
+            }
+
+            road.Init(map, roadData);
             map.Roads.Add(road);
             return road;
         }
 
-        public List<Road> CreateRoads(Map map, int indexBegin, int count)
+        [Obsolete] public List<IRoad> CreateRoads(IMap map, List<RoadData> roadDataList)
         {
-            var list = new List<Road>();
-            for (int i = indexBegin; i < indexBegin + count; i++)
+            var list = new List<IRoad>();
+            if (roadDataList == null) return list;
+            foreach (var roadData in roadDataList)
             {
-                if (map.Roads.Exists(r => r.RoadIndex == i)) continue;
-                var r = CreateRoad(map, i);
-                if (r != null) list.Add(r);
+                var road = CreateRoad(map, roadData);
+                if (road != null) list.Add(road);
             }
             return list;
         }
 
-        public Block CreateBlock(Road road, int blockLocalIndex)
+        /// <summary>
+        /// 从prefab创建Block。未预装Block脚本时自动添加ClassicBlock
+        /// </summary>
+        [Obsolete] public IBlock CreateBlock(IRoad road, int blockLocalIndex)
         {
-            if (road.blocks.Exists(b => b.blockLocalIndex == blockLocalIndex))
+            if (road == null) return null;
+            if (road.Blocks.Exists(b => b.BlockLocalIndex == blockLocalIndex))
             {
                 Debug.LogError($"Block with local index {blockLocalIndex} already exists in the road.");
                 return null;
             }
+            
+            var parent = road.Transform;
 
-            GameObject blockObj = Instantiate(blockPrefab, road.transform, false);
-            blockObj.transform.localPosition = Vector3.zero;
-            blockObj.transform.localRotation = Quaternion.identity;
+            if (blockPrefab == null)
+            {
+                Debug.LogError($"Block prefab does not exist.");
+                return null;
+            }
+
+            GameObject blockObj = Instantiate(blockPrefab, parent, false);
             blockObj.name = $"Block_{blockLocalIndex}";
 
-            var block = blockObj.AddComponent<Block>();
-            block.road = road;
-            block.blockLocalIndex = blockLocalIndex;
+            blockObj.transform.localPosition = Vector3.zero;
+            blockObj.transform.localRotation = Quaternion.identity;
 
-            var tileHolder = blockObj.GetComponentInChildren<TileHolder>();
-            var blockInfoDisplay = blockObj.GetComponentInChildren<BlockInformationDisplay>();
-            if (tileHolder == null) tileHolder = blockObj.AddComponent<TileHolder>();
-            if (blockInfoDisplay == null) blockInfoDisplay = blockObj.AddComponent<BlockInformationDisplay>();
+            if (!blockObj.TryGetComponent<IBlock>(out var block))
+            {
+                block = blockObj.AddComponent<ClassicBlock>();
+            }
 
-            block.tileHolder = tileHolder;
-            block.blockInformationDisplay = blockInfoDisplay;
+            block.Init(road, blockLocalIndex);
 
-            road.blocks.Add(block);
+            road.Blocks.Add(block);
             return block;
         }
 
-        public List<Block> CreateBlocks(Road road, int indexBegin, int count)
+        [Obsolete] public List<IBlock> CreateBlocks(IRoad road, int indexBegin, int count)
         {
-            var list = new List<Block>();
-            for (int i = indexBegin; i < indexBegin + count; i++)
+            var index = new List<int>();
+            for (int i = 0; i < count; i++)
             {
-                if (road.blocks.Exists(b => b.blockLocalIndex == i)) continue;
-                var b = CreateBlock(road, i);
-                if (b != null) list.Add(b);
+                index.Add(indexBegin + i);
+            }
+            return CreateBlocks(road, index);
+        }
+
+        [Obsolete] public List<IBlock> CreateBlocks(IRoad road, IEnumerable<int> index)
+        {
+            var list = new List<IBlock>();
+            foreach (var i in index)
+            {
+                if (road.Blocks.Exists(b => b.BlockLocalIndex == i)) continue;
+                var block = CreateBlock(road, i);
+                if (block != null) list.Add(block);
             }
             return list;
         }
