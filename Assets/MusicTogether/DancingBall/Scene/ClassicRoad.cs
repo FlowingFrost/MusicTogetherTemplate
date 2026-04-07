@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MusicTogether.DancingBall.Data;
 using MusicTogether.DancingBall.EditorTool;
 using MusicTogether.DancingBall.Player;
 using Sirenix.OdinInspector;
+using Sirenix.Serialization;
+using UnityEditor;
 using UnityEngine;
 
 namespace MusicTogether.DancingBall.Scene
@@ -11,17 +14,23 @@ namespace MusicTogether.DancingBall.Scene
     public class ClassicRoad : SerializedMonoBehaviour, IRoad
     {
         //外部引用
-        public IMap Map { get; private set; }
+        public IMap Map
+        {
+            get { return _map ??= GetComponentInParent<IMap>(); }
+            private set => _map = value;
+        }
+        [SerializeField] [ReadOnly] private IMap _map;
         
         private RoadData cachedRoadData;
-        private string targetRoadDataName;
+        [SerializeField] [ReadOnly] private string targetRoadDataName;
         public RoadData RoadData
         {
             get
             {
-                if (cachedRoadData != null) return cachedRoadData;
-                Map.SceneData.Get_RoadData_ByRoadName(targetRoadDataName, out cachedRoadData);
-                return cachedRoadData;
+                if (cachedRoadData != null && Map.SceneData.roadDataList.Contains(cachedRoadData)) return cachedRoadData;
+                if (Map.SceneData.Get_RoadData_ByRoadName(targetRoadDataName, out cachedRoadData)) return cachedRoadData;
+                Map.OnRoadDataMissing(this);
+                return null;
             }
             private set
             {
@@ -29,31 +38,85 @@ namespace MusicTogether.DancingBall.Scene
                 targetRoadDataName = value.roadName;
             }
         }
+        public string RoadName => targetRoadDataName;
         private EditorConfig EditorConfig => EditorConfig.Config;
+        
         //本体绑定信息
         public Transform Transform => transform;
         [SerializeField] private GameObject blockPrefab;
         [SerializeField] private List<IBlock> blocks = new List<IBlock>();
         public List<IBlock> Blocks => blocks;
-        
+        //预生成信息
+        [SerializeField] private double roadBeginTime, roadEndTime;
+        public double RoadBeginTime => roadBeginTime;
+        public double RoadEndTime => roadEndTime;
+        [SerializeField] [ReadOnly] private List<MovementData> movementDatum = new List<MovementData>();
+        public List<MovementData> MovementDatum => movementDatum;
+        //运行数据
+        [SerializeField] [ReadOnly] private int dirtyLevel;
         //表达式
-        private bool IsDataValid => Map != null && RoadData != null;
-
+        public bool IsDataValid
+        {
+            get
+            {
+                if (Map == null)
+                {
+                    return false;
+                }
+                if (RoadData == null)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
+        
         //函数
-        public void Init(IMap map, RoadData roadData)
+        public void Init(IMap map, RoadData roadData, GameObject blockPrefab)
         {
             Map = map;
             RoadData = roadData;
+            this.blockPrefab = blockPrefab;
         }
+
 
         #region Road_Operations //操作功能
             //物体操作================================================================================================
+            [Button("保存transform信息")]
+            public void SaveTransformData()
+            {
+                if (!IsDataValid) return;
+                RoadData.loaclPosition = Transform.localPosition;
+                RoadData.loaclRotation = Transform.localRotation;
+                RoadData.localScale = Transform.localScale;
+            }
+            [Button("重建Block列表")]
+            //Dirty Level = 4
+            public void RebuildBlocks()
+            {
+                if (!IsDataValid)
+                {
+                    throw new InvalidOperationException("[ClassicMap.RebuildRoads] SceneData 为空，无法重建 Road。");
+                }
+                blocks.Clear();
+                foreach (Transform children in transform)
+                {
+                    DestroyImmediate(children.gameObject);
+                }
+                if (dirtyLevel <= 4) dirtyLevel = 3;
+                RecoverBlocks();
+            }
             /// <summary>
             /// 暂未优化该函数，仅仅完成了错误处理
             /// </summary>
-            public void RefreshRoadBlocks()
+            [Button("清理重复和无效Block，添加缺失Block，更新Block位置")]
+            //Dirty Level = 3
+            public void RecoverBlocks()
             {
-                if (!IsDataValid) return;
+                if (!IsDataValid)
+                {
+                    throw new InvalidOperationException($"[ClassicRoad.RefreshRoadBlocks] 数据无效，Map={Map != null}, CachedRoadData={cachedRoadData != null}, RoadName={RoadName}");
+                }
 
                 int blockCount = Mathf.Max(0, RoadData.BlockCount);
 
@@ -79,6 +142,11 @@ namespace MusicTogether.DancingBall.Scene
                     RemoveBlocks(toRemove);
                 }
 
+                if (blocks.Count == 0 && blockCount > 0)
+                {
+                    throw new InvalidOperationException($"[ClassicRoad.RefreshRoadBlocks] 期望创建 {blockCount} 个 Block 但结果为 0。请检查 blockPrefab、CreateBlock 以及 RoadData.BlockCount。RoadName={RoadName}");
+                }
+
                 // 重新赋值 localIndex 按顺序
                 var sorted = blocks.OrderBy(b => b.BlockLocalIndex).ToList();
                 blocks.Clear();
@@ -87,22 +155,30 @@ namespace MusicTogether.DancingBall.Scene
                 {
                     blocks[i].BlockLocalIndex = i;
                 }
-
+                if (dirtyLevel <= 3) dirtyLevel = 2;
                 OnBlockDisplacementRuleChanged();
             }
 
             /// <summary>
             /// 暂未优化该函数，仅仅完成了错误处理
             /// </summary>
+            [Button("更新Block位置")]
+            //Dirty Level = 2
             public void OnBlockDisplacementRuleChanged()
             {
-                if (!IsDataValid) return;
+                if (!IsDataValid)
+                {
+                    throw new InvalidOperationException($"[ClassicRoad.OnBlockDisplacementRuleChanged] 数据无效，Map={Map != null}, CachedRoadData={cachedRoadData != null}, RoadName={RoadName}");
+                }
                 int blockCount = Mathf.Max(0, RoadData.BlockCount);
                 var sortedBlocks = blocks
                     .Where(b => b.BlockLocalIndex >= 0 && b.BlockLocalIndex < blockCount)
                     .OrderBy(b => b.BlockLocalIndex)
                     .ToList();
-                if (sortedBlocks.Count == 0) return;
+                if (sortedBlocks.Count == 0)
+                {
+                    throw new InvalidOperationException($"[ClassicRoad.OnBlockDisplacementRuleChanged] 没有有效 Block 可用于位移规则，blocks={blocks.Count}, BlockCount={blockCount}, RoadName={RoadName}");
+                }
 
                 // 分组：遇到具有位移规则的块时开启新组
                 var groups = new List<List<IBlock>>();
@@ -132,67 +208,94 @@ namespace MusicTogether.DancingBall.Scene
                     blockData.ApplyDisplacementRule(group);
                 }
 
+                if (dirtyLevel <= 2) dirtyLevel = 1;
                 RefreshBlockInfoDisplay();
             }
+            [Button("更新Block显示信息")]
+            //Dirty Level = 1
             public void RefreshBlockInfoDisplay()
             {
-                if (!IsDataValid) return;
-                if (blocks == null || blocks.Count == 0) return;
+                if (!IsDataValid)
+                {
+                    throw new InvalidOperationException($"[ClassicRoad.RefreshBlockInfoDisplay] 数据无效，Map={Map != null}, CachedRoadData={cachedRoadData != null}, RoadName={RoadName}");
+                }
+                if (blocks == null || blocks.Count == 0)
+                {
+                    throw new InvalidOperationException($"[ClassicRoad.RefreshBlockInfoDisplay] blocks 为空，无法刷新显示。RoadName={RoadName}");
+                }
 
                 foreach (var block in blocks)
                 {
                     var color = GetBlockColor(RoadData, block.BlockLocalIndex);
-                    block.BlockDisplay?.RefreshBlockDisplay(color);
+                    block.BlockDebugDisplay?.RefreshBlockDisplay(color);
                 }
+
+                if (dirtyLevel <= 1) dirtyLevel = 0;
             }
-            
+            [Button("生成Block MovementData（测试）")]
+            public void GenerateBlockMovementData()
+            {
+                if (!Map.SceneData.GetSegment(RoadData.targetSegmentIndex, out var targetSegment)) throw new Exception("找不到目标Segment，无法生成Block MovementData");
+                movementDatum.Clear();
+                double singleBlockDuration = targetSegment.GetNoteTimeAt(1);
+                foreach (var block in blocks)
+                {
+                    double blockTime = targetSegment.GetNoteTimeAt(RoadData.noteBeginIndex + block.BlockLocalIndex);
+                    bool blockNeedTap = targetSegment.notes.Contains(RoadData.noteBeginIndex + block.BlockLocalIndex);
+                    movementDatum.AddRange(block.TileHolder.GetTileMovementDatum(blockTime, singleBlockDuration, blockNeedTap));
+                }
+                bool movementDatumHasData = movementDatum.Count > 0;
+                if (!movementDatumHasData) throw new Exception("生成的MovementData列表为空，请检查Block.TileHolder.GetTileMovementDatum的实现");
+                roadBeginTime = movementDatum.First().Time;
+                roadEndTime = movementDatum.Last().Time;
+            }
+
+            public void OnDrawGizmosSelected()
+            {
+                
+                var points = MovementDatum.Select(d => d.GetPlayerPosition(2));
+                Handles.color = Color.cyan;
+                Handles.DrawAAPolyLine(3, points.ToArray());
+            }
             //数据操作================================================================================================
             //Road级别
-            public void ModifyBlockBeginIndex(int newBeginIndex)
+            [Button("更改Note起始序号，重建Block列表")]
+            public void ModifyNoteBeginIndex(int newBeginIndex)
             {
                 if (!IsDataValid) return;
                 RoadData.noteBeginIndex = newBeginIndex;
-                RefreshRoadBlocks();//Map.EditManager?.OnRoadBlockCountChanged(EditorTool.EditorActionContext.ForRoad(Map, GetRoadIndex()));
+                RecoverBlocks();//Map.EditManager?.OnRoadBlockCountChanged(EditorTool.EditorActionContext.ForRoad(Map, GetRoadIndex()));
             }
-
-            public void ModifyBlockEndIndex(int newEndIndex)
+            [Button("更改Note结束序号，重建Block列表")]
+            public void ModifyNoteEndIndex(int newEndIndex)
             {
                 if (!IsDataValid) return;
                 RoadData.noteEndIndex = newEndIndex;
-                RefreshRoadBlocks();//Map.EditManager?.OnRoadBlockCountChanged(EditorTool.EditorActionContext.ForRoad(Map, GetRoadIndex()));
+                RecoverBlocks();//Map.EditManager?.OnRoadBlockCountChanged(EditorTool.EditorActionContext.ForRoad(Map, GetRoadIndex()));
             }
-
+            [Button("更改目标Road数据名称")]
             public void ModifyTargetRoadDataName(string newName)
             {
                 if (!IsDataValid) return;
                 RoadData.roadName = newName;
                 targetRoadDataName = newName;
             }
-            //Block级别
-            public void ModifyDisplacementData(int blockLocalIndex, IBlockDisplacementData newDisplacementData)
-            {
-                if (!IsDataValid) return;
-                if (newDisplacementData == null) return;
-                RoadData.Set_BlockData(newDisplacementData);
-                OnBlockDisplacementRuleChanged();//Map.EditManager?.OnBlockDisplacementRuleChanged(EditorTool.EditorActionContext.ForRoadAndBlock(Map, GetRoadIndex(), blockLocalIndex));
-            }
-            
-            //数据获取
-            public List<MovementData> GetBlockMovementDatum(int blockBeginIndex)
-            {
-                return new List<MovementData>();
-            }
         #endregion
-        
+
+
+        //操作功能
+
+        //数据获取
         private int GetRoadIndex()
+        {
+            if (Map == null) return -1;
+            return Map.Roads.IndexOf(this);
+        }
+        private int GetRoadDataIndex()
         {
             if (Map?.SceneData == null || RoadData == null) return -1;
             return Map.SceneData.roadDataList.IndexOf(RoadData);
         }
-        
-        //操作功能
-
-        //数据操作
         private Color GetBlockColor(RoadData roadData, int blockLocalIndex)
         {
             if (!IsDataValid) return EditorConfig.problemBlockColor;
@@ -205,25 +308,44 @@ namespace MusicTogether.DancingBall.Scene
                     : EditorConfig.tapBlockWithoutDisplacementColor;
             return hasRule ? EditorConfig.normalBlockWithDisplacementColor : EditorConfig.normalBlockColor;
         }
+        public List<MovementData> GetBlockMovementDatum(int blockBeginIndex)
+        {
+            return new List<MovementData>();
+        }
+        //数据操作
+        public void ModifyDisplacementData(int blockLocalIndex, IBlockDisplacementData newDisplacementData)
+        {
+            if (!IsDataValid)
+            {
+                throw new InvalidOperationException($"[ClassicRoad.ModifyDisplacementData] 数据无效，Map={Map != null}, CachedRoadData={cachedRoadData != null}, RoadName={RoadName}, BlockLocalIndex={blockLocalIndex}");
+            }
+            if (newDisplacementData == null)
+            {
+                throw new ArgumentNullException(nameof(newDisplacementData), $"[ClassicRoad.ModifyDisplacementData] newDisplacementData 为空。RoadName={RoadName}, BlockLocalIndex={blockLocalIndex}");
+            }
+            RoadData.Set_BlockData(newDisplacementData);
+            OnBlockDisplacementRuleChanged();
+        }
         //地图操作
         /// <summary>
         /// 从prefab创建Block。未预装Block脚本时自动添加ClassicBlock
         /// </summary>
         public IBlock CreateBlock(int blockLocalIndex)
         {
-            if (!IsDataValid) return null;
+            if (!IsDataValid)
+            {
+                throw new InvalidOperationException($"[ClassicRoad.CreateBlock] 数据无效，Map={Map != null}, CachedRoadData={cachedRoadData != null}, RoadName={RoadName}, BlockLocalIndex={blockLocalIndex}");
+            }
             if (blocks.Exists(b => b.BlockLocalIndex == blockLocalIndex))
             {
-                Debug.LogError($"Block with local index {blockLocalIndex} already exists in the road.");
-                return null;
+                throw new InvalidOperationException($"[ClassicRoad.CreateBlock] Block with local index {blockLocalIndex} already exists in the road. RoadName={RoadName}");
             }
             
             var parent = Transform;
 
             if (blockPrefab == null)
             {
-                Debug.LogError($"Block prefab does not exist.");
-                return null;
+                throw new InvalidOperationException($"[ClassicRoad.CreateBlock] Block prefab does not exist. RoadName={RoadName}, BlockLocalIndex={blockLocalIndex}");
             }
 
             GameObject blockObj = Instantiate(blockPrefab, parent, false);

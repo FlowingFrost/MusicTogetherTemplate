@@ -20,8 +20,11 @@ namespace MusicTogether.DancingBall.Data
         public int noteEndIndex;
         public int BlockCount => noteEndIndex - noteBeginIndex + 1;
         [Obsolete("不建议使用全局序号访问Block，这可能会造成问题")][HideInInspector] public int blockIndex_Global_Begin;
+        public Vector3 loaclPosition;
+        public Quaternion loaclRotation;
+        public Vector3 localScale = Vector3.one;
         [ListDrawerSettings(DefaultExpandedState = false)]
-        public List<IBlockDisplacementData> blockDisplacementDataList = new List<IBlockDisplacementData>();
+        [OdinSerialize] public List<IBlockDisplacementData> blockDisplacementDataList = new List<IBlockDisplacementData>();
 
         public RoadData(int roadIndexGlobal, int targetSegmentIndex = 0, int noteBeginIndex = -1, int noteEndIndex = -1)
         {
@@ -121,7 +124,7 @@ namespace MusicTogether.DancingBall.Data
             noteTime = segment.GetNoteTimeAt(noteIndex);
             return true;
         }
-
+        [Obsolete]
         public bool Exists_NoteIndex(int targetSegmentIndex, int noteIndex)
         {
             if (!GetSegment(targetSegmentIndex, out Segemnt segment)) return false;
@@ -234,7 +237,22 @@ namespace MusicTogether.DancingBall.Data
                 Refresh_RoadDataList();
             }
         }
-        
+
+        /// <summary>
+        /// 用于JSON存档还原：直接替换列表并重建排序与全局索引。
+        /// </summary>
+        /// <param name="roads">完整的 RoadData 列表</param>
+        public void ApplyRoadDataListFromArchive(List<RoadData> roads)
+        {
+            roadDataList ??= new List<RoadData>();
+            roadDataList.Clear();
+            if (roads != null && roads.Count > 0)
+            {
+                roadDataList.AddRange(roads);
+                Refresh_RoadDataList();
+            }
+        }
+
         //==============Road操作中与Block相关的部分
         //过时的设计：不建议直接由SceneData访问Block数据
         //Block数据操作==================================================================================

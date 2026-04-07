@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" lgf="LightGameFrame.UI" editor-extension-mode="False">
+    <Style src="project://database/Assets/LightGameFrame/UI/TabView/TabView.uss?fileID=7433441132597879392&amp;guid=1f11d94a48daf224b97805d61e38efb1&amp;type=3#TabView" />
+    <LightGameFrame.UI.TabView tab-titles="主页,设置">
+        <ui:VisualElement>
+            <ui:Label text="主页内容" />
+        </ui:VisualElement>
+        <ui:VisualElement>
+            <ui:Label text="设置内容" />
+        </ui:VisualElement>
+    </LightGameFrame.UI.TabView>
+</ui:UXML>

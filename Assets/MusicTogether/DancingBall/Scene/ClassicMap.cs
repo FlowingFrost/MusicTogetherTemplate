@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MusicTogether.DancingBall.Data;
 using MusicTogether.DancingBall.EditorTool;
+using MusicTogether.DancingBall.Player;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -9,56 +11,122 @@ namespace MusicTogether.DancingBall.Scene
 {
     public class ClassicMap : SerializedMonoBehaviour, IMap
     {
+        //外部引用
         [Header("References")]
-        [SerializeField] private EditManager editManager;
-        [SerializeField] private Factory factory;
+        //[SerializeField] private EditManager editManager;
+        //[SerializeField] private Factory factory;
         [SerializeField] private SceneData sceneData;
         [SerializeField] private GameObject roadPrefab;
-        [SerializeField] private readonly List<IRoad> roads = new List<IRoad>();
-
-        public Transform Transform => transform;
-        public EditManager EditManager => editManager;
+        [SerializeField] private GameObject blockPrefab;
         public SceneData SceneData => sceneData;
+        //本体绑定信息
+        public Transform Transform => transform;
+        [SerializeField] private readonly List<IRoad> roads = new List<IRoad>();
         public List<IRoad> Roads => roads;
-        public bool IsDataValid => sceneData != null && editManager != null && factory != null;
-
-        //操作功能
-        [Button]
-        public void RebuildRoads()
+        [SerializeField] private readonly List<MovementData> movementDataList = new List<MovementData>();
+        
+        //运行数据
+        [SerializeField] [ReadOnly] private bool dirty;
+        
+        //表达式
+        public bool IsDataValid
         {
-            var roadDataList = sceneData.roadDataList;
-            // 去重：保留 blocks 最多的
-            var duplicateRoads = roads
-                .GroupBy(r => r.RoadData?.roadName)
-                .Where(g => g.Key != null && g.Count() > 1)
-                .SelectMany(g => g.OrderByDescending(r => r.Blocks.Count).Skip(1))
-                .ToList();
-            RemoveRoads(duplicateRoads);
-
-            // 移除无效 road（不在数据列表中）
-            var validNames = new HashSet<string>(roadDataList.Select(r => r.roadName));
-            var roadToRemove = roads.Where(r => r.RoadData == null || !validNames.Contains(r.RoadData.roadName)).ToList();
-            RemoveRoads(roadToRemove);
-            
-            //移除不在roads列表中的road（丢失绑定的子物体）
-            var missbindingRoadToRemove = GetComponentsInChildren<IRoad>().Where(r => !roads.Contains(r)).ToList();
-            RemoveRoads(missbindingRoadToRemove);
-            
-            // 添加缺失 road
-            var roadToAdd = roadDataList
-                .Where(d => !roads.Exists(r => r.RoadData != null && r.RoadData.roadName == d.roadName))
-                .ToList();
-            AddRoads(roadToAdd);
-        }
-        public void RefreshAllRoads()
-        {
-            if (!IsDataValid) return;
-
-            for (int i = 0; i < roads.Count; i++)
+            get
             {
-                roads[i].RefreshRoadBlocks();
+                if (sceneData == null)
+                {
+                    return false;
+                }
+
+                return true;
             }
         }
+
+        public void Init()
+        {
+        }
+
+        #region Map_Operations //操作功能
+        //地图操作
+            [Button("重建所有Road")]
+            public void RebuildRoads()
+            {
+                if (!IsDataValid)
+                {
+                    throw new InvalidOperationException("[ClassicMap.RebuildRoads] SceneData 为空，无法重建 Road。");
+                }
+                roads.Clear();
+                foreach (Transform children in transform)
+                {
+                    DestroyImmediate(children.gameObject);
+                }
+                RecoverRoads();
+            }
+            
+            public void OnRoadDataMissing(IRoad road)
+            {
+                DestroyImmediate(road.Transform.gameObject);
+                RecoverRoads();
+            }
+            [Button("清理重复和无效Road，添加缺失Road")]
+            public void RecoverRoads()
+            {
+                if (!IsDataValid)
+                {
+                    throw new InvalidOperationException("[ClassicMap.RecoverRoads] SceneData 为空，无法恢复 Road。");
+                }
+                var roadDataList = sceneData.roadDataList;
+                // 去重：保留 blocks 最多的
+                var duplicateRoads = roads
+                    .GroupBy(r => r.RoadData?.roadName)
+                    .Where(g => g.Key != null && g.Count() > 1)
+                    .SelectMany(g => g.OrderByDescending(r => r.Blocks.Count).Skip(1))
+                    .ToList();
+                RemoveRoads(duplicateRoads);
+
+                // 移除无效 road（找不到对应的RoadData，或RoadData与现在的数据脱节）
+                var roadToRemove = roads.Where(r => r.RoadData == null || SceneData.roadDataList.Contains(r.RoadData)).ToList();
+                RemoveRoads(roadToRemove);
+                
+                //移除不在roads列表中的road（丢失绑定的子物体）
+                var missbindingRoadToRemove = GetComponentsInChildren<IRoad>().Where(r => !roads.Contains(r)).ToList();
+                RemoveRoads(missbindingRoadToRemove);
+                
+                // 添加缺失 road
+                var roadToAdd = roadDataList
+                    .Where(d => !roads.Exists(r => r.RoadData != null && r.RoadData.roadName == d.roadName))
+                    .ToList();
+                AddRoads(roadToAdd);
+                RefreshAllRoads();
+            }
+            [Button("刷新所有Road，重建Block列表")]
+            public void RefreshAllRoads()
+            {
+                if (!IsDataValid)
+                {
+                    throw new InvalidOperationException("[ClassicMap.RefreshAllRoads] SceneData 为空，无法刷新 Road。");
+                }
+                
+                for (int i = 0; i < roads.Count; i++)
+                {
+                    var road = roads[i];
+                    road.Init(this, sceneData.roadDataList.Find(r => r.roadName == road.RoadName), blockPrefab);
+                    road.Transform.localPosition = road.RoadData.loaclPosition;
+                    road.Transform.localRotation = road.RoadData.loaclRotation;
+                    road.Transform.localScale = road.RoadData.localScale;
+                    road.RecoverBlocks();
+                }
+            }
+        //预处理运行数据
+            [Button("生成所有Road的MovementData")]
+            public void GenerateMovementData()
+            {
+                foreach (var road in roads)
+                {
+                    road.GenerateBlockMovementData();
+                }
+            }
+        #endregion
         //地图操作
         /// <summary>
         /// 从prefab或空物体创建Road。未预装Road脚本时自动添加ClassicRoad
@@ -89,7 +157,7 @@ namespace MusicTogether.DancingBall.Scene
                 road = roadObj.AddComponent<ClassicRoad>();
             }
 
-            road.Init(this, roadData);
+            road.Init(this, roadData, blockPrefab);
             roads.Add(road);
             return road;
         }

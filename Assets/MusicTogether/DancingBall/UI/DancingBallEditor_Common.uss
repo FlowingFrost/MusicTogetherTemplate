@@ -1,0 +1,163 @@
+:root {
+    --db-font-size: 12px;
+    --db-panel-padding-x: 10px;
+    --db-panel-padding-y: 8px;
+    --db-gap-xs: 4px;
+    --db-gap-sm: 6px;
+    --db-gap-md: 10px;
+    --db-radius: 6px;
+    --db-accent: rgb(31, 111, 235);
+    --db-text: rgb(31, 35, 40);
+    --db-muted: rgb(107, 114, 128);
+    --db-surface: rgb(247, 247, 249);
+    --db-surface-alt: rgb(255, 255, 255);
+    --db-border: rgb(208, 215, 222);
+    --db-button-bg: rgb(240, 242, 245);
+    --db-button-bg-hover: rgb(231, 235, 240);
+    --db-input-bg: rgb(255, 255, 255);
+    -unity-font-definition: resource('Fonts/SourceHanSansSC-Normal SDF');
+}
+
+.db-panel {
+    padding: var(--db-panel-padding-y) var(--db-panel-padding-x);
+    flex-grow: 1;
+    font-size: var(--db-font-size);
+    background-color: var(--db-surface);
+    border-radius: var(--db-radius);
+    border-width: 1px;
+    border-color: var(--db-border);
+}
+
+.db-section {
+    padding: var(--db-gap-sm);
+    background-color: var(--db-surface-alt);
+    border-radius: var(--db-radius);
+    border-width: 1px;
+    border-color: var(--db-border);
+}
+
+.db-section-spaced {
+    margin-top: var(--db-gap-md);
+}
+
+.db-title {
+    -unity-font-style: bold;
+    font-size: 12px;
+    margin-bottom: var(--db-gap-xs);
+    color: var(--db-text);
+    margin: 0 0 var(--db-gap-xs) 4px;
+}
+
+.db-subtitle {
+    -unity-font-style: bold;
+    font-size: 11px;
+    margin: 0 0 var(--db-gap-xs) 4px;
+    color: var(--db-text);
+    padding: 0;
+}
+
+.db-muted {
+    color: var(--db-muted);
+    font-size: 11px;
+}
+
+.db-row {
+    margin-top: var(--db-gap-xs);
+}
+
+.db-button {
+    margin-top: var(--db-gap-xs);
+    height: 22px;
+    color: var(--db-text);
+    background-color: var(--db-button-bg);
+    border-color: var(--db-border);
+    border-width: 1px;
+    border-radius: 4px;
+    transition-property: background-color;
+    transition-duration: 0.15s;
+}
+
+.db-button:hover {
+    background-color: var(--db-button-bg-hover);
+}
+
+.db-button:active {
+    background-color: var(--db-border);
+}
+
+.db-field {
+    margin-top: var(--db-gap-xs);
+    color: var(--db-text);
+    flex-grow: 1;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.db-accent {
+    color: var(--db-accent);
+}
+
+.unity-base-field {
+    color: var(--db-text);
+    font-size: var(--db-font-size);
+    flex-grow: 1;
+}
+
+.unity-base-field__label {
+    color: var(--db-text);
+    margin: 0;
+    padding: 0 4px 0 0;
+    flex-grow: 0;
+    min-width: auto;
+}
+
+.unity-enum-field__label {
+    color: var(--db-text);
+}
+
+.unity-base-field__input {
+    background-color: var(--db-input-bg);
+    border-color: var(--db-border);
+    border-width: 1px;
+    border-radius: 4px;
+    margin: 0;
+    padding: 0 4px;
+    -unity-text-align: middle-right;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    align-self: auto;
+    color: rgb(27, 27, 27);
+}
+
+.unity-base-field__input:focus {
+    border-color: var(--db-accent);
+}
+
+.unity-enum-field__input {
+    background-color: var(--db-input-bg);
+    border-color: var(--db-border);
+    border-width: 1px;
+    border-radius: 4px;
+}
+
+.unity-enum-field__input:focus {
+    border-color: var(--db-accent);
+}
+
+.unity-enum-field__text {
+    color: var(--db-text);
+}
+
+.unity-enum-field__arrow {
+    color: var(--db-muted);
+}
+
+.unity-toggle__checkmark {
+    margin: 0;
+    padding: 0;
+    flex-shrink: 1;
+    width: 12px;
+    height: 12px;
+    flex-grow: 0;
+}

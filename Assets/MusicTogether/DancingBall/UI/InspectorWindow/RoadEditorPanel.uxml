@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/MusicTogether/DancingBall/UI/DancingBallEditor_Common.uss?fileID=7433441132597879392&amp;guid=1dcdcf878d12b194da051df375cde7a8&amp;type=3#DancingBallEditor_Common" />
+    <ui:VisualElement name="road-root" class="db-panel">
+        <ui:VisualElement name="road-common-container" class="db-section">
+            <ui:Label text="Road 通用选项" name="road-common-header" class="db-title" />
+            <ui:Button name="road-refresh-road-blocks" text="重建Block列表，清理重复和无效Block，添加缺失Block，更新Block位置" class="db-button" />
+            <ui:Button name="road-update-block-transform" text="更新Block位置和显示信息" class="db-button" />
+            <ui:Button name="road-refresh-block-display" text="更新Block显示信息" class="db-button" />
+            <ui:VisualElement name="road-data-operations" class="db-row">
+                <ui:IntegerField name="road-note-begin" label="Note 起始序号" class="db-field" />
+                <ui:Button name="road-modify-note-begin" text="更改Note起始序号，重建Block列表" class="db-button" />
+                <ui:IntegerField name="road-note-end" label="Note 结束序号" class="db-field" />
+                <ui:Button name="road-modify-note-end" text="更改Note结束序号，重建Block列表" class="db-button" />
+                <ui:TextField name="road-target-data-name" label="目标Road数据名称" class="db-field" />
+                <ui:Button name="road-modify-target-data-name" text="更改目标Road数据名称" class="db-button" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="road-derived-container" class="db-section db-section-spaced" style="display: none;">
+            <ui:Label text="Road 继承类选项" name="road-derived-header" class="db-title" />
+            <ui:Label text="（当前无继承类专属操作）" name="road-derived-empty" class="db-muted" />
+        </ui:VisualElement>
+        <ui:VisualElement name="road-missbinding-container" class="db-section" style="display: none;">
+            <ui:Label tabindex="-1" text="Road未绑定" parse-escape-sequences="true" display-tooltip-when-elided="true" class="db-title" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

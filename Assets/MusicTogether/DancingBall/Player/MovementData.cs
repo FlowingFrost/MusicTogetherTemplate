@@ -1,18 +1,38 @@
+using System;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace MusicTogether.DancingBall.Player
 {
-    public record MovementData()
+    [Serializable]
+    public class MovementData
     {
-        public double Time { get; private set; }
-        public Vector3 Position { get; private set; }
-        public Quaternion Rotation { get; private set; }
+        [HorizontalGroup("1",120)][LabelWidth(90)][SerializeField] private bool needTap;
+        [HorizontalGroup("1")][SerializeField] private double time;
+        [HorizontalGroup("2",120)][LabelWidth(90)][SerializeField] private float tileThickness;
+        [HorizontalGroup("2")][SerializeField] private Transform tileTransform;
         
-        public MovementData(double time, Vector3 position, Quaternion rotation) : this()
+        public MovementData(bool needTap, double time, Transform tileTransform, float tileThickness)
         {
-            this.Time = time;
-            this.Position = position;
-            this.Rotation = rotation;
+            NeedTap = needTap;
+            Time = time;
+            TileTransform = tileTransform;
+            TileThickness = tileThickness;
+        }
+
+        public bool NeedTap { get => needTap; private set => needTap = value; }
+        public double Time { get => time; private set => time = value; }
+        public Transform TileTransform { get => tileTransform; private set => tileTransform = value; }
+        public float TileThickness { get => tileThickness; private set => tileThickness = value; }
+
+        public Vector3 GetPlayerPosition(float ballRadius)
+        {
+            return TileTransform.TransformPoint(Vector3.up * (tileThickness + ballRadius));
+        }
+
+        public Quaternion GetPlayerRotation()
+        {
+            return TileTransform.rotation;
         }
     }
 }

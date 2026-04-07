@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MusicTogether.DancingBall.Player;
 using UnityEngine;
 
 namespace MusicTogether.DancingBall.Scene
@@ -20,13 +21,43 @@ namespace MusicTogether.DancingBall.Scene
         /// <summary>
         /// 返回所有已启用的地板Transform和他们的厚度。
         /// </summary>
-        public List<(Transform, float)> GetTilePoses()
+        public List<MovementData> GetTileMovementDatum(double currentBlockTime, double singleBlockDuration, bool blockNeedTap)
         {
-            List<(Transform, float)> tileTransforms = new List<(Transform, float)>();
-            if (forwardTile != null && forwardTile.gameObject.activeSelf) tileTransforms.Add((forwardTile, tileThickness));
-            if (backwardTile != null && backwardTile.gameObject.activeSelf) tileTransforms.Add((backwardTile, tileThickness));
-            if (bottomTile != null && bottomTile.gameObject.activeSelf) tileTransforms.Add((bottomTile, tileThickness));
-            return tileTransforms;
+            int activeTileCount = 0;
+            if (forwardTile != null && forwardTile.gameObject.activeSelf) activeTileCount++;
+            if (bottomTile != null && bottomTile.gameObject.activeSelf) activeTileCount++;
+            if (backwardTile != null && backwardTile.gameObject.activeSelf) activeTileCount++;
+            
+            List<MovementData> datum = new List<MovementData>();
+            if (backwardTile != null && backwardTile.gameObject.activeSelf)
+            {
+                datum.Add(GenerateMovementData(backwardTile, datum.Count));
+            }
+            if (bottomTile != null && bottomTile.gameObject.activeSelf)
+            {
+                datum.Add(GenerateMovementData(bottomTile, datum.Count));
+            }
+            if (forwardTile != null && forwardTile.gameObject.activeSelf)
+            {
+                datum.Add(GenerateMovementData(forwardTile, datum.Count));
+            }
+
+            MovementData GenerateMovementData(Transform tileTransform, int currentListCount)
+            {
+                return new MovementData(
+                    currentListCount == 0 ? blockNeedTap : false, 
+                    activeTileCount switch
+                    {
+                        0 => currentBlockTime,
+                        1 => currentBlockTime,
+                        2 => currentBlockTime - singleBlockDuration*0.1 + currentListCount*singleBlockDuration*0.2,
+                        3 => currentBlockTime - singleBlockDuration*0.1 + currentListCount*singleBlockDuration*0.1,
+                        _ => currentBlockTime,
+                    }, 
+                    tileTransform, 
+                    tileThickness);
+            }
+            return datum;
         }
     }
 }

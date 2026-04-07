@@ -16,7 +16,7 @@ namespace MusicTogether.DancingBall.Scene
         /// <summary>
         /// 返回所有已启用的地板Transform和他们的厚度。
         /// </summary>
-        public List<(Transform, float)> GetTilePoses();//由于Tile可能存在移动，这里使用Transform确保实时跟踪最新位置。
+        public List<MovementData> GetTileMovementDatum(double currentBlockTime, double singleBlockDuration, bool blockNeedTap);//由于Tile可能存在移动，这里使用Transform确保实时跟踪最新位置。
     }
 
     /// <summary>
@@ -38,9 +38,10 @@ namespace MusicTogether.DancingBall.Scene
         //本体绑定信息
         public Transform Transform { get; }
         public ITileHolder TileHolder { get; }
-        public IBlockDebug BlockDisplay { get; }
+        public IBlockDebug BlockDebugDisplay { get; }
         //参数
         public int BlockLocalIndex { get; set; }
+        public bool IsDataValid { get; }
         //函数
         public void Init(IRoad targetRoad, int blockLocalIndex);
         //public List<MovementData> GetBlockMovementData();时间计算由Player完成。
@@ -54,39 +55,47 @@ namespace MusicTogether.DancingBall.Scene
         //外部引用
         public IMap Map { get; }
         public RoadData RoadData { get; }
+        public string RoadName { get; }
         //本体绑定信息
         public Transform Transform { get; }
         public List<IBlock> Blocks { get; }
         //参数
+        public bool IsDataValid { get; }
         //public string TargetRoadData { get; } 实现接口的类自己声明。用于RoadData丢失时访问。
-        
+        //预生成信息
+        public double RoadBeginTime { get; }
+        public double RoadEndTime { get; }
+        public List<MovementData> MovementDatum { get; }
         //函数
-        public void Init(IMap map, RoadData roadData);
+        public void Init(IMap map, RoadData roadData, GameObject blockPrefab);
         
         #region Road_Operations //操作功能
             //物体操作================================================================================================
-            public void RefreshRoadBlocks();
+            /// <summary>
+            /// 重建Block列表，清理无效Block并补齐缺失Block，更新Block位置
+            /// </summary>
+            public void RecoverBlocks();
             public void OnBlockDisplacementRuleChanged();
             public void RefreshBlockInfoDisplay();
-            
+            public void GenerateBlockMovementData();
             //数据操作================================================================================================
             //Road级别
-            public void ModifyBlockBeginIndex(int newBeginIndex);
-            public void ModifyBlockEndIndex(int newEndIndex);
+            public void ModifyNoteBeginIndex(int newBeginIndex);
+            public void ModifyNoteEndIndex(int newEndIndex);
             public void ModifyTargetRoadDataName(string newName);
             
-            //Block级别
-            public void ModifyDisplacementData(int blockLocalIndex, IBlockDisplacementData newDisplacementData);
-            
-            //数据获取
+        #endregion
+
+        #region Road_DataFunctions
             public List<MovementData> GetBlockMovementDatum(int blockBeginIndex);
-            
+            public void ModifyDisplacementData(int blockLocalIndex, IBlockDisplacementData newDisplacementData);
         #endregion
         
         #region Road_MapFunctions //地图操作
             public IBlock CreateBlock(int blockLocalIndex);
             public List<IBlock> CreateBlocks(IEnumerable<int> index);
             public List<IBlock> CreateBlocks(int indexBegin, int count);
+            public void RemoveBlocks(List<IBlock> blocksToRemove);
         #endregion
     }
 
@@ -96,15 +105,17 @@ namespace MusicTogether.DancingBall.Scene
         //外部绑定
         //自身绑定
         public Transform Transform { get; }
-        public EditManager EditManager { get; }
+        //public EditManager EditManager { get; }
         public SceneData SceneData { get; }
         public List<IRoad> Roads { get; }
 
         //操作功能
-        public void RebuildRoads();
+        public void RecoverRoads();
+        public void OnRoadDataMissing(IRoad road);
         
         //地图操作
         public void AddRoads(List<RoadData> roadDataToAdd);
         public void RemoveRoads(List<IRoad> roadsToRemove);
+        
     }
 }

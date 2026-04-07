@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="MapEditorPanel" src="project://database/Assets/MusicTogether/DancingBall/UI/MapEditorPanel.uxml?fileID=9197481963319205126&amp;guid=76ce77ce6b484e64ea4121da45c6607a&amp;type=3#MapEditorPanel" />
+    <ui:Template name="RoadEditorPanel" src="project://database/Assets/MusicTogether/DancingBall/UI/RoadEditorPanel.uxml?fileID=9197481963319205126&amp;guid=30c237320fff28249ad12c7b439eaa5a&amp;type=3#RoadEditorPanel" />
+    <ui:Template name="BlockEditorPanel" src="project://database/Assets/MusicTogether/DancingBall/UI/BlockEditorPanel.uxml?fileID=9197481963319205126&amp;guid=5a4569a1f5b0d484b8f076e2178eb15c&amp;type=3#BlockEditorPanel" />
+    <ui:VisualElement name="root" style="flex-grow: 1;">
+        <ui:Instance template="MapEditorPanel" name="MapEditorPanel" />
+        <ui:Instance template="RoadEditorPanel" name="RoadEditorPanel" />
+        <ui:Instance template="BlockEditorPanel" name="BlockEditorPanel" />
+    </ui:VisualElement>
+</ui:UXML>

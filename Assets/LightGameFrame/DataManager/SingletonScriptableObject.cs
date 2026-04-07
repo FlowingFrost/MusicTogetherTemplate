@@ -1,17 +1,31 @@
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 using Sirenix.OdinInspector;
 
 namespace LightGameFrame.DataManager
 {
+    [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class SingletonConfigAttribute : System.Attribute
+    {
+        public string ResourcePath { get; }
+        public string JsonFileName { get; }
+
+        public SingletonConfigAttribute(string resourcePath, string jsonFileName)
+        {
+            ResourcePath = resourcePath;
+            JsonFileName = jsonFileName;
+        }
+    }
+
     /// <summary>
     /// 修复版单例ScriptableObject基类
     /// 解决了原版本的所有主要问题
     /// </summary>
     public abstract class SingletonScriptableObject<T> : ScriptableObject where T : SingletonScriptableObject<T>
     {
-        private static T _instance;
-        private static string TName => typeof(T).Name;
+    private static T _instance;
+    private static string TName => typeof(T).Name;
         private static bool _initialized = false;
 
         /// <summary>
@@ -34,8 +48,7 @@ namespace LightGameFrame.DataManager
         /// </summary>
         private static string GetResourcePathStatic()
         {
-            // 使用反射或直接返回命名空间+类名作为默认路径
-            return $"Data/{TName}";
+            return GetTemplateInfo().resourcePath;
         }
 
         /// <summary>
@@ -43,7 +56,19 @@ namespace LightGameFrame.DataManager
         /// </summary>
         private static string GetJsonFileNameStatic()
         {
-            return $"{TName}.json";
+            return GetTemplateInfo().jsonFileName;
+        }
+
+        /// <summary>
+        /// 在没有实例时安全获取模板信息（使用特性配置）
+        /// </summary>
+        private static (string resourcePath, string jsonFileName, string typeName) GetTemplateInfo()
+        {
+            string typeName = TName;
+            var attr = typeof(T).GetCustomAttribute<SingletonConfigAttribute>();
+            string resourcePath = attr?.ResourcePath ?? $"Data/{typeName}";
+            string jsonFileName = attr?.JsonFileName ?? $"{typeName}.json";
+            return (resourcePath, jsonFileName, typeName);
         }
         /// <summary>
         /// 获取JSON保存路径（使用可写的持久化数据路径）
@@ -135,7 +160,8 @@ namespace LightGameFrame.DataManager
         {
             if (_instance == null)
             {
-                Debug.LogError($"[{TName}] 实例未初始化，无法保存");
+                var info = GetTemplateInfo();
+                Debug.LogError($"[{info.typeName}] 实例未初始化，无法保存");
                 return;
             }
 
@@ -203,7 +229,8 @@ namespace LightGameFrame.DataManager
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[{TName}] 删除持久化数据失败: {e.Message}");
+                var info = GetTemplateInfo();
+                Debug.LogError($"[{info.typeName}] 删除持久化数据失败: {e.Message}");
             }
         }
 

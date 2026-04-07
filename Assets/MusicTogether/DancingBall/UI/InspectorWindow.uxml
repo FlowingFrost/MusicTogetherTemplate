@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="Editor_Inspector" src="project://database/Assets/MusicTogether/DancingBall/UI/Editor_Inspector.uxml?fileID=9197481963319205126&amp;guid=08eb04872f4124c46a149e5326250147&amp;type=3#DancingBallEditor_EditorWindowVersion" />
+    <ui:Template name="Editor_Settings" src="project://database/Assets/MusicTogether/DancingBall/UI/Editor_Settings.uxml?fileID=9197481963319205126&amp;guid=8928022473e6a0a4c8df2d19768b6611&amp;type=3#Editor_Settings" />
+    <Style src="project://database/Assets/LightGameFrame/UI/TabView/TabView.uss?fileID=7433441132597879392&amp;guid=1f11d94a48daf224b97805d61e38efb1&amp;type=3#TabView" />
+    <ui:VisualElement name="editor-root" style="flex-grow: 1;">
+        <ui:VisualElement name="binded-view" style="flex-grow: 1; display: flex;">
+            <LightGameFrame.UI.TabView tab-count="2" tab-titles="检查器,设置">
+                <ui:Instance template="Editor_Inspector" name="DancingBallEditor_EditorWindowVersion" />
+                <ui:Instance template="Editor_Settings" name="Editor_Settings" />
+            </LightGameFrame.UI.TabView>
+        </ui:VisualElement>
+        <ui:VisualElement name="unbinded-view" style="flex-grow: 1; display: none; align-items: center; justify-content: center;">
+            <ui:Label tabindex="-1" text="未绑定EditorCenter" parse-escape-sequences="true" display-tooltip-when-elided="true" style="-unity-text-align: upper-center; color: rgb(27, 27, 27);" />
+            <ui:Button name="editor-retry" text="重试" style="margin-top: 10px; width: 80px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

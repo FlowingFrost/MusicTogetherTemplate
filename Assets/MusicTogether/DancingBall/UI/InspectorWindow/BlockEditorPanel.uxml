@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/MusicTogether/DancingBall/UI/DancingBallEditor_Common.uss?fileID=7433441132597879392&amp;guid=1dcdcf878d12b194da051df375cde7a8&amp;type=3#DancingBallEditor_Common" />
+    <ui:VisualElement name="block-root" class="db-panel">
+        <ui:VisualElement name="block-common-container" class="db-section">
+            <ui:Label text="Block 通用选项" name="block-common-header" class="db-title" />
+            <ui:Label text="（当前无通用操作）" name="block-common-empty" class="db-muted" />
+        </ui:VisualElement>
+        <ui:VisualElement name="block-derived-container" class="db-section db-section-spaced">
+            <ui:Label text="Block 继承类选项" name="block-derived-header" class="db-title" />
+            <ui:EnumField name="block-displacement-data-type" label="IBlockDisplacementData 类型" class="db-field" />
+            <ui:VisualElement name="classic-block-displacement-options" class="db-row">
+                <ui:VisualElement name="classic-block-displacement-header-holder" style="flex-grow: 1; flex-direction: row;">
+                    <ui:Label text="ClassicBlockDisplacementData" name="classic-block-displacement-header" class="db-subtitle db-accent" />
+                    <ui:VisualElement style="flex-grow: 1; margin-left: 4px; height: 2px; align-self: center; background-color: rgb(31, 111, 235); margin-right: 4px;" />
+                </ui:VisualElement>
+                <ui:EnumField name="classic-block-turn-type" label="TurnType" class="db-field" />
+                <ui:Button name="classic-block-apply-turn-type" text="修改TurnType" class="db-button" />
+                <ui:EnumField name="classic-block-displacement-type" label="DisplacementType" class="db-field" />
+                <ui:Button name="classic-block-apply-displacement-type" text="修改DisplacementType" class="db-button" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="block-missbinding-container" class="db-section">
+            <ui:Label tabindex="-1" text="Block丢失绑定" parse-escape-sequences="true" display-tooltip-when-elided="true" enable-rich-text="true" class="db-title" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

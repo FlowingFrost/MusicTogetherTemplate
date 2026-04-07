@@ -1,17 +1,31 @@
-using MusicTogether.DancingBall.Scene;
+using System;
+using UnityEditor;
+using UnityEngine;
 
 namespace MusicTogether.DancingBall.EditorTool
 {
-	public interface IEditManager
-	{
-		public Factory Factory { get; }
-		public EditorActionDispatcher Dispatcher { get; }
-		public void RecreateMapRoadList(EditorActionContext ctx);
-		public void RefreshAllRoads(EditorActionContext ctx);
-		public void RefreshRoadBlocks(EditorActionContext ctx);
-		public void OnRoadBlockCountChanged(EditorActionContext ctx);
-		public void OnBlockDisplacementRuleChanged(EditorActionContext ctx);
-		public void RefreshBlockInfoDisplay(EditorActionContext ctx);
-		public void RemoveBlocks(IRoad road, System.Collections.Generic.List<IBlock> blocksToRemove);
-	}
+    public class Interfaces
+    {
+        public interface ISelectionWindow
+        {
+            public void Init(EditorCenter editorCenter);
+            public void OnEnabledChanged(bool enabled);
+            public void UpdateSelectionInfo(int roadIndex, int blockIndex);
+            //public Action<int,int> JumpTo { get; set; }
+        }
+        public interface ISelector
+        {
+            public void LookAt(GameObject go);
+        }
+        
+        public interface IMessageReceiver
+        {
+            void ShowMessage(string msg);
+        }
+        
+        public interface IEditorWindow
+        {
+            
+        }
+    }
 }

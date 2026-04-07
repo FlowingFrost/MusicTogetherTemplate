@@ -15,7 +15,7 @@ namespace MusicTogether.DancingBall.Data
         public enum TurnType { None, Left, Right, Jump }
         public enum DisplacementType { None, Up, Down, ForwardUp, ForwardDown }
         
-        [OdinSerialize][Sirenix.OdinInspector.ReadOnly]public int BlockIndex_Local { get; private set; }
+        [OdinSerialize]public int BlockIndex_Local { get; private set; }
         public TurnType turnType;
         public DisplacementType displacementType;
         

@@ -8,8 +8,10 @@ namespace MusicTogether.DancingBall.EditorTool
     /// 存储WindowChrome等UI组件的全局参数
     /// </summary>
     [CreateAssetMenu(fileName = "EditorConfig", menuName = "MusicTogether/DancingBall/Editor Config")]
+    [SingletonConfig(resourcePath:"Data/DancingBall/EditorConfig", jsonFileName:"EditorConfig.json")]
     public class EditorConfig : SingletonScriptableObject<EditorConfig>
     {
+
         //DebugColors
         [Header("Debug Colors")]
         public Color normalBlockColor = new Color(1f, 1f, 1f, 0.3f);
