@@ -1,5 +1,6 @@
 using System;
 using MusicTogether.DancingBall.Data;
+using MusicTogether.DancingBall.Player;
 using MusicTogether.DancingBall.Scene;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -9,11 +10,12 @@ namespace MusicTogether.DancingBall.EditorTool
     public class EditorCenter
     {
         public static EditorCenter Instance { get; private set; }
-        private IMap targetMap;
+        public IMap targetMap;
         public int SelectedRoadIndex { get; private set; }
         public int SelectedBlockIndex { get; private set; }
         public IRoad selectedRoad;
-        private IBlock selectedBlock;
+        public IBlock selectedBlock;
+        public BallPlayer player;
 
         private bool IsRoadIndexOutOfRange => targetMap == null || SelectedRoadIndex < 0 || SelectedRoadIndex >= targetMap.Roads.Count;
         private bool IsBlockIndexOutOfRange => selectedRoad == null || SelectedBlockIndex < 0 || SelectedBlockIndex >= selectedRoad.Blocks.Count;
@@ -24,9 +26,10 @@ namespace MusicTogether.DancingBall.EditorTool
         public Action<IBlock, IBlockDisplacementData> OnBlockSelectionChanged;
         public Action<GameObject> LookAtObject;
         
-        public void Setup(IMap targetMap, int selectedRoadIndex, int selectedBlockIndex)
+        public void Setup(IMap targetMap, BallPlayer player, int selectedRoadIndex, int selectedBlockIndex)
         {
             this.targetMap = targetMap;
+            this.player = player;
             SelectedRoadIndex = selectedRoadIndex;
             SelectedBlockIndex = selectedBlockIndex;
             Instance = this;

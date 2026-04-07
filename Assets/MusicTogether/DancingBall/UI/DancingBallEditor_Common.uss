@@ -65,6 +65,21 @@
     margin-top: var(--db-gap-xs);
 }
 
+.db-graph {
+    margin-top: var(--db-gap-sm);
+    height: 160px;
+    background-color: var(--db-surface-alt);
+    border-width: 1px;
+    border-color: var(--db-border);
+    border-radius: var(--db-radius);
+}
+
+.db-legend {
+    margin-top: var(--db-gap-sm);
+    font-size: 11px;
+    color: var(--db-text);
+}
+
 .db-button {
     margin-top: var(--db-gap-xs);
     height: 22px;

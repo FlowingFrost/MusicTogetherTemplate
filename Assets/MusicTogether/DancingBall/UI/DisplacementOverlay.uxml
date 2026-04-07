@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/MusicTogether/DancingBall/UI/DancingBallEditor_Common.uss?fileID=7433441132597879392&amp;guid=1dcdcf878d12b194da051df375cde7a8&amp;type=3#DancingBallEditor_Common" />
+    <ui:VisualElement name="displacement-root" class="db-panel">
+        <ui:VisualElement name="binded-view" style="flex-grow: 1; display: flex;">
+            <ui:Label name="displacement-title" text="DancingBall 位移调试" class="db-title" />
+            <ui:Toggle name="displacement-enable" text="启用" class="db-field" style="flex-shrink: 1; flex-grow: 0;" />
+            <ui:Label name="displacement-info" class="db-muted" />
+            <ui:VisualElement name="displacement-graph" class="db-graph" />
+            <ui:Label name="displacement-legend" class="db-legend" />
+        </ui:VisualElement>
+        <ui:VisualElement name="unbinded-view" style="flex-grow: 1; display: none;">
+            <ui:Label tabindex="-1" text="未绑定EditorCenter或Player" parse-escape-sequences="true" display-tooltip-when-elided="true" style="-unity-text-align: upper-center; color: rgb(27, 27, 27);" />
+            <ui:Button name="displacement-retry" text="重试" class="db-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

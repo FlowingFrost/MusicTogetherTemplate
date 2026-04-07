@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32a184edec0dc494eae5a36a1c10fea5, type: 3}
   m_Name: EditorConfig
   m_EditorClassIdentifier: 
-  normalBlockColor: {r: 1, g: 1, b: 1, a: 0.3}
-  problemBlockColor: {r: 1, g: 0.5, b: 0.5, a: 0.3}
-  tapBlockWithDisplacementColor: {r: 0.1, g: 0.9, b: 0.2, a: 0.3}
-  tapBlockWithoutDisplacementColor: {r: 1, g: 0.85, b: 0.2, a: 0.3}
-  normalBlockWithDisplacementColor: {r: 0.2, g: 0.8, b: 1, a: 0.3}
-  specialEventBlockColor: {r: 0.5, g: 0.5, b: 1, a: 0.3}
+  normalBlockColor: {r: 1, g: 1, b: 1, a: 0}
+  problemBlockColor: {r: 1, g: 0.5, b: 0.5, a: 0}
+  tapBlockWithDisplacementColor: {r: 0.1, g: 0.9, b: 0.2, a: 0}
+  tapBlockWithoutDisplacementColor: {r: 1, g: 0.85, b: 0.2, a: 0}
+  normalBlockWithDisplacementColor: {r: 0.2, g: 0.8, b: 1, a: 0}
+  specialEventBlockColor: {r: 0.5, g: 0.5, b: 1, a: 0}

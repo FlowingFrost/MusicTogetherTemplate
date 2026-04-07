@@ -34,5 +34,10 @@ namespace MusicTogether.DancingBall.Player
         {
             return TileTransform.rotation;
         }
+        
+        public Vector3 GetGlobalForwardDirection()
+        {
+            return TileTransform.TransformVector(Vector3.forward);
+        }
     }
 }
