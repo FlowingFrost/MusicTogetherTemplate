@@ -19,6 +19,7 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
         private VisualElement _blockDerivedContainer;
         private VisualElement _blockMissBindingContainer;
 
+        private Button _mapMissbindingButton;
         private Button _mapRebuildRoadsButton;
         private Button _mapRefreshAllRoadsButton;
 
@@ -38,24 +39,11 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
         private EnumField _classicBlockDisplacementTypeField;
         private Button _classicBlockApplyDisplacementTypeButton;
 
-        private EnumField _settingsPrevBlockField;
-        private EnumField _settingsNextBlockField;
-        private EnumField _settingsSprintField;
-        private EnumField _settingsTurnNoneField;
-        private EnumField _settingsTurnForwardField;
-        private EnumField _settingsTurnRightField;
-        private EnumField _settingsTurnLeftField;
-        private EnumField _settingsTurnJumpField;
-        private EnumField _settingsDisplacementNoneField;
-        private EnumField _settingsDisplacementUpField;
-        private EnumField _settingsDisplacementDownField;
-        private EnumField _settingsDisplacementForwardUpField;
-        private EnumField _settingsDisplacementForwardDownField;
-
         private VisualElement _bindedView;
         private VisualElement _unbindedView;
         private Button _retryButton;
 
+        public Action MapMissBindingRetryRequested { get; set; }
         public Action MapRebuildRoadsRequested { get; set; }
         public Action MapRefreshAllRoadsRequested { get; set; }
 
@@ -71,8 +59,6 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
         public Action<Enum> ClassicBlockApplyDisplacementTypeRequested { get; set; }
 
         public Action RetryBind { get; set; }
-
-        public Action ShortcutSettingsSaved { get; set; }
 
         public InspectorWindowManager(VisualElement root) : base(root)
         {
@@ -111,57 +97,6 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
             {
                 _unbindedView.style.display = isBinded ? DisplayStyle.None : DisplayStyle.Flex;
             }
-        }
-
-        public void LoadShortcutSettings(EditorShortcutConfig config = null)
-        {
-            if (config == null)
-            {
-                return;
-            }
-
-            _settingsPrevBlockField?.SetValueWithoutNotify(config.previousBlock);
-            _settingsNextBlockField?.SetValueWithoutNotify(config.nextBlock);
-            _settingsSprintField?.SetValueWithoutNotify(config.sprint);
-
-            _settingsTurnNoneField?.SetValueWithoutNotify(config.setTurnTypeNone);
-            _settingsTurnForwardField?.SetValueWithoutNotify(config.setTurnTypeForward);
-            _settingsTurnRightField?.SetValueWithoutNotify(config.setTurnTypeRight);
-            _settingsTurnLeftField?.SetValueWithoutNotify(config.setTurnTypeLeft);
-            _settingsTurnJumpField?.SetValueWithoutNotify(config.setTurnTypeJump);
-
-            _settingsDisplacementNoneField?.SetValueWithoutNotify(config.setDisplacementTypeNone);
-            _settingsDisplacementUpField?.SetValueWithoutNotify(config.setDisplacementTypeUp);
-            _settingsDisplacementDownField?.SetValueWithoutNotify(config.setDisplacementTypeDown);
-            _settingsDisplacementForwardUpField?.SetValueWithoutNotify(config.setDisplacementTypeForwardUp);
-            _settingsDisplacementForwardDownField?.SetValueWithoutNotify(config.setDisplacementTypeForwardDown);
-        }
-
-        public void SaveShortcutSettings(EditorShortcutConfig config = null)
-        {
-            config ??= EditorShortcutConfig.Config;
-            if (config == null)
-            {
-                return;
-            }
-
-            config.previousBlock = ResolveKeyCode(_settingsPrevBlockField?.value);
-            config.nextBlock = ResolveKeyCode(_settingsNextBlockField?.value);
-            config.sprint = ResolveKeyCode(_settingsSprintField?.value);
-
-            config.setTurnTypeNone = ResolveKeyCode(_settingsTurnNoneField?.value);
-            config.setTurnTypeForward = ResolveKeyCode(_settingsTurnForwardField?.value);
-            config.setTurnTypeRight = ResolveKeyCode(_settingsTurnRightField?.value);
-            config.setTurnTypeLeft = ResolveKeyCode(_settingsTurnLeftField?.value);
-            config.setTurnTypeJump = ResolveKeyCode(_settingsTurnJumpField?.value);
-
-            config.setDisplacementTypeNone = ResolveKeyCode(_settingsDisplacementNoneField?.value);
-            config.setDisplacementTypeUp = ResolveKeyCode(_settingsDisplacementUpField?.value);
-            config.setDisplacementTypeDown = ResolveKeyCode(_settingsDisplacementDownField?.value);
-            config.setDisplacementTypeForwardUp = ResolveKeyCode(_settingsDisplacementForwardUpField?.value);
-            config.setDisplacementTypeForwardDown = ResolveKeyCode(_settingsDisplacementForwardDownField?.value);
-
-            ShortcutSettingsSaved?.Invoke();
         }
 
         public void SetRoadNoteRange(int begin, int end)
@@ -219,6 +154,7 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
             _unbindedView = Root.Q<VisualElement>("unbinded-view");
             _retryButton = Root.Q<Button>("editor-retry");
 
+            _mapMissbindingButton = Root.Q<Button>("map-missbinding-retry");
             _mapRebuildRoadsButton = Root.Q<Button>("map-rebuild-roads");
             _mapRefreshAllRoadsButton = Root.Q<Button>("map-refresh-all-roads");
 
@@ -238,34 +174,10 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
             _classicBlockDisplacementTypeField = Root.Q<EnumField>("classic-block-displacement-type");
             _classicBlockApplyDisplacementTypeButton = Root.Q<Button>("classic-block-apply-displacement-type");
 
-            _settingsPrevBlockField = Root.Q<EnumField>("settings-prev-block");
-            _settingsNextBlockField = Root.Q<EnumField>("settings-next-block");
-            _settingsSprintField = Root.Q<EnumField>("settings-sprint");
-            _settingsTurnNoneField = Root.Q<EnumField>("settings-turn-none");
-            _settingsTurnForwardField = Root.Q<EnumField>("settings-turn-forward");
-            _settingsTurnRightField = Root.Q<EnumField>("settings-turn-right");
-            _settingsTurnLeftField = Root.Q<EnumField>("settings-turn-left");
-            _settingsTurnJumpField = Root.Q<EnumField>("settings-turn-jump");
-            _settingsDisplacementNoneField = Root.Q<EnumField>("settings-displacement-none");
-            _settingsDisplacementUpField = Root.Q<EnumField>("settings-displacement-up");
-            _settingsDisplacementDownField = Root.Q<EnumField>("settings-displacement-down");
-            _settingsDisplacementForwardUpField = Root.Q<EnumField>("settings-displacement-forward-up");
-            _settingsDisplacementForwardDownField = Root.Q<EnumField>("settings-displacement-forward-down");
-
-            ConfigureKeyCodeField(_settingsPrevBlockField);
-            ConfigureKeyCodeField(_settingsNextBlockField);
-            ConfigureKeyCodeField(_settingsSprintField);
-            ConfigureKeyCodeField(_settingsTurnNoneField);
-            ConfigureKeyCodeField(_settingsTurnForwardField);
-            ConfigureKeyCodeField(_settingsTurnRightField);
-            ConfigureKeyCodeField(_settingsTurnLeftField);
-            ConfigureKeyCodeField(_settingsTurnJumpField);
-            ConfigureKeyCodeField(_settingsDisplacementNoneField);
-            ConfigureKeyCodeField(_settingsDisplacementUpField);
-            ConfigureKeyCodeField(_settingsDisplacementDownField);
-            ConfigureKeyCodeField(_settingsDisplacementForwardUpField);
-            ConfigureKeyCodeField(_settingsDisplacementForwardDownField);
-
+            if (_mapMissbindingButton != null)
+            {
+                _mapMissbindingButton.clicked += () => MapMissBindingRetryRequested?.Invoke();
+            }
             if (_mapRebuildRoadsButton != null)
             {
                 _mapRebuildRoadsButton.clicked += () => MapRebuildRoadsRequested?.Invoke();
@@ -326,48 +238,6 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
                 _retryButton.clicked += () => RetryBind?.Invoke();
             }
 
-            RegisterShortcutSaveCallback(_settingsPrevBlockField);
-            RegisterShortcutSaveCallback(_settingsNextBlockField);
-            RegisterShortcutSaveCallback(_settingsSprintField);
-            RegisterShortcutSaveCallback(_settingsTurnNoneField);
-            RegisterShortcutSaveCallback(_settingsTurnForwardField);
-            RegisterShortcutSaveCallback(_settingsTurnRightField);
-            RegisterShortcutSaveCallback(_settingsTurnLeftField);
-            RegisterShortcutSaveCallback(_settingsTurnJumpField);
-            RegisterShortcutSaveCallback(_settingsDisplacementNoneField);
-            RegisterShortcutSaveCallback(_settingsDisplacementUpField);
-            RegisterShortcutSaveCallback(_settingsDisplacementDownField);
-            RegisterShortcutSaveCallback(_settingsDisplacementForwardUpField);
-            RegisterShortcutSaveCallback(_settingsDisplacementForwardDownField);
-        }
-
-        private void RegisterShortcutSaveCallback(EnumField field)
-        {
-            if (field == null)
-            {
-                return;
-            }
-
-            field.RegisterValueChangedCallback(_ => SaveShortcutSettings());
-        }
-
-        private void ConfigureKeyCodeField(EnumField field)
-        {
-            if (field == null)
-            {
-                return;
-            }
-
-            if (field.value == null || field.value.GetType() != typeof(KeyCode))
-            {
-                field.Init(KeyCode.None);
-                field.SetValueWithoutNotify(KeyCode.None);
-            }
-        }
-
-        private static KeyCode ResolveKeyCode(Enum value)
-        {
-            return value is KeyCode keyCode ? keyCode : KeyCode.None;
         }
     }
 }

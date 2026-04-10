@@ -71,19 +71,23 @@ namespace MusicTogether.DancingBall.Scene
         
         #region Road_Operations //操作功能
             //物体操作================================================================================================
+            public void RebuildBlocks();
             /// <summary>
             /// 重建Block列表，清理无效Block并补齐缺失Block，更新Block位置
             /// </summary>
             public void RecoverBlocks();
             public void OnBlockDisplacementRuleChanged();
             public void RefreshBlockInfoDisplay();
-            public void GenerateBlockMovementData();
+            
             //数据操作================================================================================================
             //Road级别
             public void ModifyNoteBeginIndex(int newBeginIndex);
             public void ModifyNoteEndIndex(int newEndIndex);
             public void ModifyTargetRoadDataName(string newName);
+            public void SaveTransformData();
             
+            //预处理数据
+            public void GenerateBlockMovementData();
         #endregion
 
         #region Road_DataFunctions
@@ -109,13 +113,19 @@ namespace MusicTogether.DancingBall.Scene
         public SceneData SceneData { get; }
         public List<IRoad> Roads { get; }
 
-        //操作功能
-        public void RecoverRoads();
-        public void OnRoadDataMissing(IRoad road);
+        #region Map_Operations
+            //操作功能
+            public void RebuildRoads();
+            public void RecoverRoads();
+            public void RefreshAllRoads();
+            //预处理运行数据
+            public void GenerateMovementData();
+        #endregion
         
         //地图操作
         public void AddRoads(List<RoadData> roadDataToAdd);
         public void RemoveRoads(List<IRoad> roadsToRemove);
+        public void OnRoadDataMissing(IRoad road);
         
     }
 }

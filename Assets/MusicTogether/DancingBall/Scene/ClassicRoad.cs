@@ -82,14 +82,7 @@ namespace MusicTogether.DancingBall.Scene
 
         #region Road_Operations //操作功能
             //物体操作================================================================================================
-            [Button("保存transform信息")]
-            public void SaveTransformData()
-            {
-                if (!IsDataValid) return;
-                RoadData.loaclPosition = Transform.localPosition;
-                RoadData.loaclRotation = Transform.localRotation;
-                RoadData.localScale = Transform.localScale;
-            }
+
             [Button("重建Block列表")]
             //Dirty Level = 4
             public void RebuildBlocks()
@@ -232,31 +225,7 @@ namespace MusicTogether.DancingBall.Scene
 
                 if (dirtyLevel <= 1) dirtyLevel = 0;
             }
-            [Button("生成Block MovementData（测试）")]
-            public void GenerateBlockMovementData()
-            {
-                if (!Map.SceneData.GetSegment(RoadData.targetSegmentIndex, out var targetSegment)) throw new Exception("找不到目标Segment，无法生成Block MovementData");
-                movementDatum.Clear();
-                double singleBlockDuration = targetSegment.GetNoteTimeAt(1);
-                foreach (var block in blocks)
-                {
-                    double blockTime = targetSegment.GetNoteTimeAt(RoadData.noteBeginIndex + block.BlockLocalIndex);
-                    bool blockNeedTap = targetSegment.notes.Contains(RoadData.noteBeginIndex + block.BlockLocalIndex);
-                    movementDatum.AddRange(block.TileHolder.GetTileMovementDatum(blockTime, singleBlockDuration, blockNeedTap));
-                }
-                bool movementDatumHasData = movementDatum.Count > 0;
-                if (!movementDatumHasData) throw new Exception("生成的MovementData列表为空，请检查Block.TileHolder.GetTileMovementDatum的实现");
-                roadBeginTime = movementDatum.First().Time;
-                roadEndTime = movementDatum.Last().Time;
-            }
 
-            public void OnDrawGizmosSelected()
-            {
-                
-                var points = MovementDatum.Select(d => d.GetPlayerPosition(2));
-                Handles.color = Color.cyan;
-                Handles.DrawAAPolyLine(3, points.ToArray());
-            }
             //数据操作================================================================================================
             //Road级别
             [Button("更改Note起始序号，重建Block列表")]
@@ -279,6 +248,33 @@ namespace MusicTogether.DancingBall.Scene
                 if (!IsDataValid) return;
                 RoadData.roadName = newName;
                 targetRoadDataName = newName;
+            }
+            [Button("保存transform信息")]
+            public void SaveTransformData()
+            {
+                if (!IsDataValid) return;
+                RoadData.loaclPosition = Transform.localPosition;
+                RoadData.loaclRotation = Transform.localRotation;
+                RoadData.localScale = Transform.localScale;
+            }
+            
+            //预处理数据
+            [Button("生成Block MovementData（测试）")]
+            public void GenerateBlockMovementData()
+            {
+                if (!Map.SceneData.GetSegment(RoadData.targetSegmentIndex, out var targetSegment)) throw new Exception("找不到目标Segment，无法生成Block MovementData");
+                movementDatum.Clear();
+                double singleBlockDuration = targetSegment.GetNoteTimeAt(1);
+                foreach (var block in blocks)
+                {
+                    double blockTime = targetSegment.GetNoteTimeAt(RoadData.noteBeginIndex + block.BlockLocalIndex);
+                    bool blockNeedTap = targetSegment.notes.Contains(RoadData.noteBeginIndex + block.BlockLocalIndex);
+                    movementDatum.AddRange(block.TileHolder.GetTileMovementDatum(blockTime, singleBlockDuration, blockNeedTap));
+                }
+                bool movementDatumHasData = movementDatum.Count > 0;
+                if (!movementDatumHasData) throw new Exception("生成的MovementData列表为空，请检查Block.TileHolder.GetTileMovementDatum的实现");
+                roadBeginTime = movementDatum.First().Time;
+                roadEndTime = movementDatum.Last().Time;
             }
         #endregion
 

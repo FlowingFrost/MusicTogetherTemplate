@@ -111,7 +111,8 @@ namespace MusicTogether.DancingBall.EditorTool.Editor
             _selectionWindowManager.SetEnabledState(_toolEnabled);
             EditorCenter.OnSelectionChanged += _selectionWindowManager.UpdateSelectionInfo;
             EditorCenter.LookAtObject += LookAt;
-            
+
+            _selectionWindowManager.SetBindedViewVisible(true);
             _selectionWindowManager.SetEnabledState(true);
         }
         private bool ValidateEditorCenter()

@@ -15,6 +15,7 @@ namespace MusicTogether.DancingBall.EditorTool
         public int SelectedBlockIndex { get; private set; }
         public IRoad selectedRoad;
         public IBlock selectedBlock;
+        public IBlockDisplacementData selectedDisplacementData;
         public BallPlayer player;
 
         private bool IsRoadIndexOutOfRange => targetMap == null || SelectedRoadIndex < 0 || SelectedRoadIndex >= targetMap.Roads.Count;
@@ -111,8 +112,8 @@ namespace MusicTogether.DancingBall.EditorTool
             }
 
             selectedBlock = selectedRoad.Blocks[SelectedBlockIndex];
-            selectedRoad.RoadData.Get_BlockData(selectedBlock.BlockLocalIndex, out var blockData);
-            OnBlockSelectionChanged?.Invoke(selectedBlock, blockData);
+            selectedRoad.RoadData.Get_BlockData(selectedBlock.BlockLocalIndex, out selectedDisplacementData);
+            OnBlockSelectionChanged?.Invoke(selectedBlock, selectedDisplacementData);
             if (selectedBlock == null)
             {
                 SendMessage("Selected block is null.");
@@ -122,5 +123,9 @@ namespace MusicTogether.DancingBall.EditorTool
             OnSelectionChanged?.Invoke(SelectedRoadIndex, SelectedBlockIndex);
             LookAtObject?.Invoke(selectedBlock.Transform.gameObject);
         }
+        
+        //操作功能
+        public void MapRebuildRoadsRequested() { targetMap.RebuildRoads(); RefreshSelection(); }
+        public void MapRefreshAllRoadsRequested() { targetMap.RefreshAllRoads(); RefreshSelection(); }
     }
 }

@@ -9,11 +9,11 @@ namespace MusicTogether.DancingBall.EditorTool.Editor
 {
     public class InspectorWindow : UnityEditor.EditorWindow
     {
-        private const string UxmlPath = "Assets/MusicTogether/DancingBall/UI/InspectorWindow.uxml";
+    private const string UxmlPath = "Assets/MusicTogether/DancingBall/UI/InspectorWindow.uxml";
         private EditorCenter EditorCenter => EditorCenter.Instance;
         private InspectorWindowManager _windowManager;
 
-        [MenuItem("MusicTogether/DancingBall/Editor Window")]
+    [MenuItem("MusicTogether/DancingBall/Inspector")]
         public static void ShowWindow()
         {
             var window = GetWindow<InspectorWindow>("DancingBall Editor");
@@ -32,40 +32,43 @@ namespace MusicTogether.DancingBall.EditorTool.Editor
             visualTree.CloneTree(rootVisualElement);
 
             _windowManager = new InspectorWindowManager(rootVisualElement);
-            _windowManager.LoadShortcutSettings(EditorShortcutConfig.Config);
             _windowManager.RetryBind = BindEditorCenter;
             BindEditorCenter();
         }
         
         private void BindEditorCenter()
         {
-            if (!ValidateEditorCenter()) return;
-
+            if (!VerifyEditorCenter()) return;
+            
             // TODO: Here you can bind your other EditorCenter events logically if added later.
             EditorCenter.OnRoadSelectionChanged += OnRoadSelected;
             EditorCenter.OnBlockSelectionChanged += OnBlockSelected;
+
+            _windowManager.RetryBind = BindEditorCenter;
+            _windowManager.MapMissBindingRetryRequested = BindEditorCenter;
+            
             _windowManager.SetBindedViewVisible(true);
+            if (VerifyMap()) _windowManager.SetMapContainersVisibility(true, true, false);
+            OnRoadSelected(EditorCenter.selectedRoad);
+            OnBlockSelected(EditorCenter.selectedBlock, EditorCenter.selectedDisplacementData);
         }
-        
-        private bool ValidateEditorCenter()
-        {
-            if (EditorCenter == null)
-            {
-                _windowManager.SetBindedViewVisible(false);
-                return false;
-            }
-            return true;
-        }
-        
+
+        private bool VerifyEditorCenter() { if (EditorCenter == null) { _windowManager.SetBindedViewVisible(false); return false; } return true; }
+        private bool VerifyMap() { if (EditorCenter.targetMap == null) { _windowManager.SetMapContainersVisibility(false, false, true); return false; } return true; }
+        private bool VerifyRoad() { if (EditorCenter.selectedRoad == null) { _windowManager.SetRoadContainersVisibility(false, false, true); return false; } return true; }
+        private bool VerifyBlock() { if (EditorCenter.selectedBlock == null) { _windowManager.SetBlockContainersVisibility(false, false, true); return false; } return true; }
         //绑定函数
         private void OnRoadSelected(IRoad road)
         {
+            if (!VerifyRoad()) return;
+            _windowManager.SetRoadContainersVisibility(true, true, false);
             _windowManager.SetRoadNoteRange(road.RoadData.noteBeginIndex, road.RoadData.noteEndIndex);
             _windowManager.SetRoadTargetDataName(road.RoadData.roadName);
         }
-
         private void OnBlockSelected(IBlock block, IBlockDisplacementData displacementData)
         {
+            if (!VerifyBlock()) return;
+            _windowManager.SetBlockContainersVisibility(true, true, false);
             //如果为空，让玩家自己选择目标类型，并new一个目标类型的对象
             if (displacementData == null)
             {
@@ -81,5 +84,8 @@ namespace MusicTogether.DancingBall.EditorTool.Editor
             }
             
         }
+        
+        //功能按钮
+        private void MapRebuildRoadsRequested() { if (!VerifyMap()) return; EditorCenter.MapRebuildRoadsRequested(); }
     }
 }

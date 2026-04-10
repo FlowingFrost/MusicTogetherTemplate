@@ -6,10 +6,10 @@
     --db-accent: rgb(88, 166, 255);
     --db-text: rgb(201, 209, 217);
     --db-muted: rgb(139, 148, 158);
-    --db-surface: rgb(33, 38, 45);
-    --db-surface-alt: rgb(13, 17, 23);
+    --db-surface: rgb(30, 30, 30);
+    --db-surface-alt: rgb(56, 56, 56);
     --db-border: rgb(48, 54, 61);
-    --db-button-bg: rgb(33, 38, 45);
-    --db-button-bg-hover: rgb(48, 54, 61);
-    --db-input-bg: rgb(13, 17, 23);
+    --db-button-bg: rgb(88, 88, 88);
+    --db-button-bg-hover: rgb(103, 103, 103);
+    --db-input-bg: rgb(81, 81, 81);
 }

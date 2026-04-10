@@ -62,12 +62,6 @@ namespace MusicTogether.DancingBall.Scene
                 }
                 RecoverRoads();
             }
-            
-            public void OnRoadDataMissing(IRoad road)
-            {
-                DestroyImmediate(road.Transform.gameObject);
-                RecoverRoads();
-            }
             [Button("清理重复和无效Road，添加缺失Road")]
             public void RecoverRoads()
             {
@@ -190,6 +184,11 @@ namespace MusicTogether.DancingBall.Scene
                     DestroyImmediate(roadBehaviour.gameObject);
                 }
             }
+        }
+        public void OnRoadDataMissing(IRoad road)
+        {
+            DestroyImmediate(road.Transform.gameObject);
+            RecoverRoads();
         }
     }
 }

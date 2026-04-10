@@ -1,7 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/MusicTogether/DancingBall/UI/DancingBallEditor_Common.uss?fileID=7433441132597879392&amp;guid=1dcdcf878d12b194da051df375cde7a8&amp;type=3#DancingBallEditor_Common" />
     <ui:VisualElement name="road-root" class="db-panel">
-        <ui:VisualElement name="road-common-container" class="db-section">
+        <ui:VisualElement name="road-common-container" class="db-section" style="display: none;">
             <ui:Label text="Road 通用选项" name="road-common-header" class="db-title" />
             <ui:Button name="road-refresh-road-blocks" text="重建Block列表，清理重复和无效Block，添加缺失Block，更新Block位置" class="db-button" />
             <ui:Button name="road-update-block-transform" text="更新Block位置和显示信息" class="db-button" />
@@ -19,7 +18,7 @@
             <ui:Label text="Road 继承类选项" name="road-derived-header" class="db-title" />
             <ui:Label text="（当前无继承类专属操作）" name="road-derived-empty" class="db-muted" />
         </ui:VisualElement>
-        <ui:VisualElement name="road-missbinding-container" class="db-section" style="display: none;">
+        <ui:VisualElement name="road-missbinding-container" class="db-section" style="display: flex;">
             <ui:Label tabindex="-1" text="Road未绑定" parse-escape-sequences="true" display-tooltip-when-elided="true" class="db-title" />
         </ui:VisualElement>
     </ui:VisualElement>

@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="settings-root" class="db-panel">
+        <ui:VisualElement name="settings-navigation-container" class="db-section">
+            <ui:Label text="编辑器快捷键" name="settings-header" class="db-title" />
+            <ui:Label text="导航" name="settings-navigation-header" class="db-subtitle db-accent" />
+            <ui:EnumField name="settings-prev-block" label="上一块" class="db-field" />
+            <ui:EnumField name="settings-next-block" label="下一块" class="db-field" />
+            <ui:EnumField name="settings-sprint" label="快速跳转" class="db-field" />
+        </ui:VisualElement>
+        <ui:VisualElement name="settings-edit-container" class="db-section db-section-spaced">
+            <ui:Label text="编辑快捷键" name="settings-edit-header" class="db-title" />
+            <ui:Label text="TurnType" name="settings-turn-header" class="db-subtitle db-accent" />
+            <ui:EnumField name="settings-turn-none" label="None" class="db-field" />
+            <ui:EnumField name="settings-turn-forward" label="Forward" class="db-field" />
+            <ui:EnumField name="settings-turn-right" label="Right" class="db-field" />
+            <ui:EnumField name="settings-turn-left" label="Left" class="db-field" />
+            <ui:EnumField name="settings-turn-jump" label="Jump" class="db-field" />
+            <ui:Label text="DisplacementType" name="settings-displacement-header" class="db-subtitle db-accent" />
+            <ui:EnumField name="settings-displacement-none" label="None" class="db-field" />
+            <ui:EnumField name="settings-displacement-up" label="Up" class="db-field" />
+            <ui:EnumField name="settings-displacement-down" label="Down" class="db-field" />
+            <ui:EnumField name="settings-displacement-forward-up" label="ForwardUp" class="db-field" />
+            <ui:EnumField name="settings-displacement-forward-down" label="ForwardDown" class="db-field" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
