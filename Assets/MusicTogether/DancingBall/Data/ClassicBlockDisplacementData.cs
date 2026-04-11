@@ -71,37 +71,47 @@ namespace MusicTogether.DancingBall.Data
                 case 20: goto BottomTileWithNormalDisplacement;
                 case 11: goto Upward;
                 case 21: goto Upward;
+                case 12: goto Downward;
+                case 22: goto Downward;
+                case 13: goto UpwardStair;
+                case 23: goto UpwardStair;
+                case 14: goto DownStair;
+                case 24: goto DownStair;
                 case 30: goto Jump;
                 case 01: goto Upward;
                 case 02: goto Downward;
                 case 03: goto UpwardStair;
                 case 04: goto DownStair;
 
+
                 Upward:
                     ApplyTile(new List<ITileHolder> { rootBlock.TileHolder }, false, true, true);
-                    goto SkipFirstThenBottomTileWithNormalDisplacement;
+                    ApplyBottomTile(targetBlocks.Skip(1).Select(b => b.TileHolder).ToList());
+                    ApplyLineDisplacement(transformList, startPosition, previousRotation, deltaRotation);
+                    break;
                 Downward:
-                    ApplyTile(new List<ITileHolder> { rootBlock.TileHolder }, false, false, false);
-                    goto SkipFirstThenBottomTileWithNormalDisplacement;
+                    ApplyBottomTile(targetBlocks.Select(b => b.TileHolder).ToList());
+                    ApplyDownwardDisplacement(transformList, startPosition, previousRotation, deltaRotation);
+                    break;
                 Jump:
                     ApplyBottomTile(targetBlocks.Select(b => b.TileHolder).ToList());
                     var emptyHolders = targetBlocks
                         .Where(b => b.BlockLocalIndex > rootBlockLocalIndex && b.BlockLocalIndex <= rootBlockLocalIndex + 1)
                         .Select(b => b.TileHolder).ToList();
                     ApplyEmptyTile(emptyHolders);
-                    ApplyLineDisplacement(transformList, startPosition, previousRotation);
+                    ApplyLineDisplacement(transformList, startPosition, previousRotation, Quaternion.identity);
                     break;
                 UpwardStair:
                     var holdersUS = targetBlocks.Select(b => b.TileHolder).ToList();
                     ApplyTile(holdersUS, true, false, true);
                     ApplyBottomTile(new List<ITileHolder> { holdersUS.Last() });
-                    ApplyStairDisplacement(transformList, startPosition, previousRotation, true);
+                    ApplyStairDisplacement(transformList, startPosition, previousRotation * deltaRotation, true);
                     break;
                 DownStair:
                     var holdersDS = targetBlocks.Select(b => b.TileHolder).ToList();
                     ApplyTile(holdersDS, false, true, true);
                     ApplyBottomTile(new List<ITileHolder> { holdersDS.First() });
-                    ApplyStairDisplacement(transformList, startPosition, previousRotation, false);
+                    ApplyStairDisplacement(transformList, startPosition, previousRotation * deltaRotation, false);
                     break;
                 BottomTileWithNormalDisplacement:
                     ApplyBottomTile(targetBlocks.Select(b => b.TileHolder).ToList());
@@ -110,17 +120,18 @@ namespace MusicTogether.DancingBall.Data
                     ApplyBottomTile(targetBlocks.Skip(1).Select(b => b.TileHolder).ToList());
                     goto NormalDisplacement;
                 NormalDisplacement:
-                    ApplyLineDisplacement(transformList, startPosition, previousRotation * deltaRotation);
+                    ApplyLineDisplacement(transformList, startPosition, previousRotation, deltaRotation);
                     break;
                 default:
-                    ApplyLineDisplacement(transformList, startPosition, previousRotation);
+                    ApplyLineDisplacement(transformList, startPosition, previousRotation, Quaternion.identity);
                     ApplyBottomTile(targetBlocks.Skip(1).Select(b => b.TileHolder).ToList());
                     break;
             }
         }
         
-        private void ApplyLineDisplacement(List<Transform> blockTransforms, Vector3 startPosition, Quaternion rotation)
+        private void ApplyLineDisplacement(List<Transform> blockTransforms, Vector3 startPosition, Quaternion previousRotation, Quaternion deltaRotation)
         {
+            var rotation = previousRotation * deltaRotation;
             for (int i = 0; i < blockTransforms.Count; i++)
             {
                 var t = blockTransforms[i];
@@ -129,6 +140,18 @@ namespace MusicTogether.DancingBall.Data
             }
         }
 
+        private void ApplyDownwardDisplacement(List<Transform> blockTransforms, Vector3 startPosition, Quaternion previousRotation, Quaternion deltaRotation)
+        {
+            blockTransforms[0].localPosition = startPosition;
+            blockTransforms[0].localRotation = previousRotation;
+            var rotation = previousRotation * deltaRotation;
+            for (int i = 1; i < blockTransforms.Count; i++)
+            {
+                var t = blockTransforms[i];
+                t.localPosition = startPosition + rotation * (Vector3.up + Vector3.forward * i);
+                t.localRotation = rotation;
+            }
+        }
         private void ApplyStairDisplacement(List<Transform> blockTransforms, Vector3 startPosition, Quaternion rotation, bool isUpward)
         {
             for (int i = 0; i < blockTransforms.Count; i++)
@@ -150,5 +173,11 @@ namespace MusicTogether.DancingBall.Data
 
         private void ApplyBottomTile(List<ITileHolder> TileHolders) => ApplyTile(TileHolders, false, false, true);
         private void ApplyEmptyTile(List<ITileHolder> TileHolders) => ApplyTile(TileHolders, false, false, false);
+
+        public int GetBlockIndexDelta()
+        {
+            if (displacementType == DisplacementType.Down) return 0;
+            return 1;
+        }
     }
 }

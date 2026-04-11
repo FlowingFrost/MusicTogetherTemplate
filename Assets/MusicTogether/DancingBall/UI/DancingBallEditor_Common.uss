@@ -6,15 +6,18 @@
     --db-gap-sm: 6px;
     --db-gap-md: 10px;
     --db-radius: 6px;
-    --db-accent: rgb(31, 111, 235);
-    --db-text: rgb(31, 35, 40);
-    --db-muted: rgb(107, 114, 128);
-    --db-surface: rgb(247, 247, 249);
+    --db-accent: rgb(0, 92, 187);
+    --db-text: rgb(20, 24, 28);
+    --db-muted: rgb(88, 96, 105);
+    --db-surface: rgb(245, 245, 247);
     --db-surface-alt: rgb(255, 255, 255);
-    --db-border: rgb(208, 215, 222);
-    --db-button-bg: rgb(240, 242, 245);
-    --db-button-bg-hover: rgb(231, 235, 240);
+    --db-border: rgb(200, 206, 212);
+    --db-button-bg: rgb(235, 238, 240);
+    --db-button-bg-hover: rgb(225, 229, 232);
     --db-input-bg: rgb(255, 255, 255);
+    --db-item-hover: rgb(230, 235, 241);
+    --db-item-selected: rgb(212, 225, 240);
+    --db-item-selected-text: var(--db-text);
     -unity-font-definition: resource('Fonts/SourceHanSansSC-Normal SDF');
 }
 
@@ -59,10 +62,86 @@
 .db-muted {
     color: var(--db-muted);
     font-size: 11px;
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 4px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
 }
 
 .db-row {
     margin-top: var(--db-gap-xs);
+}
+
+.db-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: var(--db-gap-xs);
+}
+
+.db-list {
+    margin-top: var(--db-gap-xs);
+    border-width: 1px;
+    border-color: var(--db-border);
+    border-radius: var(--db-radius);
+    background-color: var(--db-surface-alt);
+    height: 160px;
+}
+
+.db-list-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    border-bottom-width: 1px;
+    border-color: var(--db-border);
+    color: var(--db-text);
+}
+
+.db-list-row:hover {
+    background-color: var(--db-item-hover);
+}
+
+.db-list-row--selected {
+    background-color: var(--db-item-selected);
+    color: var(--db-item-selected-text);
+    -unity-font-style: bold;
+}
+
+.unity-popup-menu__item {
+    color: var(--db-text);
+    background-color: var(--db-surface-alt);
+}
+
+.unity-popup-menu__item:hover {
+    background-color: var(--db-item-hover);
+}
+
+.unity-popup-menu__item--selected {
+    background-color: var(--db-item-selected);
+    color: var(--db-item-selected-text);
+}
+
+.db-detail-form {
+    margin-top: var(--db-gap-sm);
+    padding: var(--db-gap-sm);
+    border-width: 1px;
+    border-color: var(--db-border);
+    border-radius: var(--db-radius);
+    background-color: var(--db-surface-alt);
+}
+
+.db-status-tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    color: var(--db-accent);
+    border-width: 1px;
+    border-color: var(--db-accent);
+    background-color: rgba(0, 92, 187, 0.08);
 }
 
 .db-graph {
@@ -142,7 +221,7 @@
     flex-shrink: 1;
     flex-basis: auto;
     align-self: auto;
-    color: rgb(27, 27, 27);
+    color: var(--db-text);
 }
 
 .unity-base-field__input:focus {
@@ -154,6 +233,7 @@
     border-color: var(--db-border);
     border-width: 1px;
     border-radius: 4px;
+    color: var(--db-text);
 }
 
 .unity-enum-field__input:focus {
@@ -162,6 +242,22 @@
 
 .unity-enum-field__text {
     color: var(--db-text);
+}
+
+.unity-base-popup-field__input {
+    background-color: var(--db-input-bg);
+    border-color: var(--db-border);
+    border-width: 1px;
+    border-radius: 4px;
+    color: var(--db-text);
+}
+
+.unity-base-popup-field__text {
+    color: var(--db-text);
+}
+
+.unity-base-popup-field__arrow {
+    color: var(--db-muted);
 }
 
 .unity-enum-field__arrow {
@@ -175,4 +271,30 @@
     width: 12px;
     height: 12px;
     flex-grow: 0;
+}
+
+.unity-foldout__toggle {
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.unity-foldout__toggle .unity-toggle__input {
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.unity-foldout__toggle .unity-base-field__input {
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.unity-foldout__content {
+    margin: 0;
+    padding: 0;
 }

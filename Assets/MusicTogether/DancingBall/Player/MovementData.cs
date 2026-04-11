@@ -21,7 +21,7 @@ namespace MusicTogether.DancingBall.Player
         }
 
         public bool NeedTap { get => needTap; private set => needTap = value; }
-        public double Time { get => time; private set => time = value; }
+        public double Time { get => time; set => time = value; }
         public Transform TileTransform { get => tileTransform; private set => tileTransform = value; }
         public float TileThickness { get => tileThickness; private set => tileThickness = value; }
 

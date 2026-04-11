@@ -1,0 +1,52 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/MusicTogether/DancingBall/UI/DancingBallEditor_Common.uss?fileID=7433441132597879392&amp;guid=1dcdcf878d12b194da051df375cde7a8&amp;type=3#DancingBallEditor_Common" />
+    <Style src="project://database/Assets/MusicTogether/DancingBall/UI/BlockDisplacementData/DisplacementData_Common.uss?fileID=7433441132597879392&amp;guid=7b9d9f5c1c1640c1b5b3f90d5f1f2d8a&amp;type=3#DisplacementData_Common" />
+    <ui:VisualElement name="classic-root">
+        <ui:Label text="ClassicBlockDisplacementData" name="classic-header" class="db-title" />
+        <ui:Label text="点击方块选择 TurnType / DisplacementType" name="classic-hint" class="db-muted" style="display: none;" />
+        <ui:VisualElement class="db-detail-form" style="flex-grow: 0; flex-direction: row; justify-content: space-around; align-self: auto;">
+            <ui:VisualElement name="classic-data-section" style="align-self: flex-start;">
+                <ui:Label text="TurnType（俯视图）" class="db-muted" />
+                <ui:Label text="当前：未设置" name="classic-turn-type" class="db-muted" />
+                <ui:VisualElement name="classic-turn-grid" class="db-grid">
+                    <ui:VisualElement class="db-grid-row">
+                        <ui:Button name="classic-turn-0-0" class="db-grid-cell" />
+                        <ui:Button name="classic-turn-0-1" class="db-grid-cell" />
+                        <ui:Button name="classic-turn-0-2" class="db-grid-cell" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="db-grid-row">
+                        <ui:Button name="classic-turn-1-0" class="db-grid-cell" />
+                        <ui:Button name="classic-turn-1-1" class="db-grid-cell db-grid-cell--center" />
+                        <ui:Button name="classic-turn-1-2" class="db-grid-cell" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="db-grid-row">
+                        <ui:Button name="classic-turn-2-0" class="db-grid-cell" />
+                        <ui:Button name="classic-turn-2-1" class="db-grid-cell" />
+                        <ui:Button name="classic-turn-2-2" class="db-grid-cell" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="classic-displacement-section" style="align-self: flex-start;">
+                <ui:Label text="DisplacementType（侧视图）" class="db-muted" />
+                <ui:Label text="当前：未设置" name="classic-displacement-type" class="db-muted" />
+                <ui:VisualElement name="classic-displacement-grid" class="db-grid">
+                    <ui:VisualElement class="db-grid-row">
+                        <ui:Button name="classic-displacement-0-0" class="db-grid-cell" />
+                        <ui:Button name="classic-displacement-0-1" class="db-grid-cell" />
+                        <ui:Button name="classic-displacement-0-2" class="db-grid-cell" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="db-grid-row">
+                        <ui:Button name="classic-displacement-1-0" class="db-grid-cell" />
+                        <ui:Button name="classic-displacement-1-1" class="db-grid-cell db-grid-cell--center" />
+                        <ui:Button name="classic-displacement-1-2" class="db-grid-cell" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="db-grid-row">
+                        <ui:Button name="classic-displacement-2-0" class="db-grid-cell" />
+                        <ui:Button name="classic-displacement-2-1" class="db-grid-cell" />
+                        <ui:Button name="classic-displacement-2-2" class="db-grid-cell" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

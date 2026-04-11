@@ -1,23 +1,21 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="ClassicBlockDisplacementPanel" src="project://database/Assets/MusicTogether/DancingBall/UI/BlockDisplacementData/Classic.uxml?fileID=9197481963319205126&amp;guid=b859fd2cb885d2f4e8fde00b1b88d570&amp;type=3#Classic" />
     <ui:VisualElement name="block-root" class="db-panel">
-        <ui:VisualElement name="block-common-container" class="db-section" style="display: none;">
-            <ui:Label text="Block 通用选项" name="block-common-header" class="db-title" />
-            <ui:Label text="（当前无通用操作）" name="block-common-empty" class="db-muted" />
-        </ui:VisualElement>
-        <ui:VisualElement name="block-derived-container" class="db-section db-section-spaced" style="display: none;">
-            <ui:Label text="Block 继承类选项" name="block-derived-header" class="db-title" />
-            <ui:EnumField name="block-displacement-data-type" label="IBlockDisplacementData 类型" class="db-field" />
-            <ui:VisualElement name="classic-block-displacement-options" class="db-row">
-                <ui:VisualElement name="classic-block-displacement-header-holder" style="flex-grow: 1; flex-direction: row;">
-                    <ui:Label text="ClassicBlockDisplacementData" name="classic-block-displacement-header" class="db-subtitle db-accent" />
-                    <ui:VisualElement style="flex-grow: 1; margin-left: 4px; height: 2px; align-self: center; background-color: rgb(31, 111, 235); margin-right: 4px;" />
-                </ui:VisualElement>
-                <ui:EnumField name="classic-block-turn-type" label="TurnType" class="db-field" />
-                <ui:Button name="classic-block-apply-turn-type" text="修改TurnType" class="db-button" />
-                <ui:EnumField name="classic-block-displacement-type" label="DisplacementType" class="db-field" />
-                <ui:Button name="classic-block-apply-displacement-type" text="修改DisplacementType" class="db-button" />
+        <ui:Foldout name="block-common-container" text="Block 通用选项" class="db-section" style="display: none;">
+            <ui:Label text="（Block 物体由 Road Note 范围自动生成）" class="db-muted" />
+        </ui:Foldout>
+        <ui:Foldout name="block-derived-container" text="Block 继承类选项" class="db-section db-section-spaced" style="display: none;">
+            <ui:VisualElement name="block-displacement-create-section" class="db-detail-form" style="display: none;">
+                <ui:Label text="创建位移数据" class="db-subtitle" />
+                <ui:EnumField name="block-displacement-data-type" label="IBlockDisplacementData 类型" class="db-field" />
+                <ui:Button name="block-displacement-create-current" text="创建当前 Block 位移数据" class="db-button" />
             </ui:VisualElement>
-        </ui:VisualElement>
+            <ui:VisualElement name="block-displacement-detail" style="display: none;">
+                <ui:Label text="位移数据详情" class="db-subtitle" />
+                <ui:Instance template="ClassicBlockDisplacementPanel" name="classic-block-displacement-panel" />
+                <ui:Button name="block-displacement-delete-current" text="删除当前位移数据" class="db-button" />
+            </ui:VisualElement>
+        </ui:Foldout>
         <ui:VisualElement name="block-missbinding-container" class="db-section">
             <ui:Label tabindex="-1" text="Block丢失绑定" parse-escape-sequences="true" display-tooltip-when-elided="true" enable-rich-text="true" class="db-title" />
         </ui:VisualElement>

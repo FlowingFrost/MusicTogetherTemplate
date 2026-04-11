@@ -7,6 +7,7 @@ namespace MusicTogether.DancingBall.EditorTool
     /// 编辑器快捷键配置 - 单例ScriptableObject
     /// </summary>
     [CreateAssetMenu(fileName = "EditorShortcutConfig", menuName = "MusicTogether/DancingBall/Editor Shortcut Config")]
+    [SingletonConfig("Data/DancingBall/EditorShortcutConfig", "EditorShortcutConfig")]
     public class EditorShortcutConfig : SingletonScriptableObject<EditorShortcutConfig>
     {
         [Header("Navigation Shortcuts")]

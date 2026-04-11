@@ -1,0 +1,46 @@
+:root {
+    --db-grid-size: 30px;
+    --db-grid-gap: 3px;
+}
+
+.db-grid {
+    margin-top: 4px;
+    flex-direction: column;
+    align-self: flex-start;
+    margin-right: 0;
+    margin-left: 4px;
+}
+
+.db-grid-row {
+    flex-direction: row;
+}
+
+.db-grid-cell {
+    width: var(--db-grid-size);
+    height: var(--db-grid-size);
+    min-width: var(--db-grid-size);
+    min-height: var(--db-grid-size);
+    padding: 0;
+    margin: 0;
+    border-width: 1px;
+    border-color: var(--db-border);
+    border-radius: 3px;
+    background-color: var(--db-input-bg);
+    color: var(--db-text);
+    margin-right: var(--db-grid-gap);
+    margin-bottom: var(--db-grid-gap);
+}
+
+.db-grid-cell:hover {
+    background-color: var(--db-item-hover);
+}
+
+.db-grid-cell--center {
+    border-color: var(--db-accent);
+    background-color: rgba(0, 92, 187, 0.12);
+}
+
+.db-grid-cell--selected {
+    background-color: var(--db-accent);
+    color: white;
+}

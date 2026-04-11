@@ -66,6 +66,7 @@ namespace MusicTogether.DancingBall.Scene
         public double RoadBeginTime { get; }
         public double RoadEndTime { get; }
         public List<MovementData> MovementDatum { get; }
+        public List<IAnimationEventData> AnimationEventDatum { get; }
         //函数
         public void Init(IMap map, RoadData roadData, GameObject blockPrefab);
         
@@ -83,6 +84,8 @@ namespace MusicTogether.DancingBall.Scene
             //Road级别
             public void ModifyNoteBeginIndex(int newBeginIndex);
             public void ModifyNoteEndIndex(int newEndIndex);
+            public void ModifyNoteRange(int newBeginIndex, int newEndIndex);
+            public void ModifyTargetSegmentIndex(int newSegmentIndex);
             public void ModifyTargetRoadDataName(string newName);
             public void SaveTransformData();
             

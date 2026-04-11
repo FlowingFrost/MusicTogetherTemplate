@@ -4,15 +4,17 @@
     <ui:Template name="BlockEditorPanel" src="project://database/Assets/MusicTogether/DancingBall/UI/InspectorWindow/BlockEditorPanel.uxml?fileID=9197481963319205126&amp;guid=5a4569a1f5b0d484b8f076e2178eb15c&amp;type=3#BlockEditorPanel" />
     <ui:VisualElement name="editor-root" style="flex-grow: 1;">
         <ui:VisualElement name="binded-view" style="flex-grow: 1; display: flex;">
-            <ui:VisualElement name="root" style="flex-grow: 1;">
-                <ui:Instance template="MapEditorPanel" name="MapEditorPanel" />
-                <ui:Instance template="RoadEditorPanel" name="RoadEditorPanel" />
-                <ui:Instance template="BlockEditorPanel" name="BlockEditorPanel" />
-            </ui:VisualElement>
+            <ui:ScrollView name="editor-scroll" style="flex-grow: 1;">
+                <ui:VisualElement name="root" style="flex-grow: 1;">
+                    <ui:Instance template="MapEditorPanel" name="MapEditorPanel" />
+                    <ui:Instance template="RoadEditorPanel" name="RoadEditorPanel" />
+                    <ui:Instance template="BlockEditorPanel" name="BlockEditorPanel" />
+                </ui:VisualElement>
+            </ui:ScrollView>
         </ui:VisualElement>
-        <ui:Button name="editor-retry" text="重试" style="margin-top: 10px; width: 80px;" />
         <ui:VisualElement name="unbinded-view" style="flex-grow: 1; display: none; align-items: center; justify-content: center;">
             <ui:Label tabindex="-1" text="未绑定EditorCenter" parse-escape-sequences="true" display-tooltip-when-elided="true" style="-unity-text-align: upper-center; color: rgb(27, 27, 27);" />
+            <ui:Button name="editor-retry" text="重试" style="margin-top: 10px; width: 80px;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

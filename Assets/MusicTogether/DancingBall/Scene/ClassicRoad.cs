@@ -48,10 +48,13 @@ namespace MusicTogether.DancingBall.Scene
         public List<IBlock> Blocks => blocks;
         //预生成信息
         [SerializeField] private double roadBeginTime, roadEndTime;
+        [SerializeField] private double singleBlockDuration;
         public double RoadBeginTime => roadBeginTime;
         public double RoadEndTime => roadEndTime;
         [SerializeField] [ReadOnly] private List<MovementData> movementDatum = new List<MovementData>();
+        [SerializeField] [ReadOnly] private List<IAnimationEventData> animationEventDatum = new List<IAnimationEventData>();
         public List<MovementData> MovementDatum => movementDatum;
+        public List<IAnimationEventData> AnimationEventDatum => animationEventDatum;
         //运行数据
         [SerializeField] [ReadOnly] private int dirtyLevel;
         //表达式
@@ -92,9 +95,9 @@ namespace MusicTogether.DancingBall.Scene
                     throw new InvalidOperationException("[ClassicMap.RebuildRoads] SceneData 为空，无法重建 Road。");
                 }
                 blocks.Clear();
-                foreach (Transform children in transform)
+                for (int i = transform.childCount - 1; i >= 0; i--)
                 {
-                    DestroyImmediate(children.gameObject);
+                    DestroyImmediate(transform.GetChild(i).gameObject);
                 }
                 if (dirtyLevel <= 4) dirtyLevel = 3;
                 RecoverBlocks();
@@ -242,6 +245,21 @@ namespace MusicTogether.DancingBall.Scene
                 RoadData.noteEndIndex = newEndIndex;
                 RecoverBlocks();//Map.EditManager?.OnRoadBlockCountChanged(EditorTool.EditorActionContext.ForRoad(Map, GetRoadIndex()));
             }
+            [Button("更改Note起止序号，重建Block列表")]
+            public void ModifyNoteRange(int newBeginIndex, int newEndIndex)
+            {
+                if (!IsDataValid) return;
+                RoadData.noteBeginIndex = newBeginIndex;
+                RoadData.noteEndIndex = newEndIndex;
+                RecoverBlocks();//Map.EditManager?.OnRoadBlockCountChanged(EditorTool.EditorActionContext.ForRoad(Map, GetRoadIndex()));
+            }
+            [Button("更改目标Segment")]
+            public void ModifyTargetSegmentIndex(int newSegmentIndex)
+            {
+                if (!IsDataValid) return;
+                RoadData.targetSegmentIndex = newSegmentIndex;
+                RecoverBlocks();//Map.EditManager?.OnRoadBlockCountChanged(EditorTool.EditorActionContext.ForRoad(Map, GetRoadIndex()));
+            }
             [Button("更改目标Road数据名称")]
             public void ModifyTargetRoadDataName(string newName)
             {
@@ -257,6 +275,27 @@ namespace MusicTogether.DancingBall.Scene
                 RoadData.loaclRotation = Transform.localRotation;
                 RoadData.localScale = Transform.localScale;
             }
+
+            [Button("确保Block位移数据")]
+            public bool EnsureBlockDisplacementData(int blockLocalIndex, IBlockDisplacementData data)
+            {
+                if (!IsDataValid) return false;
+                if (data == null) return false;
+                RoadData.AddOrReplace_BlockData(data);
+                OnBlockDisplacementRuleChanged();
+                return true;
+            }
+
+            [Button("移除Block位移数据")]
+            public bool RemoveBlockDisplacementData(int blockLocalIndex)
+            {
+                if (!IsDataValid) return false;
+                int indexInList = RoadData.Get_BlockDisplacementDataListIndex_ByBlockIndexLocal(blockLocalIndex);
+                if (indexInList < 0) return false;
+                RoadData.Remove_BlockData(blockLocalIndex);
+                OnBlockDisplacementRuleChanged();
+                return true;
+            }
             
             //预处理数据
             [Button("生成Block MovementData（测试）")]
@@ -264,7 +303,7 @@ namespace MusicTogether.DancingBall.Scene
             {
                 if (!Map.SceneData.GetSegment(RoadData.targetSegmentIndex, out var targetSegment)) throw new Exception("找不到目标Segment，无法生成Block MovementData");
                 movementDatum.Clear();
-                double singleBlockDuration = targetSegment.GetNoteTimeAt(1);
+                singleBlockDuration = targetSegment.GetNoteTimeAt(1);
                 foreach (var block in blocks)
                 {
                     double blockTime = targetSegment.GetNoteTimeAt(RoadData.noteBeginIndex + block.BlockLocalIndex);
@@ -273,6 +312,7 @@ namespace MusicTogether.DancingBall.Scene
                 }
                 bool movementDatumHasData = movementDatum.Count > 0;
                 if (!movementDatumHasData) throw new Exception("生成的MovementData列表为空，请检查Block.TileHolder.GetTileMovementDatum的实现");
+                
                 roadBeginTime = movementDatum.First().Time;
                 roadEndTime = movementDatum.Last().Time;
             }
@@ -296,8 +336,7 @@ namespace MusicTogether.DancingBall.Scene
         {
             if (!IsDataValid) return EditorConfig.problemBlockColor;
             bool hasRule = roadData.blockDisplacementDataList.Exists(b => b.BlockIndex_Local == blockLocalIndex);
-            bool hasTap = Map.SceneData.Exists_NoteIndex(roadData.targetSegmentIndex,
-                roadData.noteBeginIndex + blockLocalIndex);
+            bool hasTap = Map.SceneData.GetSegment(roadData.targetSegmentIndex, out var segemnt) ? segemnt.notes.Contains(roadData.noteBeginIndex + blockLocalIndex) : false;
             if (hasTap)
                 return hasRule
                     ? EditorConfig.tapBlockWithDisplacementColor
@@ -319,7 +358,7 @@ namespace MusicTogether.DancingBall.Scene
             {
                 throw new ArgumentNullException(nameof(newDisplacementData), $"[ClassicRoad.ModifyDisplacementData] newDisplacementData 为空。RoadName={RoadName}, BlockLocalIndex={blockLocalIndex}");
             }
-            RoadData.Set_BlockData(newDisplacementData);
+            RoadData.AddOrReplace_BlockData(newDisplacementData);
             OnBlockDisplacementRuleChanged();
         }
         //地图操作

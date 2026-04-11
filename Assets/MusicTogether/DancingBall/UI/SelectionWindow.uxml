@@ -1,18 +1,27 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="ClassicBlockDisplacementPanel" src="project://database/Assets/MusicTogether/DancingBall/UI/BlockDisplacementData/Classic.uxml?fileID=9197481963319205126&amp;guid=b859fd2cb885d2f4e8fde00b1b88d570&amp;type=3#Classic" />
     <Style src="project://database/Assets/MusicTogether/DancingBall/UI/DancingBallEditor_Common.uss?fileID=7433441132597879392&amp;guid=1dcdcf878d12b194da051df375cde7a8&amp;type=3#DancingBallEditor_Common" />
     <ui:VisualElement name="selection-root" class="db-panel">
         <ui:VisualElement name="binded-view" style="flex-grow: 1; display: flex;">
-            <ui:Label name="selection-title" text="DancingBall 选择信息" class="db-title" />
-            <ui:Toggle name="selection-enable" text="启用" class="db-field" style="flex-shrink: 1; flex-grow: 0;" />
-            <ui:Label name="selection-info" class="db-muted" />
-            <ui:Label name="selection-hint" class="db-muted" />
-            <ui:Label name="selection-jump-header" text="跳转到 (Road | Block)" class="db-subtitle db-accent" />
-            <ui:VisualElement name="selection-jump-row" class="db-row">
-                <ui:VisualElement style="flex-grow: 1; flex-direction: row; justify-content: space-between;">
-                    <ui:IntegerField name="selection-jump-road" label="Road" class="db-field" />
-                    <ui:IntegerField name="selection-jump-block" label="Block" class="db-field" />
+            <ui:VisualElement name="selection-layout" style="flex-direction: row; justify-content: space-between;">
+                <ui:VisualElement name="selection-left" style="flex-grow: 1; margin-right: 8px;">
+                    <ui:Label name="selection-title" text="DancingBall 选择信息" class="db-title" />
+                    <ui:Toggle name="selection-enable" text="启用" class="db-field" style="flex-shrink: 1; flex-grow: 0;" />
+                    <ui:Label name="selection-info" class="db-muted" />
+                    <ui:Label name="selection-hint" class="db-muted" />
+                    <ui:Label name="selection-jump-header" text="跳转到 (Road | Block)" class="db-subtitle db-accent" />
+                    <ui:VisualElement name="selection-jump-row" class="db-row">
+                        <ui:VisualElement style="flex-grow: 1; flex-direction: row; justify-content: space-between;">
+                            <ui:IntegerField name="selection-jump-road" label="Road" class="db-field" />
+                            <ui:IntegerField name="selection-jump-block" label="Block" class="db-field" />
+                        </ui:VisualElement>
+                        <ui:Button name="selection-jump-go" text="Go" class="db-button" />
+                    </ui:VisualElement>
+                    <ui:EnumField name="selection-default-displacement-type" label="默认位移数据" class="db-field" />
                 </ui:VisualElement>
-                <ui:Button name="selection-jump-go" text="Go" class="db-button" />
+                <ui:VisualElement name="selection-right" style="flex-grow: 0; align-self: flex-start;">
+                    <ui:Instance template="ClassicBlockDisplacementPanel" name="selection-classic-panel" />
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="unbinded-view" style="flex-grow: 1; display: none;">

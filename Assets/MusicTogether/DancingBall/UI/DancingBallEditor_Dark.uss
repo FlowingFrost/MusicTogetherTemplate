@@ -1,15 +1,29 @@
 :root {
-    /* 
-     * DancingBall Editor UI - Dark Theme Variables
-     * Used github-dark inspired color palette
-     */
-    --db-accent: rgb(88, 166, 255);
-    --db-text: rgb(201, 209, 217);
-    --db-muted: rgb(139, 148, 158);
-    --db-surface: rgb(30, 30, 30);
-    --db-surface-alt: rgb(56, 56, 56);
-    --db-border: rgb(48, 54, 61);
-    --db-button-bg: rgb(88, 88, 88);
-    --db-button-bg-hover: rgb(103, 103, 103);
-    --db-input-bg: rgb(81, 81, 81);
+    /* 暗色主题 - 基于 VS Code 暗色优化，专业且舒适 */
+    --db-accent: rgb(86, 156, 214);          /* 柔和蓝 */
+    --db-text: rgb(212, 219, 226);           /* 高可读性灰白 */
+    --db-muted: rgb(138, 148, 158);          /* 辅助文字 */
+    --db-surface: rgb(37, 37, 38);           /* 主背景 */
+    --db-surface-alt: rgb(45, 45, 47);       /* 卡片背景 */
+    --db-border: rgb(60, 65, 70);            /* 边框 */
+    --db-button-bg: rgb(60, 60, 65);
+    --db-button-bg-hover: rgb(75, 75, 80);
+    --db-input-bg: rgb(30, 30, 32);
+    
+    /* 交互状态变量 */
+    --db-item-hover: rgb(62, 68, 77);
+    --db-item-selected: rgb(9, 71, 113);     /* 深蓝选中 */
+    --db-item-selected-text: rgb(255, 255, 255);
+}
+
+/* 通用类沿用亮色主题结构，仅变量不同，以下为必要的暗色特有调整 */
+
+.db-status-tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    color: var(--db-accent);
+    border-width: 1px;
+    border-color: var(--db-accent);
+    background-color: rgba(86, 156, 214, 0.15);
 }

@@ -13,13 +13,11 @@ namespace MusicTogether.DancingBall.Data
     [Serializable]
     public class RoadData
     {
-        [Obsolete("应直接按照列表顺序访问，Index不再需要(Road按照时间排序而不是序号排序)")][HideInInspector] public int roadIndex_Global;
         public string roadName;
         public int targetSegmentIndex;
         public int noteBeginIndex;
         public int noteEndIndex;
         public int BlockCount => noteEndIndex - noteBeginIndex + 1;
-        [Obsolete("不建议使用全局序号访问Block，这可能会造成问题")][HideInInspector] public int blockIndex_Global_Begin;
         public Vector3 loaclPosition;
         public Quaternion loaclRotation;
         public Vector3 localScale = Vector3.one;
@@ -54,17 +52,58 @@ namespace MusicTogether.DancingBall.Data
             return false;
         }
         
-        public void Set_BlockData(IBlockDisplacementData data)
+        private void Set_BlockData(IBlockDisplacementData data)
         {
             int indexInList = Get_BlockDisplacementDataListIndex_ByBlockIndexLocal(data.BlockIndex_Local);
             if (indexInList >= 0) blockDisplacementDataList[indexInList] = data;
             else blockDisplacementDataList.Insert(~indexInList,data);
         }
 
+        /// <summary>
+        /// 添加或替换 Block 位移数据。
+        /// </summary>
+        public bool AddOrReplace_BlockData(IBlockDisplacementData data)
+        {
+            if (data == null) return false;
+            Set_BlockData(data);
+            return true;
+        }
+
         public void Remove_BlockData(int blockIndexLocal)
         {
             int indexInList = Get_BlockDisplacementDataListIndex_ByBlockIndexLocal(blockIndexLocal);
             if (indexInList >= 0) blockDisplacementDataList.RemoveAt(indexInList);
+        }
+
+        /// <summary>
+        /// 创建并写入 Block 位移数据实例。
+        /// </summary>
+        public IBlockDisplacementData CreateBlockDisplacementData(int blockLocalIndex, Type dataType)
+        {
+            if (dataType == null) return null;
+            if (!typeof(IBlockDisplacementData).IsAssignableFrom(dataType)) return null;
+            try
+            {
+                var instance = Activator.CreateInstance(dataType, blockLocalIndex) as IBlockDisplacementData;
+                if (instance != null) Set_BlockData(instance);
+                return instance;
+            }
+            catch (MissingMethodException)
+            {
+                Debug.LogError($"CreateBlockDisplacementData failed: {dataType.Name} does not have ctor(int blockLocalIndex).");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 移除 Block 位移数据（封装 Remove_BlockData）。
+        /// </summary>
+        public bool RemoveBlockDisplacementData(int blockLocalIndex)
+        {
+            int indexInList = Get_BlockDisplacementDataListIndex_ByBlockIndexLocal(blockLocalIndex);
+            if (indexInList < 0) return false;
+            Remove_BlockData(blockLocalIndex);
+            return true;
         }
     }
 
@@ -100,7 +139,6 @@ namespace MusicTogether.DancingBall.Data
 
             return true;
         }
-
         public bool GetSegment(int targetSegmentIndex, out Segemnt segment)
         {
             segment = new Segemnt();
@@ -109,68 +147,22 @@ namespace MusicTogether.DancingBall.Data
             return true;
         }
 
-        //移除HasTap，road自己根据index进行遍历操作。
-        [Obsolete]
-        public bool GetNoteTime(int targetSegmentIndex, int noteIndex, out double noteTime)
-        {
-            noteTime = 0f;
-            if (!GetSegment(targetSegmentIndex, out Segemnt segment)) return false;
-            if (noteIndex < 0 || noteIndex >= segment.notes.Count)
-            {
-                Debug.LogError($"Note index {noteIndex} is out of range for segment {targetSegmentIndex}.");
-                return false;
-            }
-
-            noteTime = segment.GetNoteTimeAt(noteIndex);
-            return true;
-        }
-        [Obsolete]
-        public bool Exists_NoteIndex(int targetSegmentIndex, int noteIndex)
-        {
-            if (!GetSegment(targetSegmentIndex, out Segemnt segment)) return false;
-            return segment.notes.Contains(noteIndex);
-        }
-
         //Road数据操作==================================================================================
-        [Obsolete] private bool Is_RoadIndexInRange(int roadIndexGlobal) => roadIndexGlobal >= 0 && roadIndexGlobal < roadDataList.Count;
-        
         public bool Exists_RoadData_ByRoadName(string roadName) => roadDataList.Any(rd => rd.roadName == roadName);
-        
-        /// <summary>
-        /// 验证RoadData的roadIndex_Global是否有效且与列表中的位置一致。如果不一致，尝试排序列表以修正索引。
-        /// </summary>
-        [Obsolete] private bool ValidateRoadIndexGlobal(int roadIndexGlobal)
-        {
-            if (roadIndexGlobal < 0 || roadIndexGlobal >= roadDataList.Count)
-            {
-                Debug.LogError($"Road index {roadIndexGlobal} is out of range.");
-                return false;
-            }
 
-            if (roadDataList[roadIndexGlobal].roadIndex_Global != roadIndexGlobal) Refresh_RoadDataList();
-            return true;
-        }
-        
         /// <summary>
-        /// 获取RoadData在列表中的索引。现在的列表强制要求序号统一，不再需要这个函数
+        /// 检查 RoadName 是否唯一且合法。
         /// </summary>
-        [Obsolete] private int Find_RoadDataListIndex_ByRoadIndexGlobal(int roadIndexGlobal)
+        public bool ValidateRoadNameUnique(string roadName)
         {
-            if (roadIndexGlobal < 0) return -1;
-            if (roadDataList.Count > roadIndexGlobal)
-            {
-                if (roadDataList[roadIndexGlobal].roadIndex_Global == roadIndexGlobal)
-                {
-                    return roadIndexGlobal;
-                }
-            }
-            return roadDataList.FindIndex(roadData => roadData.roadIndex_Global == roadIndexGlobal);
+            if (string.IsNullOrWhiteSpace(roadName)) return false;
+            return !Exists_RoadData_ByRoadName(roadName);
         }
         
         /// <summary>
         /// 根据Road起始时间排序，按照开始时间排序并生成blockIndex的Global起始。
         /// </summary>
-        private void Refresh_RoadDataList()
+        public void RefreshRoadDataList()
         {
             var sorted = roadDataList
                 .Select(rd => new
@@ -191,22 +183,6 @@ namespace MusicTogether.DancingBall.Data
 
             roadDataList.Clear();
             roadDataList.AddRange(sorted);
-            //为了适配旧API设计的功能
-#pragma warning disable CS0618 // 类型或成员已过时
-            roadDataList[0].blockIndex_Global_Begin = 0;
-            for (int i = 1; i < roadDataList.Count; i++)
-            {
-                roadDataList[i].blockIndex_Global_Begin = roadDataList[i - 1].blockIndex_Global_Begin + roadDataList[i - 1].BlockCount;
-            }
-#pragma warning restore CS0618 // 类型或成员已过时
-        }
-        
-        [Obsolete] public bool Get_RoadData_ByRoadIndexGlobal(int roadIndexGlobal, out RoadData roadData)
-        {
-            roadData = null;
-            if (!ValidateRoadIndexGlobal(roadIndexGlobal)) return false;
-            roadData = roadDataList[roadIndexGlobal];
-            return roadData != null;
         }
         
         public int Get_RoadDataIndex_ByRoadName(string roadName) => roadDataList.FindIndex(rd => rd.roadName == roadName);
@@ -234,8 +210,49 @@ namespace MusicTogether.DancingBall.Data
             else
             {
                 roadDataList.Add(roadData);
-                Refresh_RoadDataList();
+                RefreshRoadDataList();
             }
+        }
+
+        /// <summary>
+        /// 创建并加入新的 RoadData，返回创建结果（失败返回 null）。
+        /// </summary>
+        public RoadData CreateRoadData(string roadName, int segmentIndex, int noteBegin, int noteEnd)
+        {
+            if (!ValidateRoadNameUnique(roadName)) return null;
+            var roadData = new RoadData(roadDataList.Count, segmentIndex, noteBegin, noteEnd)
+            {
+                roadName = roadName
+            };
+            roadDataList.Add(roadData);
+            RefreshRoadDataList();
+            return roadData;
+        }
+
+        /// <summary>
+        /// 按名称删除 RoadData。
+        /// </summary>
+        public bool RemoveRoadData(string roadName)
+        {
+            int index = Get_RoadDataIndex_ByRoadName(roadName);
+            if (index < 0) return false;
+            roadDataList.RemoveAt(index);
+            RefreshRoadDataList();
+            return true;
+        }
+
+        /// <summary>
+        /// 重命名 RoadData（保证新名称唯一）。
+        /// </summary>
+        public bool RenameRoadData(string oldName, string newName)
+        {
+            if (string.Equals(oldName, newName, StringComparison.Ordinal)) return false;
+            if (!ValidateRoadNameUnique(newName)) return false;
+            int index = Get_RoadDataIndex_ByRoadName(oldName);
+            if (index < 0) return false;
+            roadDataList[index].roadName = newName;
+            RefreshRoadDataList();
+            return true;
         }
 
         /// <summary>
@@ -249,7 +266,7 @@ namespace MusicTogether.DancingBall.Data
             if (roads != null && roads.Count > 0)
             {
                 roadDataList.AddRange(roads);
-                Refresh_RoadDataList();
+                RefreshRoadDataList();
             }
         }
 

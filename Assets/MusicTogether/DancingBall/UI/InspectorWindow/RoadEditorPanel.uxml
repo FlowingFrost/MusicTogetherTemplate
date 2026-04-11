@@ -1,23 +1,38 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:VisualElement name="road-root" class="db-panel">
-        <ui:VisualElement name="road-common-container" class="db-section" style="display: none;">
-            <ui:Label text="Road 通用选项" name="road-common-header" class="db-title" />
+        <ui:Foldout name="road-common-container" text="Road 通用选项" class="db-section" style="display: none;">
+            <ui:VisualElement name="road-detail-form" class="db-detail-form">
+                <ui:Label text="Road 详情" class="db-subtitle" />
+                <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+                    <ui:TextField name="road-target-data-name" label="目标Road数据名称" class="db-field" />
+                    <ui:Button name="road-modify-target-data-name" text="更改目标Road数据名称" class="db-button" />
+                </ui:VisualElement>
+                <ui:DropdownField name="road-detail-segment" label="目标Segment" class="db-field" />
+                <ui:VisualElement class="db-row">
+                    <ui:Label text="Note 起止序号" class="db-field" />
+                    <ui:IntegerField name="road-note-range-begin" class="db-field" />
+                    <ui:IntegerField name="road-note-range-end" class="db-field" />
+                </ui:VisualElement>
+                <ui:Button name="road-modify-note-range" text="更改Note起止序号，重建Block列表" class="db-button" />
+            </ui:VisualElement>
             <ui:Button name="road-refresh-road-blocks" text="重建Block列表，清理重复和无效Block，添加缺失Block，更新Block位置" class="db-button" />
             <ui:Button name="road-update-block-transform" text="更新Block位置和显示信息" class="db-button" />
             <ui:Button name="road-refresh-block-display" text="更新Block显示信息" class="db-button" />
-            <ui:VisualElement name="road-data-operations" class="db-row">
-                <ui:IntegerField name="road-note-begin" label="Note 起始序号" class="db-field" />
-                <ui:Button name="road-modify-note-begin" text="更改Note起始序号，重建Block列表" class="db-button" />
-                <ui:IntegerField name="road-note-end" label="Note 结束序号" class="db-field" />
-                <ui:Button name="road-modify-note-end" text="更改Note结束序号，重建Block列表" class="db-button" />
-                <ui:TextField name="road-target-data-name" label="目标Road数据名称" class="db-field" />
-                <ui:Button name="road-modify-target-data-name" text="更改目标Road数据名称" class="db-button" />
+            <ui:VisualElement name="block-displacement-list-section" class="db-row">
+                <ui:Label text="Block 位移数据列表" class="db-subtitle" />
+                <ui:VisualElement name="block-displacement-toolbar" class="db-toolbar">
+                    <ui:Button name="block-displacement-create" text="新建" class="db-button" style="display: none;" />
+                    <ui:Button name="block-displacement-delete" text="删除" class="db-button" />
+                    <ui:Button name="block-displacement-apply-batch" text="批量应用" class="db-button" style="display: none;" />
+                </ui:VisualElement>
+                <ui:ListView name="block-displacement-list-view" class="db-list" />
+                <ui:Label name="block-displacement-list-empty" text="暂无位移数据" class="db-muted" />
+                <ui:Label text="未定义的 Block 不会显示在此列表" class="db-muted" />
             </ui:VisualElement>
-        </ui:VisualElement>
-        <ui:VisualElement name="road-derived-container" class="db-section db-section-spaced" style="display: none;">
-            <ui:Label text="Road 继承类选项" name="road-derived-header" class="db-title" />
+        </ui:Foldout>
+        <ui:Foldout name="road-derived-container" text="Road 继承类选项" class="db-section db-section-spaced" style="display: none;">
             <ui:Label text="（当前无继承类专属操作）" name="road-derived-empty" class="db-muted" />
-        </ui:VisualElement>
+        </ui:Foldout>
         <ui:VisualElement name="road-missbinding-container" class="db-section" style="display: flex;">
             <ui:Label tabindex="-1" text="Road未绑定" parse-escape-sequences="true" display-tooltip-when-elided="true" class="db-title" />
         </ui:VisualElement>

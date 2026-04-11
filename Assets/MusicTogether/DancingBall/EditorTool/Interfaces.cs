@@ -22,8 +22,7 @@ namespace MusicTogether.DancingBall.EditorTool
         {
             void ShowMessage(string msg);
         }
-        
-        public interface IEditorWindow
+        public interface IKeyboardListener
         {
             
         }

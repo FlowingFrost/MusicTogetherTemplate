@@ -1,5 +1,8 @@
+using System;
 using System.Linq;
+using MusicTogether.DancingBall.Data;
 using MusicTogether.DancingBall.EditorTool.UIManager;
+using MusicTogether.DancingBall.Scene;
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;
@@ -14,6 +17,10 @@ namespace MusicTogether.DancingBall.EditorTool.Editor
         private const string SelectionUxmlPath = "Assets/MusicTogether/DancingBall/UI/SelectionWindow.uxml";
         private EditorCenter EditorCenter => EditorCenter.Instance;
         private SelectionWindowManager _selectionWindowManager;
+    private ClassicBlockDisplacementUIManager _classicDisplacementManager;
+    private BlockDisplacementDataType _defaultDisplacementType = BlockDisplacementDataType.Classic;
+    private IBlock _currentBlock;
+    private IBlockDisplacementData _currentDisplacementData;
         
         private bool _toolEnabled = true;
         private int _controlId = -1;
@@ -52,6 +59,14 @@ namespace MusicTogether.DancingBall.EditorTool.Editor
             _selectionWindowManager = new SelectionWindowManager(root);
             _selectionWindowManager.EnableChanged = enabled => _toolEnabled = enabled;
             _selectionWindowManager.RetryBind = BindEditorCenter;
+            _selectionWindowManager.DefaultDisplacementTypeChanged = OnDefaultDisplacementTypeChanged;
+
+            var classicRoot = root.Q<VisualElement>("classic-root");
+            if (classicRoot != null)
+            {
+                _classicDisplacementManager = new ClassicBlockDisplacementUIManager(classicRoot);
+                _classicDisplacementManager.DataChanged = OnDisplacementDataChanged;
+            }
             BindEditorCenter();
             
             _updateCallback = () => RefreshUI(root);
@@ -110,10 +125,12 @@ namespace MusicTogether.DancingBall.EditorTool.Editor
             _selectionWindowManager.JumpTo = (roadIndex, blockIndex) => EditorCenter.JumpTo(roadIndex, blockIndex);
             _selectionWindowManager.SetEnabledState(_toolEnabled);
             EditorCenter.OnSelectionChanged += _selectionWindowManager.UpdateSelectionInfo;
+            EditorCenter.OnBlockSelectionChanged += OnBlockSelectionChanged;
             EditorCenter.LookAtObject += LookAt;
 
             _selectionWindowManager.SetBindedViewVisible(true);
             _selectionWindowManager.SetEnabledState(true);
+            _selectionWindowManager.SetDefaultDisplacementType(_defaultDisplacementType);
         }
         private bool ValidateEditorCenter()
         {
@@ -128,7 +145,98 @@ namespace MusicTogether.DancingBall.EditorTool.Editor
         {
             if (go == null) return;
             Selection.activeGameObject = go;
-            SceneView.lastActiveSceneView?.FrameSelected();
+            var sceneView = SceneView.lastActiveSceneView;
+            if (sceneView == null) return;
+
+            if (TryGetExpandedBounds(go, 3.0f, out var bounds))
+            {
+                sceneView.Frame(bounds, false);
+            }
+            else
+            {
+                sceneView.FrameSelected();
+            }
+        }
+
+        private bool TryGetExpandedBounds(GameObject target, float expandMultiplier, out Bounds bounds)
+        {
+            bounds = new Bounds();
+            if (target == null) return false;
+
+            var renderers = target.GetComponentsInChildren<Renderer>();
+            if (renderers == null || renderers.Length == 0) return false;
+
+            bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                bounds.Encapsulate(renderers[i].bounds);
+            }
+
+            if (expandMultiplier > 1f)
+            {
+                bounds.Expand(bounds.size * (expandMultiplier - 1f));
+            }
+            return true;
+        }
+
+        private void OnBlockSelectionChanged(IBlock block, IBlockDisplacementData data)
+        {
+            _currentBlock = block;
+            _currentDisplacementData = data;
+            RefreshDisplacementPanel();
+        }
+
+        private void RefreshDisplacementPanel()
+        {
+            if (_classicDisplacementManager == null) return;
+
+            if (_currentBlock == null)
+            {
+                _classicDisplacementManager.SetData(null);
+                return;
+            }
+
+            if (_currentDisplacementData is ClassicBlockDisplacementData classicData)
+            {
+                _classicDisplacementManager.SetData(classicData);
+                return;
+            }
+
+            if (_currentDisplacementData == null)
+            {
+                _classicDisplacementManager.SetData(CreateDefaultDisplacementData(_currentBlock.BlockLocalIndex) as ClassicBlockDisplacementData);
+                return;
+            }
+
+            _classicDisplacementManager.SetData(null);
+        }
+
+        private IBlockDisplacementData CreateDefaultDisplacementData(int blockLocalIndex)
+        {
+            return _defaultDisplacementType switch
+            {
+                BlockDisplacementDataType.Classic => new ClassicBlockDisplacementData(blockLocalIndex),
+                _ => new ClassicBlockDisplacementData(blockLocalIndex)
+            };
+        }
+
+        private void OnDefaultDisplacementTypeChanged(Enum value)
+        {
+            if (value is BlockDisplacementDataType type)
+            {
+                _defaultDisplacementType = type;
+                if (_currentDisplacementData == null)
+                {
+                    RefreshDisplacementPanel();
+                }
+            }
+        }
+
+        private void OnDisplacementDataChanged(IBlockDisplacementData data)
+        {
+            if (data == null || EditorCenter?.selectedRoad == null) return;
+            EditorCenter.selectedRoad.ModifyDisplacementData(data.BlockIndex_Local, data);
+            EditorCenter.RefreshSelection();
         }
     }
 }

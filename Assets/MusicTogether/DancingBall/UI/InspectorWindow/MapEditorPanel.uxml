@@ -1,14 +1,23 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:VisualElement name="map-root" class="db-panel">
-        <ui:VisualElement name="map-common-container" class="db-section" style="display: none;">
-            <ui:Label text="Map 通用选项" name="map-common-header" class="db-title" />
+        <ui:Foldout name="map-common-container" text="Map 通用选项" class="db-section" style="display: none;">
             <ui:Button name="map-rebuild-roads" text="重建Road列表，清理重复和无效Road，添加缺失Road" class="db-button" />
             <ui:Button name="map-refresh-all-roads" text="刷新所有Road，重建Block列表" class="db-button" />
-        </ui:VisualElement>
-        <ui:VisualElement name="map-derived-container" class="db-section db-section-spaced" style="display: none;">
-            <ui:Label text="Map 继承类选项" name="map-derived-header" class="db-title" />
+            <ui:VisualElement name="map-road-list-section" class="db-row">
+                <ui:Label text="Road 列表" class="db-subtitle" />
+                <ui:VisualElement name="road-toolbar" class="db-toolbar">
+                    <ui:Button name="road-create" text="新建" class="db-button" />
+                    <ui:Button name="road-delete" text="删除" class="db-button" />
+                    <ui:Button name="road-duplicate" text="复制" class="db-button" />
+                    <ui:Button name="road-refresh" text="刷新" class="db-button" />
+                </ui:VisualElement>
+                <ui:ListView name="road-list-view" class="db-list" />
+                <ui:Label name="road-list-empty" text="暂无 Road 数据" class="db-muted" />
+            </ui:VisualElement>
+        </ui:Foldout>
+        <ui:Foldout name="map-derived-container" text="Map 继承类选项" class="db-section db-section-spaced" style="display: none;">
             <ui:Label text="（当前无继承类专属操作）" name="map-derived-empty" class="db-muted" />
-        </ui:VisualElement>
+        </ui:Foldout>
         <ui:VisualElement name="map-missbinding-container" class="db-section" style="display: flex;">
             <ui:Label tabindex="-1" text="Map丢失绑定" parse-escape-sequences="true" display-tooltip-when-elided="true" class="db-title" />
             <ui:Button name="map-missbinding-retry" text="重试" class="db-button" />

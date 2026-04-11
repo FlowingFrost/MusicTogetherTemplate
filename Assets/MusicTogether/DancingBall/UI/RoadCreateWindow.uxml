@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="road-create-root" class="db-panel" style="flex-grow: 1;">
+        <ui:Label text="Road 创建" class="db-title" />
+        <ui:TextField name="road-create-name" label="Road 名称" class="db-field" />
+    <ui:DropdownField name="road-create-segment" label="SegmentName" class="db-field" />
+        <ui:IntegerField name="road-create-note-begin" label="Note 起始" class="db-field" />
+        <ui:IntegerField name="road-create-note-end" label="Note 结束" class="db-field" />
+        <ui:VisualElement class="db-toolbar" style="justify-content: flex-end;">
+            <ui:Button name="road-create-confirm" text="创建" class="db-button" />
+            <ui:Button name="road-create-cancel" text="取消" class="db-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

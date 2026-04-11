@@ -1,7 +1,11 @@
+using System.Collections.Generic;
 using MusicTogether.DancingBall.Scene;
 using MusicTogether.LevelManagement;
 using Sirenix.OdinInspector;
 using UnityEngine;
+
+//设计思路：
+//切换到某个road时，road内的data按照begin时间（现在没有声明动画，暂时使用clickTime + duration*2）顺序排列
 
 namespace MusicTogether.DancingBall.Player
 {
@@ -22,7 +26,6 @@ namespace MusicTogether.DancingBall.Player
             public Vector3 CurrentDataPosition;
             public Vector3 PreviousMotionPosition;
         }
-
         private const float StandardDisplacementSqrEpsilon = 1e-6f;
 
         [SerializeField] private ILevelManager levelManager;
@@ -30,6 +33,8 @@ namespace MusicTogether.DancingBall.Player
         [SerializeField] private IMap map;
         [SerializeField] private float ballRadius;
         [SerializeField] private AnimationCurve motionCorrectionCurve;
+        [SerializeField] private AnimationEventPlayer animationEventPlayer;
+        
         private int currentRoadIndex = 0;
         private int currentDataIndex = 0;
         
@@ -39,8 +44,16 @@ namespace MusicTogether.DancingBall.Player
         private double CurrentDataTime => CurrentData.Time;
         private double PreviousDataTime => GetPreviousData(out var data)? data.Time : 0;
         private bool IsRoadIndexOutOfRange(int roadIndex) => roadIndex < 0 || roadIndex >= map.Roads.Count;
-        private bool IsDataIndexOutOfRange(int dataIndex) => dataIndex < 0 || dataIndex >= CurrentRoad.MovementDatum.Count;
-
+        private bool IsDataIndexOutOfCurrentRange(int dataIndex) => dataIndex < 0 || dataIndex >= CurrentRoad.MovementDatum.Count;
+        private bool IsDataIndexOutOfRange(int roadIndex, int dataIndex)
+        {
+            if (IsRoadIndexOutOfRange(roadIndex))
+                return true;
+            if (dataIndex < 0 || dataIndex >= map.Roads[roadIndex].MovementDatum.Count)
+                return true;
+            return false;
+        }
+        
         private double previousMotionPointTime;
         private Vector3 previousMotionPointPosition;
         private Quaternion previousMotionPointRotation;
@@ -61,26 +74,44 @@ namespace MusicTogether.DancingBall.Player
             previousMotionPointPosition = transform.position;
             previousMotionPointRotation = transform.GetChild(0).rotation;
         }
-        private bool GetPreviousData(out MovementData data)
+        private bool GetPreviousData(out MovementData data) => GetPreviousData(1, out data);
+
+        private bool GetPreviousData(int step, out MovementData data)
         {
             data = null;
-            if (IsDataIndexOutOfRange(currentDataIndex - 1))
+            if (step <= 0)
             {
-                if (IsRoadIndexOutOfRange(currentRoadIndex - 1))
-                    return false;
+                data = CurrentData;
+                return data != null;
+            }
+
+            int roadIndex = currentRoadIndex;
+            int dataIndex = currentDataIndex;
+
+            for (int i = 0; i < step; i++)
+            {
+                if (dataIndex - 1 < 0)
+                {
+                    roadIndex--;
+                    if (IsRoadIndexOutOfRange(roadIndex))
+                        return false;
+                    dataIndex = map.Roads[roadIndex].MovementDatum.Count - 1;
+                }
                 else
                 {
-                    data = map.Roads[currentRoadIndex - 1].MovementDatum[^1];
-                    return true;
+                    dataIndex--;
                 }
             }
 
-            data = map.Roads[currentRoadIndex].MovementDatum[currentDataIndex - 1];
+            if (IsDataIndexOutOfRange(roadIndex, dataIndex))
+                return false;
+
+            data = map.Roads[roadIndex].MovementDatum[dataIndex];
             return true;
         }
         private bool GotoPreviousData()
         {
-            if (IsDataIndexOutOfRange(currentDataIndex - 1))
+            if (IsDataIndexOutOfCurrentRange(currentDataIndex - 1))
             {
                 if (IsRoadIndexOutOfRange(currentRoadIndex - 1))
                     return false;
@@ -98,31 +129,52 @@ namespace MusicTogether.DancingBall.Player
                     return true;
                 }
             }
-
+            nextData = CurrentData;
+            GetPreviousData(out previousData);
+            
             currentDataIndex--;
             RecordPreviousMotionPoint();
             return true;
         }
 
-        private bool GetNextData(out MovementData data)
+        private bool GetNextData(out MovementData data) => GetNextData(1, out data);
+
+        private bool GetNextData(int step, out MovementData data)
         {
             data = null;
-            if (IsDataIndexOutOfRange(currentDataIndex + 1))
+            if (step <= 0)
             {
-                if (IsRoadIndexOutOfRange(currentRoadIndex + 1))
-                    return false;
+                data = CurrentData;
+                return data != null;
+            }
+
+            int roadIndex = currentRoadIndex;
+            int dataIndex = currentDataIndex;
+
+            for (int i = 0; i < step; i++)
+            {
+                if (dataIndex + 1 >= map.Roads[roadIndex].MovementDatum.Count)
+                {
+                    roadIndex++;
+                    if (IsRoadIndexOutOfRange(roadIndex))
+                        return false;
+                    dataIndex = 0;
+                }
                 else
                 {
-                    data = map.Roads[currentRoadIndex + 1].MovementDatum[0];
-                    return true;
+                    dataIndex++;
                 }
             }
-            data = map.Roads[currentRoadIndex].MovementDatum[currentDataIndex + 1];
+
+            if (IsDataIndexOutOfRange(roadIndex, dataIndex))
+                return false;
+
+            data = map.Roads[roadIndex].MovementDatum[dataIndex];
             return true;
         }
         private bool GotoNextData()
         {
-            if (IsDataIndexOutOfRange(currentDataIndex + 1))
+            if (IsDataIndexOutOfCurrentRange(currentDataIndex + 1))
             {
                 if (IsRoadIndexOutOfRange(currentRoadIndex + 1))
                     return false;
@@ -141,51 +193,12 @@ namespace MusicTogether.DancingBall.Player
                     return true;
                 }
             }
-
+            previousData = CurrentData;
+            GetNextData(out nextData);
+            
             currentDataIndex++;
             RecordPreviousMotionPoint();
             return true;
-        }
-        private void UpdateTimeOnPlaying(double currentTime)
-        {
-            if (DetectInput() && CurrentData.NeedTap)
-            {
-                if (previousData == null || PreviousDataTime < currentTime)
-                    GotoNextData();
-                //previousMotionPointTime = PreviousDataTime;
-            }
-            //超时切换
-            else if (currentTime > CurrentDataTime)
-            {
-                while (currentTime > CurrentDataTime && !CurrentData.NeedTap)// && (!CurrentData.NeedTap || DetectInput()) 
-                {
-                    if (!GotoNextData()) break;
-                }
-            }
-            /*else if (PreviousDataTime > currentTime)
-            {
-                while (PreviousDataTime > currentTime)
-                {
-                    if (!GotoPreviousData()) break;
-                }
-            }*/
-        }
-        private void UpdateTimeOnPreview(double currentTime)
-        {
-            if (currentTime > CurrentDataTime)
-            {
-                while (currentTime > CurrentDataTime)
-                {
-                    if (!GotoNextData()) break;
-                }
-            }
-            else if (PreviousDataTime > currentTime)
-            {
-                while (PreviousDataTime > currentTime)
-                {
-                    if (!GotoPreviousData()) break;
-                }
-            }
         }
 
         private void SetPlayerTransformOnPlaying(double currentTime)
@@ -213,14 +226,13 @@ namespace MusicTogether.DancingBall.Player
             Vector3 currentPosition = Vector3.LerpUnclamped(previousPosition, nextPosition, deltaTimeRatio);
             float deltaTimeRatioClamped = Mathf.Clamp01(deltaTimeRatio);
             
-            Quaternion currentRotation = Quaternion.Lerp(previousRotation, nextRotation, motionCorrectionCurve.Evaluate(deltaTimeRatioClamped));
             
             DisplacementDebugData? debugData = null;
             
-            GetPreviousData(out previousData);
+            //GetPreviousData(out previousData);
             if (previousData != null && CurrentData != null)
             {
-                
+                nextRotation = CurrentData.NeedTap ? previousData.GetPlayerRotation() : CurrentData.GetPlayerRotation();
 
                 Vector3 previousDataPosition = previousData.GetPlayerPosition(ballRadius);
                 Vector3 currentDataPosition = CurrentData.GetPlayerPosition(ballRadius);
@@ -235,9 +247,9 @@ namespace MusicTogether.DancingBall.Player
                                       actualDisplacementOnStandardDirection * deltaTimeRatio +
                                       actualDisplacementOnOrthogonalDirection *
                                       motionCorrectionCurve.Evaluate(deltaTimeRatioClamped);
-
-                    Vector3 standardDirection = standardDisplacement.normalized;
-
+                    //currentRotation = Quaternion.Lerp(previousRotation, previousData.GetPlayerRotation(), motionCorrectionCurve.Evaluate(deltaTimeRatioClamped));
+                    
+        
 
                     debugData = new DisplacementDebugData
                     {
@@ -268,9 +280,13 @@ namespace MusicTogether.DancingBall.Player
                     };
                 }
             }
+            else if (currentRoadIndex != 0 || currentDataIndex != 0)
+            {
+                Debug.LogError("错误的播放状态");
+            }
             UpdateDebugData(debugData);
             
-            
+            Quaternion currentRotation = Quaternion.Lerp(previousRotation, nextRotation, motionCorrectionCurve.Evaluate(deltaTimeRatioClamped));
             
             //deltaTimeRatio = Mathf.Clamp01(deltaTimeRatio);
             
@@ -303,21 +319,81 @@ namespace MusicTogether.DancingBall.Player
                 ? 1f
                 : (float)((currentTime - previousTime) / motionTimeLength);
             Vector3 currentPosition = Vector3.LerpUnclamped(previousPosition, nextPosition, deltaTimeRatio);
-            Quaternion currentRotation = Quaternion.LerpUnclamped(previousRotation, nextRotation, deltaTimeRatio);
+            Quaternion currentRotation = Quaternion.Lerp(previousRotation, nextRotation, deltaTimeRatio);
             transform.position = currentPosition;
             transform.GetChild(0).rotation = currentRotation;
         }
 
+        private void UpdateMovementDataOnPlaying(double currentTime)
+        {
+            if (CurrentData.NeedTap)
+            {
+                if (DetectInput())
+                {
+                    if (previousData == null || PreviousDataTime < currentTime)
+                    {
+                        GotoNextData();
+                        animationEventPlayer.NotifyBlockClicked(currentRoadIndex, currentDataIndex, currentTime);
+                    }
+                    //previousMotionPointTime = PreviousDataTime;
+                }
+                else if (currentTime > nextData.Time)
+                {
+                    GotoNextData();
+                }
+            }
+
+            //超时切换
+            else if (currentTime > CurrentDataTime)
+            {
+                while (currentTime > CurrentDataTime && !CurrentData.NeedTap)// && (!CurrentData.NeedTap || DetectInput()) 
+                {
+                    if (!GotoNextData()) break;
+                }
+            }
+            /*else if (PreviousDataTime > currentTime)
+            {
+                while (PreviousDataTime > currentTime)
+                {
+                    if (!GotoPreviousData()) break;
+                }
+            }*/
+        }
+        private void UpdateMovementDataOnPreview(double currentTime)
+        {
+            if (currentTime > CurrentDataTime)
+            {
+                while (currentTime > CurrentDataTime)
+                {
+                    if (!GotoNextData()) break;
+                }
+            }
+            else if (PreviousDataTime > currentTime)
+            {
+                while (PreviousDataTime > currentTime)
+                {
+                    if (!GotoPreviousData()) break;
+                }
+            }
+        }
+
+        
+        private int clickTipReadingRoadIndex;
+        private int clickTipReadingBlockIndex;
+        [SerializeField] private GameObject clickTipPrefab;
+        private List<IClickTipObject> activeClickTips = new List<IClickTipObject>();
+        private List<IClickTipObject> unusedClickTips = new List<IClickTipObject>();
+        
         public void Update()
         {
             switch (levelManager.CurrentLevelState)
             {
                 case LevelState.Playing:
-                    UpdateTimeOnPlaying(Time);
+                    UpdateMovementDataOnPlaying(Time);
                     SetPlayerTransformOnPlaying(Time);
                     break;
                 case LevelState.Previewing:
-                    UpdateTimeOnPreview(Time);
+                    UpdateMovementDataOnPreview(Time);
                     SetPlayerTransformOnPreview(Time);
                     break;
             }
@@ -327,7 +403,7 @@ namespace MusicTogether.DancingBall.Player
         {
             if (map == null || map.Roads == null || map.Roads.Count == 0)
                 return;
-            if (IsRoadIndexOutOfRange(currentRoadIndex) || IsDataIndexOutOfRange(currentDataIndex))
+            if (IsRoadIndexOutOfRange(currentRoadIndex) || IsDataIndexOutOfCurrentRange(currentDataIndex))
                 return;
 
             MovementData currentData = CurrentData;
@@ -351,6 +427,33 @@ namespace MusicTogether.DancingBall.Player
 
             Gizmos.color = Color.magenta;
             Gizmos.DrawLine(previousMotionPosition, currentDataPosition);
+
+            float directionLength = ballRadius;
+            float arrowHeadLength = ballRadius * 0.35f;
+            float arrowHeadAngle = 25f;
+
+            if (hasPreviousData)
+            {
+                Quaternion previousRotation = gizmoPreviousData.GetPlayerRotation();
+                Vector3 previousForward = previousRotation * Vector3.forward;
+                Gizmos.color = new Color(0.2f, 0.9f, 0.2f, 0.9f);
+                Vector3 previousArrowEnd = previousDataPosition + previousForward * directionLength;
+                Gizmos.DrawLine(previousDataPosition, previousArrowEnd);
+                Vector3 previousArrowLeft = Quaternion.AngleAxis(180f + arrowHeadAngle, previousRotation * Vector3.up) * previousForward;
+                Vector3 previousArrowRight = Quaternion.AngleAxis(180f - arrowHeadAngle, previousRotation * Vector3.up) * previousForward;
+                Gizmos.DrawLine(previousArrowEnd, previousArrowEnd + previousArrowLeft * arrowHeadLength);
+                Gizmos.DrawLine(previousArrowEnd, previousArrowEnd + previousArrowRight * arrowHeadLength);
+            }
+
+            Quaternion currentRotation = currentData.GetPlayerRotation();
+            Vector3 currentForward = currentRotation * Vector3.forward;
+            Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.9f);
+            Vector3 currentArrowEnd = currentDataPosition + currentForward * directionLength;
+            Gizmos.DrawLine(currentDataPosition, currentArrowEnd);
+            Vector3 currentArrowLeft = Quaternion.AngleAxis(180f + arrowHeadAngle, currentRotation * Vector3.up) * currentForward;
+            Vector3 currentArrowRight = Quaternion.AngleAxis(180f - arrowHeadAngle, currentRotation * Vector3.up) * currentForward;
+            Gizmos.DrawLine(currentArrowEnd, currentArrowEnd + currentArrowLeft * arrowHeadLength);
+            Gizmos.DrawLine(currentArrowEnd, currentArrowEnd + currentArrowRight * arrowHeadLength);
 
             Vector3 standardDisplacement = currentDataPosition - previousDataPosition;
             if (standardDisplacement.sqrMagnitude > StandardDisplacementSqrEpsilon)

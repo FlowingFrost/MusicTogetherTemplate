@@ -1,0 +1,245 @@
+:root {
+    /* 暗色主题 - 基于 VS Code 暗色优化，专业且舒适 */
+    --db-accent: rgb(86, 156, 214);          /* 柔和蓝 */
+    --db-text: rgb(212, 219, 226);           /* 高可读性灰白 */
+    --db-muted: rgb(138, 148, 158);          /* 辅助文字 */
+    --db-surface: rgb(37, 37, 38);           /* 主背景 */
+    --db-surface-alt: rgb(45, 45, 47);       /* 卡片背景 */
+    --db-border: rgb(60, 65, 70);            /* 边框 */
+    --db-button-bg: rgb(60, 60, 65);
+    --db-button-bg-hover: rgb(75, 75, 80);
+    --db-input-bg: rgb(30, 30, 32);
+    
+    /* 交互状态变量 */
+    --db-item-hover: rgb(62, 68, 77);
+    --db-item-selected: rgb(9, 71, 113);     /* 深蓝选中 */
+    --db-item-selected-text: rgb(255, 255, 255);
+}
+
+/* 通用类沿用亮色主题结构，仅变量不同，以下为必要的暗色特有调整 */
+
+.db-panel {
+    padding: var(--db-panel-padding-y) var(--db-panel-padding-x);
+    flex-grow: 1;
+    font-size: var(--db-font-size);
+    background-color: var(--db-surface);
+    border-radius: var(--db-radius);
+    border-width: 1px;
+    border-color: var(--db-border);
+}
+
+.db-section {
+    padding: var(--db-gap-sm);
+    background-color: var(--db-surface-alt);
+    border-radius: var(--db-radius);
+    border-width: 1px;
+    border-color: var(--db-border);
+}
+
+.db-section-spaced {
+    margin-top: var(--db-gap-md);
+}
+
+.db-title {
+    -unity-font-style: bold;
+    font-size: 12px;
+    margin-bottom: var(--db-gap-xs);
+    color: var(--db-text);
+    margin: 0 0 var(--db-gap-xs) 4px;
+}
+
+.db-subtitle {
+    -unity-font-style: bold;
+    font-size: 11px;
+    margin: 0 0 var(--db-gap-xs) 4px;
+    color: var(--db-text);
+    padding: 0;
+}
+
+.db-muted {
+    color: var(--db-muted);
+    font-size: 11px;
+}
+
+.db-row {
+    margin-top: var(--db-gap-xs);
+}
+
+.db-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--db-gap-xs);
+    margin-top: var(--db-gap-xs);
+}
+
+.db-list {
+    margin-top: var(--db-gap-xs);
+    border-width: 1px;
+    border-color: var(--db-border);
+    border-radius: var(--db-radius);
+    background-color: var(--db-surface-alt);
+    height: 160px;
+}
+
+.db-list-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    border-bottom-width: 1px;
+    border-color: var(--db-border);
+    color: var(--db-text);
+}
+
+.db-list-row:hover {
+    background-color: var(--db-item-hover);
+}
+
+.db-list-row--selected {
+    background-color: var(--db-item-selected);
+    color: var(--db-item-selected-text);
+    -unity-font-style: bold;
+}
+
+.unity-popup-menu__item {
+    color: var(--db-text);
+    background-color: var(--db-surface-alt);
+}
+
+.unity-popup-menu__item:hover {
+    background-color: var(--db-item-hover);
+}
+
+.unity-popup-menu__item--selected {
+    background-color: var(--db-item-selected);
+    color: var(--db-item-selected-text);
+}
+
+.db-detail-form {
+    margin-top: var(--db-gap-sm);
+    padding: var(--db-gap-sm);
+    border-width: 1px;
+    border-color: var(--db-border);
+    border-radius: var(--db-radius);
+    background-color: var(--db-surface-alt);
+}
+
+.db-status-tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    color: var(--db-accent);
+    border-width: 1px;
+    border-color: var(--db-accent);
+    background-color: rgba(86, 156, 214, 0.15);
+}
+
+.db-graph {
+    margin-top: var(--db-gap-sm);
+    height: 160px;
+    background-color: var(--db-surface-alt);
+    border-width: 1px;
+    border-color: var(--db-border);
+    border-radius: var(--db-radius);
+}
+
+.db-legend {
+    margin-top: var(--db-gap-sm);
+    font-size: 11px;
+    color: var(--db-text);
+}
+
+.db-button {
+    margin-top: var(--db-gap-xs);
+    height: 22px;
+    color: var(--db-text);
+    background-color: var(--db-button-bg);
+    border-color: var(--db-border);
+    border-width: 1px;
+    border-radius: 4px;
+    transition-property: background-color;
+    transition-duration: 0.15s;
+}
+
+.db-button:hover {
+    background-color: var(--db-button-bg-hover);
+}
+
+.db-button:active {
+    background-color: var(--db-border);
+}
+
+.db-field {
+    margin-top: var(--db-gap-xs);
+    color: var(--db-text);
+    flex-grow: 1;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.db-accent {
+    color: var(--db-accent);
+}
+
+.unity-base-field {
+    color: var(--db-text);
+    font-size: var(--db-font-size);
+    flex-grow: 1;
+}
+
+.unity-base-field__label {
+    color: var(--db-text);
+    margin: 0;
+    padding: 0 4px 0 0;
+    flex-grow: 0;
+    min-width: auto;
+}
+
+.unity-enum-field__label {
+    color: var(--db-text);
+}
+
+.unity-base-field__input {
+    background-color: var(--db-input-bg);
+    border-color: var(--db-border);
+    border-width: 1px;
+    border-radius: 4px;
+    margin: 0;
+    padding: 0 4px;
+    -unity-text-align: middle-right;
+    flex-grow: 1;
+    color: var(--db-text);
+}
+
+.unity-base-field__input:focus {
+    border-color: var(--db-accent);
+}
+
+.unity-enum-field__input {
+    background-color: var(--db-input-bg);
+    border-color: var(--db-border);
+    border-width: 1px;
+    border-radius: 4px;
+    color: var(--db-text);
+}
+
+.unity-enum-field__input:focus {
+    border-color: var(--db-accent);
+}
+
+.unity-enum-field__text {
+    color: var(--db-text);
+}
+
+.unity-enum-field__arrow {
+    color: var(--db-muted);
+}
+
+.unity-toggle__checkmark {
+    margin: 0;
+    padding: 0;
+    flex-shrink: 1;
+    width: 12px;
+    height: 12px;
+    flex-grow: 0;
+}

@@ -1,4 +1,5 @@
 using System;
+using MusicTogether.DancingBall.EditorTool;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -11,9 +12,10 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
         private Toggle _enableToggle;
         private Label _infoLabel;
         private Label _hintLabel;
-        private IntegerField _jumpRoadField;
+    private IntegerField _jumpRoadField;
         private IntegerField _jumpBlockField;
         private Button _jumpButton;
+    private EnumField _defaultDisplacementTypeField;
         private VisualElement _bindedView;
         private VisualElement _unbindedView;
         private Button _retryButton;
@@ -21,7 +23,8 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
         
         public Action<bool> EnableChanged { get; set; }
         public Action<int,int> JumpTo { get; set; }
-        public Action RetryBind { get; set; }
+    public Action RetryBind { get; set; }
+    public Action<Enum> DefaultDisplacementTypeChanged { get; set; }
         
         public SelectionWindowManager(VisualElement root) : base(root)
         {
@@ -76,6 +79,12 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
             _enableToggle?.SetEnabled(enabled);
         }
 
+        public void SetDefaultDisplacementType(BlockDisplacementDataType type)
+        {
+            if (_defaultDisplacementTypeField == null) return;
+            _defaultDisplacementTypeField.SetValueWithoutNotify(type);
+        }
+
         public void SetBindedViewVisible(bool isBinded)
         {
             if (_bindedView != null)
@@ -104,6 +113,7 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
             _jumpRoadField = Root.Q<IntegerField>("selection-jump-road");
             _jumpBlockField = Root.Q<IntegerField>("selection-jump-block");
             _jumpButton = Root.Q<Button>("selection-jump-go");
+            _defaultDisplacementTypeField = Root.Q<EnumField>("selection-default-displacement-type");
             _bindedView = Root.Q<VisualElement>("binded-view");
             _unbindedView = Root.Q<VisualElement>("unbinded-view");
             _retryButton = Root.Q<Button>("selection-retry");
@@ -116,6 +126,13 @@ namespace MusicTogether.DancingBall.EditorTool.UIManager
             if (_jumpButton != null)
             {
                 _jumpButton.clicked += OnJumpClicked;
+            }
+
+            if (_defaultDisplacementTypeField != null)
+            {
+                _defaultDisplacementTypeField.Init(BlockDisplacementDataType.Classic);
+                _defaultDisplacementTypeField.SetValueWithoutNotify(BlockDisplacementDataType.Classic);
+                _defaultDisplacementTypeField.RegisterValueChangedCallback(evt => DefaultDisplacementTypeChanged?.Invoke(evt.newValue));
             }
 
             if (_retryButton != null)
